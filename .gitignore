@@ -1,0 +1,65 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Widget Preview related
+.widget_preview/
+
+# Data pipeline: downloaded sources and generated databases (rebuild with
+# `python data_pipeline/build_all.py`)
+/data_pipeline/sources/
+/data_pipeline/output/
+__pycache__/
+/assets/db/*.gz
+
+# Per-environment config (copy env/example.json). Publishable keys are not
+# secret, but each developer/environment keeps its own file.
+/env/*.json
+!/env/example.json
+
+# Planning and design documents
+/prd.md
+/development_plan.md
+/ui-design.md

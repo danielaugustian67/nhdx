@@ -1,0 +1,14 @@
+{
+  "dictionary.db": {
+    "asset": "assets/db/dictionary.db.gz",
+    "sha256": "4cab04fc334f8395f7d4d598121561fe67349a01c0b6637b807defbd33f274ae",
+    "size": 44170456,
+    "version": "1.0.0"
+  },
+  "content.db": {
+    "asset": "assets/db/content.db.gz",
+    "sha256": "07c99434b538f6866b58773a8b5a2e842559e9591a1c8e373bd7c6a2e3c4e0d5",
+    "size": 1303648,
+    "version": "1.0.0"
+  }
+}

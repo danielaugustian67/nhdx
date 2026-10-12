@@ -1,0 +1,37 @@
+{
+  "_comment": "Shared by the Python pipeline and the Dart app. Both must produce exactly these outputs.",
+  "normalize_jp": [
+    ["たべる", "たべる"],
+    ["タベル", "たべる"],
+    ["ﾀﾍﾞﾙ", "たべる"],
+    ["食べる", "食べる"],
+    ["食べ物", "食べ物"],
+    ["コーヒー", "こーひー"],
+    ["ヴァイオリン", "ゔぁいおりん"],
+    ["  たべる  ", "たべる"],
+    ["ＡＢＣ", "abc"],
+    ["Ｔシャツ", "tしゃつ"],
+    ["日本語", "日本語"],
+    ["つづく", "つずく"],
+    ["はなぢ", "はなじ"],
+    ["ツヅク", "つずく"],
+    ["", ""]
+  ],
+  "normalize_latin": [
+    ["Eat", "eat"],
+    ["  To   Eat ", "to eat"],
+    ["ＥＡＴ", "eat"],
+    ["Café", "cafe"],
+    ["naïve", "naive"],
+    ["Tōkyō", "tokyo"],
+    ["", ""]
+  ],
+  "romaji_search": [
+    ["on'na", "onna"],
+    ["shin'ai", "shinai"],
+    ["Taberu", "taberu"],
+    ["kēki", "keki"],
+    ["e-mēru", "emeru"],
+    ["-", "-"]
+  ]
+}

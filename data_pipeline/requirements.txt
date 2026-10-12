@@ -1,0 +1,4 @@
+requests>=2.31
+tqdm>=4.66
+PySastrawi>=1.2
+fonttools>=4.50

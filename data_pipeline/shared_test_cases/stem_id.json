@@ -1,0 +1,20 @@
+{
+  "_comment": "Indonesian stemming (Sastrawi / Nazief-Adriani). Shared by the Python pipeline and the Dart app.",
+  "stem_id": [
+    ["makan", "makan"],
+    ["memakan", "makan"],
+    ["dimakan", "makan"],
+    ["makanan", "makan"],
+    ["minuman", "minum"],
+    ["meminum", "minum"],
+    ["berlari", "lari"],
+    ["pelajaran", "ajar"],
+    ["belajar", "ajar"],
+    ["membaca", "baca"],
+    ["dibaca", "baca"],
+    ["menulis", "tulis"],
+    ["memakan nasi", "makan nasi"],
+    ["makan; memakan", "makan; makan"],
+    ["Memakan", "makan"]
+  ]
+}
