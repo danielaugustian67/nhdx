@@ -4,13 +4,28 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text.dart';
 import 'app_tokens.dart';
+import 'theme_palette.dart';
 
 /// Builds ThemeData from the design tokens (ui-design §4). Dark is the
 /// default; elevation is expressed with surface tones and glow, not grey
 /// shadows (§4.4).
 abstract final class AppTheme {
-  static ThemeData light() => _build(AppColors.light, Brightness.light);
-  static ThemeData dark() => _build(AppColors.dark, Brightness.dark);
+  static ThemeData light([AppColors? colors]) => _build(colors ?? AppColors.light, Brightness.light);
+  static ThemeData dark([AppColors? colors]) => _build(colors ?? AppColors.dark, Brightness.dark);
+
+  static ThemeData build(
+    Brightness brightness, {
+    ThemePalette palette = ThemePalette.sakura,
+    int? customColor,
+    bool pureBlack = false,
+  }) {
+    final colors = palette.resolveColors(
+      brightness,
+      customColorValue: customColor,
+      pureBlack: pureBlack,
+    );
+    return _build(colors, brightness);
+  }
 
   static ThemeData _build(AppColors c, Brightness brightness) {
     final scheme = ColorScheme(

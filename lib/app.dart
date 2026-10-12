@@ -65,8 +65,17 @@ class NihondxApp extends ConsumerWidget {
     final onboarding = ref.watch(onboardingNeededProvider).value ?? false;
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.build(
+        Brightness.light,
+        palette: look.palette,
+        customColor: look.customColor,
+      ),
+      darkTheme: AppTheme.build(
+        Brightness.dark,
+        palette: look.palette,
+        customColor: look.customColor,
+        pureBlack: look.pureBlack,
+      ),
       themeMode: look.theme.mode,
       locale: look.language.locale,
       builder: (context, child) {

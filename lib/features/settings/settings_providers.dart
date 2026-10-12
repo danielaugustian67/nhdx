@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/providers.dart';
 import '../../core/study_day.dart';
+import '../../core/theme/theme_palette.dart';
 
 /// Light or dark look (ui-design §4.1: dark is the default). Stays on this
 /// device.
@@ -44,19 +45,43 @@ enum TextSize {
   static TextSize parse(String? v) => values.firstWhere((s) => s.name == v, orElse: () => normal);
 }
 
-typedef Appearance = ({ThemeChoice theme, LanguageChoice language, TextSize textSize});
+typedef Appearance = ({
+  ThemeChoice theme,
+  LanguageChoice language,
+  TextSize textSize,
+  ThemePalette palette,
+  int? customColor,
+  bool pureBlack,
+});
 
-const defaultAppearance = (theme: ThemeChoice.dark, language: LanguageChoice.system, textSize: TextSize.normal);
+const defaultAppearance = (
+  theme: ThemeChoice.dark,
+  language: LanguageChoice.system,
+  textSize: TextSize.normal,
+  palette: ThemePalette.sakura,
+  customColor: null,
+  pureBlack: false,
+);
 
 final appearanceProvider = StreamProvider<Appearance>((ref) async* {
   final db = await ref.watch(userDbProvider.future);
   yield* db
-      .watchSettings(const [ThemeChoice.settingKey, LanguageChoice.settingKey, TextSize.settingKey])
+      .watchSettings(const [
+        ThemeChoice.settingKey,
+        LanguageChoice.settingKey,
+        TextSize.settingKey,
+        ThemePalette.settingKey,
+        ThemePalette.customColorKey,
+        ThemePalette.pureBlackKey,
+      ])
       .map(
         (s) => (
           theme: ThemeChoice.parse(s[ThemeChoice.settingKey]),
           language: LanguageChoice.parse(s[LanguageChoice.settingKey]),
           textSize: TextSize.parse(s[TextSize.settingKey]),
+          palette: ThemePalette.parse(s[ThemePalette.settingKey]),
+          customColor: int.tryParse(s[ThemePalette.customColorKey] ?? ''),
+          pureBlack: s[ThemePalette.pureBlackKey] == 'true',
         ),
       );
 });
