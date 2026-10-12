@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/audio/speech.dart';
 import '../../core/database/content_db.dart';
 import '../../core/database/providers.dart';
 import '../../core/theme/app_colors.dart';
@@ -12,9 +13,11 @@ import '../../core/widgets/flip_card.dart';
 import '../../core/widgets/game_card.dart';
 import '../../core/widgets/hanko_stamp.dart';
 import '../../core/widgets/level_badge.dart';
+import '../../core/widgets/speak_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../kana/widgets/stroke_animation.dart';
 import '../learn/path_providers.dart';
+import '../learn/speech_text.dart';
 import '../learn/vocab_path.dart';
 import '../srs/srs_providers.dart';
 import 'free_study_providers.dart';
@@ -57,6 +60,11 @@ class _FreeStudySessionScreenState extends ConsumerState<FreeStudySessionScreen>
     });
   }
 
+  void _flip() {
+    setState(() => _flipped = true);
+    autoSpeak(ref, speechText(_items[_index]));
+  }
+
   void _undo() {
     final last = _answers.removeLast();
     ref.read(studyMarksProvider.notifier).set(studyKey(last.item), last.before);
@@ -93,6 +101,8 @@ class _FreeStudySessionScreenState extends ConsumerState<FreeStudySessionScreen>
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
     final done = _index >= _items.length;
+    // Loaded up front so the first card is read aloud straight away.
+    ref.watch(speechAutoplayProvider);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -142,7 +152,7 @@ class _FreeStudySessionScreenState extends ConsumerState<FreeStudySessionScreen>
                         secondaryBackground: _SwipeHint(label: l10n.freeStudyNotYet, color: c.seal, start: false),
                         child: FlipCard(
                           flipped: _flipped,
-                          onFlip: () => setState(() => _flipped = true),
+                          onFlip: _flip,
                           front: _Face(item: _items[_index], back: false, meaningFirst: widget.meaningFirst),
                           back: _Face(item: _items[_index], back: true, meaningFirst: widget.meaningFirst),
                         ),
@@ -286,31 +296,43 @@ class _Face extends ConsumerWidget {
               ],
             ),
           );
-    Widget example(String headword, String? reading, String meaning) => Padding(
-      padding: const EdgeInsets.only(top: AppSpace.xs),
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: headword,
-              locale: ja,
-              style: AppText.bodyJp.copyWith(color: c.ink),
-            ),
-            if (reading != null)
-              TextSpan(
-                text: ' ($reading)',
-                locale: ja,
-                style: AppText.bodySmallJp.copyWith(color: c.inkMuted),
+    // Tapping an example word reads it.
+    Widget example(String headword, String? reading, String meaning) => InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.badge),
+      onTap: () => ref.read(speechProvider).speak(reading ?? headword),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpace.xs, horizontal: AppSpace.s),
+        child: Text.rich(
+          TextSpan(
+            children: [
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(end: AppSpace.xs),
+                  child: Icon(Icons.volume_up_rounded, size: 16, color: c.primaryText),
+                ),
               ),
-            TextSpan(
-              text: '  $meaning',
-              style: AppText.bodySmall.copyWith(color: c.inkMuted),
-            ),
-          ],
+              TextSpan(
+                text: headword,
+                locale: ja,
+                style: AppText.bodyJp.copyWith(color: c.ink),
+              ),
+              if (reading != null)
+                TextSpan(
+                  text: ' ($reading)',
+                  locale: ja,
+                  style: AppText.bodySmallJp.copyWith(color: c.inkMuted),
+                ),
+              TextSpan(
+                text: '  $meaning',
+                style: AppText.bodySmall.copyWith(color: c.inkMuted),
+              ),
+            ],
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
-        textAlign: TextAlign.center,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
       ),
     );
 
@@ -318,6 +340,7 @@ class _Face extends ConsumerWidget {
       Kana k => [
         big,
         Text(k.romaji, style: AppText.title1.copyWith(color: c.primaryText, fontSize: 32)),
+        SpeakButton(speechText(k)),
         strokes(),
         if (k.exampleWordId case final id? when dict != null)
           if (dict.entry(id) case final e?) ...[
@@ -340,6 +363,7 @@ class _Face extends ConsumerWidget {
           textAlign: TextAlign.center,
           style: AppText.bodyJp.copyWith(color: c.ink),
         ),
+        SpeakButton(speechText(k)),
         strokes(),
         ..._kanjiExamples(ref, k, l10n, c, example),
       ],
@@ -358,6 +382,7 @@ class _Face extends ConsumerWidget {
           children: [
             Text(w.word.romaji, style: AppText.body.copyWith(color: c.inkMuted)),
             LevelBadge(w.word.jlpt),
+            SpeakButton(speechText(w), size: 24),
           ],
         ),
         const SizedBox(height: AppSpace.l),

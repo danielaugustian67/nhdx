@@ -463,5 +463,10 @@
   "freeStudyAdded": "Sudah masuk review",
   "freeStudyAllKnown": "Semua sudah hafal. Mantap!",
   "freeStudyRecallReading": "Huruf apa ini?",
-  "freeStudyRecallKanji": "Kanji apa yang artinya ini?"
+  "freeStudyRecallKanji": "Kanji apa yang artinya ini?",
+  "listen": "Dengarkan",
+  "speechUnavailable": "Suara bahasa Jepang belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Jepang.",
+  "speechAutoplay": "Putar suara otomatis",
+  "speechAutoplayNote": "Baca huruf dan kata saat kartu dibalik atau pelajaran dibuka",
+  "settingsSound": "Suara"
 }

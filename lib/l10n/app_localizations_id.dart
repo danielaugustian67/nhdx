@@ -1366,4 +1366,21 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get freeStudyRecallKanji => 'Kanji apa yang artinya ini?';
+
+  @override
+  String get listen => 'Dengarkan';
+
+  @override
+  String get speechUnavailable =>
+      'Suara bahasa Jepang belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Jepang.';
+
+  @override
+  String get speechAutoplay => 'Putar suara otomatis';
+
+  @override
+  String get speechAutoplayNote =>
+      'Baca huruf dan kata saat kartu dibalik atau pelajaran dibuka';
+
+  @override
+  String get settingsSound => 'Suara';
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/audio/speech.dart';
 import '../../../core/database/content_db.dart';
 import '../../../core/database/providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/game_card.dart';
+import '../../../core/widgets/speak_button.dart';
 import '../../../l10n/app_localizations.dart';
 import 'stroke_animation.dart';
 
@@ -32,6 +34,12 @@ class KanaDetailSheet extends ConsumerStatefulWidget {
 
 class _KanaDetailSheetState extends ConsumerState<KanaDetailSheet> {
   final _animations = <GlobalKey<StrokeAnimationState>>[];
+
+  @override
+  void initState() {
+    super.initState();
+    autoSpeak(ref, widget.kana.literal);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +69,7 @@ class _KanaDetailSheetState extends ConsumerState<KanaDetailSheet> {
                 const SizedBox(width: AppSpace.m),
                 Text(l10n.strokeCount(total), style: AppText.bodySmall.copyWith(color: c.inkMuted)),
                 const Spacer(),
+                SpeakButton(widget.kana.literal),
                 TextButton.icon(
                   onPressed: () => [for (final k in _animations) k.currentState?.replay()],
                   icon: const Icon(Icons.replay_rounded),
@@ -112,6 +121,7 @@ class _KanaDetailSheetState extends ConsumerState<KanaDetailSheet> {
                         ],
                       ),
                     ),
+                    SpeakButton(example.kana, size: 24),
                   ],
                 ),
               ),

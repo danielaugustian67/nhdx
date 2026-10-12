@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/audio/speech.dart';
 import '../../core/database/providers.dart';
 import '../../core/study_day.dart';
 import '../../core/theme/app_colors.dart';
@@ -14,6 +15,7 @@ import '../../core/widgets/flip_card.dart';
 import '../../core/widgets/game_card.dart';
 import '../../core/widgets/hanko_stamp.dart';
 import '../../core/widgets/level_badge.dart';
+import '../../core/widgets/speak_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../progress/progress_providers.dart';
 import 'sm2.dart';
@@ -79,6 +81,11 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     });
   }
 
+  void _flip() {
+    setState(() => _flipped = true);
+    autoSpeak(ref, _queue!.first.spoken);
+  }
+
   void _answer(Rating rating) {
     final queue = _queue!;
     final item = queue.first;
@@ -122,6 +129,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
             romaji: item.romaji,
             back: item.back,
             jlpt: item.jlpt,
+            speech: item.speech,
           ),
         );
       }
@@ -135,6 +143,8 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Loaded up front so the first card is read aloud straight away.
+    ref.watch(speechAutoplayProvider);
     final queue = _queue;
     if (queue == null) return Scaffold(appBar: AppBar(), body: const SizedBox.shrink());
     if (_total == 0) return _Empty(waiting: _waiting, limitReached: _limitReached, onAdded: _load);
@@ -180,7 +190,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   key: ValueKey('${item.card.id}-$_answered'),
                   item: item,
                   flipped: _flipped,
-                  onFlip: () => setState(() => _flipped = true),
+                  onFlip: _flip,
                 ),
               ),
               const SizedBox(height: AppSpace.l),
@@ -191,7 +201,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                     : ChunkyButton(
                         key: const ValueKey('flip'),
                         label: l10n.showAnswer,
-                        onPressed: () => setState(() => _flipped = true),
+                        onPressed: _flip,
                       ),
               ),
             ],
@@ -282,6 +292,7 @@ class _Face extends StatelessWidget {
               children: [
                 if (item.romaji != null) Text(item.romaji!, style: AppText.body.copyWith(color: c.inkMuted)),
                 if (item.jlpt case final level?) LevelBadge(level),
+                SpeakButton(item.spoken, size: 24),
               ],
             ),
             const SizedBox(height: AppSpace.l),

@@ -9,6 +9,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
 import '../../core/widgets/level_badge.dart';
+import '../../core/widgets/speak_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../learn/path_providers.dart';
 import '../srs/srs_providers.dart';
@@ -139,6 +140,8 @@ class _Body extends ConsumerWidget {
             Text(word.romaji, style: AppText.body.copyWith(color: c.inkMuted)),
             if (word.jlpt case final level?) LevelBadge(level),
             if (word.isCommon) _Tag(l10n.commonWord),
+            // Read from the kana: the kanji alone could be read several ways.
+            SpeakButton(word.kana, size: 24),
           ],
         ),
         if (wordClass != null) ...[const SizedBox(height: AppSpace.xs), Text(wordClass, style: muted)],

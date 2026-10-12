@@ -2353,6 +2353,36 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Kanji apa yang artinya ini?'**
   String get freeStudyRecallKanji;
+
+  /// No description provided for @listen.
+  ///
+  /// In id, this message translates to:
+  /// **'Dengarkan'**
+  String get listen;
+
+  /// No description provided for @speechUnavailable.
+  ///
+  /// In id, this message translates to:
+  /// **'Suara bahasa Jepang belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Jepang.'**
+  String get speechUnavailable;
+
+  /// No description provided for @speechAutoplay.
+  ///
+  /// In id, this message translates to:
+  /// **'Putar suara otomatis'**
+  String get speechAutoplay;
+
+  /// No description provided for @speechAutoplayNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Baca huruf dan kata saat kartu dibalik atau pelajaran dibuka'**
+  String get speechAutoplayNote;
+
+  /// No description provided for @settingsSound.
+  ///
+  /// In id, this message translates to:
+  /// **'Suara'**
+  String get settingsSound;
 }
 
 class _AppLocalizationsDelegate

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/audio/speech.dart';
 import '../../core/database/providers.dart';
 import '../../core/study_day.dart';
 import '../../core/theme/app_colors.dart';
@@ -198,6 +199,14 @@ class SettingsSection extends ConsumerWidget {
               options: [for (final s in TextSize.values) (s, sizeName(s), null)],
               onSelected: (v) => saveSetting(ref, TextSize.settingKey, v.name),
             ),
+          ),
+          Divider(color: c.line, height: AppSpace.l),
+          _GroupLabel(l10n.settingsSound),
+          SwitchListTile(
+            title: Text(l10n.speechAutoplay, style: AppText.body.copyWith(color: c.ink)),
+            subtitle: Text(l10n.speechAutoplayNote, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
+            value: ref.watch(speechAutoplayProvider).value ?? true,
+            onChanged: (on) => saveSetting(ref, speechAutoplayKey, on ? 'on' : 'off'),
           ),
           Divider(color: c.line, height: AppSpace.l),
           _GroupLabel(l10n.settingsNotifications),

@@ -1491,4 +1491,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get freeStudyRecallKanji => 'Which kanji means this?';
+
+  @override
+  String get listen => 'Listen';
+
+  @override
+  String get speechUnavailable =>
+      'No Japanese voice on this phone yet. Install one in phone Settings › Text-to-speech › Japanese.';
+
+  @override
+  String get speechAutoplay => 'Play sound automatically';
+
+  @override
+  String get speechAutoplayNote =>
+      'Read characters and words aloud when a card turns over or a lesson card opens';
+
+  @override
+  String get settingsSound => 'Sound';
 }

@@ -8,6 +8,7 @@ import '../../core/database/user_db.dart';
 import '../../core/study_day.dart';
 import '../kana/kana_providers.dart';
 import '../learn/path_providers.dart';
+import '../learn/speech_text.dart';
 import 'sm2.dart';
 
 /// Daily limits (PRD F5), chosen in Settings and synced.
@@ -156,7 +157,15 @@ void removeWordCard(WidgetRef ref, int wordId) =>
 
 /// One card with what its two sides show.
 class ReviewItem {
-  const ReviewItem({required this.card, required this.front, this.reading, this.romaji, required this.back, this.jlpt});
+  const ReviewItem({
+    required this.card,
+    required this.front,
+    this.reading,
+    this.romaji,
+    required this.back,
+    this.jlpt,
+    this.speech,
+  });
 
   final SrsCard card;
   final String front;
@@ -166,6 +175,11 @@ class ReviewItem {
   final String? romaji;
   final String back;
   final int? jlpt;
+
+  /// Read aloud instead of [reading] or [front] (a kanji's readings).
+  final String? speech;
+
+  String get spoken => speech ?? reading ?? front;
 
   /// Meaning → Japanese: the front asks with [back], the answer is [front].
   bool get reversed => card.direction == CardDirection.meaningToJp.value;
@@ -209,6 +223,7 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
             reading: kanjiReadings(k),
             back: k.meanings.take(3).join(', '),
             jlpt: k.jlpt,
+            speech: kanjiSpeech(k),
           ),
           null => null,
         },

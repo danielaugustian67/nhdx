@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/audio/speech.dart';
 import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
@@ -9,11 +10,13 @@ import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
 import '../../core/widgets/level_badge.dart';
+import '../../core/widgets/speak_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../kana/kana_providers.dart';
 import '../kana/widgets/stroke_animation.dart';
 import 'lesson.dart';
 import 'lesson_screen.dart';
+import 'speech_text.dart';
 import 'vocab_path.dart';
 
 /// "Kenali …" lesson (ui-design §5.2): one card per new kana or kanji with
@@ -43,6 +46,17 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
   bool _exercises = false;
 
   @override
+  void initState() {
+    super.initState();
+    autoSpeak(ref, speechText(widget.items.first));
+  }
+
+  void _next() {
+    setState(() => _index++);
+    autoSpeak(ref, speechText(widget.items[_index]));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final item = widget.items[_index];
     final vocab = item is VocabWord;
@@ -61,6 +75,8 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
     final content = vocab ? null : ref.watch(contentProvider).value;
+    // Loaded up front so the first card is read aloud straight away.
+    ref.watch(speechAutoplayProvider);
     final last = _index == widget.items.length - 1;
 
     return Scaffold(
@@ -128,7 +144,8 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
                         Kana k => Text(k.romaji, style: AppText.title1.copyWith(color: c.primaryText, fontSize: 32)),
                         _ => const SizedBox.shrink(),
                       },
-                      const SizedBox(height: AppSpace.xl),
+                      SpeakButton(speechText(item), size: 32),
+                      const SizedBox(height: AppSpace.m),
                       if (content != null)
                         Container(
                           decoration: BoxDecoration(
@@ -158,7 +175,7 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
               const SizedBox(height: AppSpace.m),
               ChunkyButton(
                 label: last ? l10n.startQuiz : l10n.next,
-                onPressed: () => setState(() => last ? _exercises = true : _index++),
+                onPressed: last ? () => setState(() => _exercises = true) : _next,
               ),
               const SizedBox(height: AppSpace.s),
             ],

@@ -65,6 +65,12 @@ void main() {
     await settle(tester);
   }
 
+  /// Drift streams close on the next tick after the tree goes.
+  Future<void> unmount(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 10));
+  }
+
   Future<void> tapAndSettle(WidgetTester tester, Finder finder) async {
     await tester.tap(finder);
     await settle(tester);
@@ -137,15 +143,14 @@ void main() {
     expect(find.bySemanticsLabel(RegExp(r'^あいうえお, 3 dari 5 hafal')), findsOneWidget);
     expect(find.text('Yang belum hafal (2)'), findsOneWidget);
     expect(find.textContaining('Lanjutkan: あいうえお'), findsOneWidget);
+    await unmount(tester);
   }, skip: skip != false);
 
   testWidgets('the Today screen opens Hafalan Bebas', (tester) async {
     await pump(tester, const TodayScreen());
     await tapAndSettle(tester, find.text('Hafalan Bebas'));
     expect(find.text('Pilih grup dulu'), findsOneWidget);
-    // Drift streams close on the next tick.
-    await tester.pumpWidget(const SizedBox());
-    await tester.pump(const Duration(milliseconds: 10));
+    await unmount(tester);
   }, skip: skip != false);
 
   testWidgets('swiping right marks Hafal, left marks Belum', (tester) async {
@@ -162,6 +167,7 @@ void main() {
     expect(find.text('3 / 5'), findsOneWidget);
     expect(await savedMarks(tester, StudyMarksNotifier.knownKey), hasLength(1));
     expect(await savedMarks(tester, StudyMarksNotifier.notYetKey), hasLength(1));
+    await unmount(tester);
   }, skip: skip != false);
 
   testWidgets('kanji groups open and the meaning-first option asks for the kanji', (tester) async {
@@ -171,6 +177,7 @@ void main() {
     await tapAndSettle(tester, find.bySemanticsLabel(RegExp(r'dari \d+ hafal$')).first);
     await tapAndSettle(tester, find.textContaining(RegExp(r'^Mulai \(')));
     expect(find.text('Kanji apa yang artinya ini?'), findsOneWidget);
+    await unmount(tester);
   }, skip: skip != false);
 
   testWidgets('a kanji card shows in the daily review with its readings', (tester) async {
@@ -204,5 +211,6 @@ void main() {
     await tapAndSettle(tester, find.text('Tampilkan jawaban'));
     expect(find.text(kanji.meanings.take(3).join(', ')), findsOneWidget);
     expect(find.textContaining(kanji.onyomi.first), findsOneWidget);
+    await unmount(tester);
   }, skip: dictSkip != false);
 }
