@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
+import '../../core/widgets/flip_card.dart';
 import '../../core/widgets/game_card.dart';
 import '../../core/widgets/hanko_stamp.dart';
 import '../../core/widgets/level_badge.dart';
@@ -209,44 +210,12 @@ class _Flashcard extends StatelessWidget {
   final VoidCallback onFlip;
 
   @override
-  Widget build(BuildContext context) {
-    final reduceMotion = MediaQuery.of(context).disableAnimations;
-    return GestureDetector(
-      onTap: flipped ? null : onFlip,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(end: flipped ? 1 : 0),
-        duration: reduceMotion ? AppDurations.crossFade : AppDurations.cardFlip,
-        curve: Curves.easeInOut,
-        builder: (context, t, _) {
-          if (reduceMotion) {
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                Opacity(
-                  opacity: 1 - t,
-                  child: _Face(item: item, back: false),
-                ),
-                Opacity(
-                  opacity: t,
-                  child: _Face(item: item, back: true),
-                ),
-              ],
-            );
-          }
-          // 3D flip: front turns away during the first half, back turns in.
-          final angle = t * math.pi;
-          final showBack = angle > math.pi / 2;
-          return Transform(
-            alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.0012)
-              ..rotateY(showBack ? angle - math.pi : angle),
-            child: _Face(item: item, back: showBack),
-          );
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => FlipCard(
+    flipped: flipped,
+    onFlip: onFlip,
+    front: _Face(item: item, back: false),
+    back: _Face(item: item, back: true),
+  );
 }
 
 class _Face extends StatelessWidget {

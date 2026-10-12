@@ -2239,6 +2239,120 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'{title}, terkunci'**
   String nodeLockedLabel(String title);
+
+  /// No description provided for @freeStudy.
+  ///
+  /// In id, this message translates to:
+  /// **'Hafalan Bebas'**
+  String get freeStudy;
+
+  /// No description provided for @freeStudyHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Pilih grup yang mau dihafal. Tanpa nilai, tanpa batas.'**
+  String get freeStudyHint;
+
+  /// No description provided for @freeStudyContinue.
+  ///
+  /// In id, this message translates to:
+  /// **'Lanjutkan: {title}'**
+  String freeStudyContinue(String title);
+
+  /// No description provided for @freeStudyNotYetGroup.
+  ///
+  /// In id, this message translates to:
+  /// **'Yang belum hafal ({count})'**
+  String freeStudyNotYetGroup(int count);
+
+  /// No description provided for @freeStudyStart.
+  ///
+  /// In id, this message translates to:
+  /// **'Mulai ({count} kartu)'**
+  String freeStudyStart(int count);
+
+  /// No description provided for @freeStudyPickFirst.
+  ///
+  /// In id, this message translates to:
+  /// **'Pilih grup dulu'**
+  String get freeStudyPickFirst;
+
+  /// No description provided for @freeStudyShuffle.
+  ///
+  /// In id, this message translates to:
+  /// **'Acak'**
+  String get freeStudyShuffle;
+
+  /// No description provided for @freeStudyMeaningFirst.
+  ///
+  /// In id, this message translates to:
+  /// **'Arti dulu'**
+  String get freeStudyMeaningFirst;
+
+  /// No description provided for @freeStudyKnown.
+  ///
+  /// In id, this message translates to:
+  /// **'Hafal'**
+  String get freeStudyKnown;
+
+  /// No description provided for @freeStudyNotYet.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum'**
+  String get freeStudyNotYet;
+
+  /// No description provided for @freeStudySwipeHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Geser ke kanan kalau hafal, ke kiri kalau belum'**
+  String get freeStudySwipeHint;
+
+  /// No description provided for @freeStudyGroupLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'{title}, {known} dari {total} hafal'**
+  String freeStudyGroupLabel(String title, int known, int total);
+
+  /// No description provided for @freeStudySummary.
+  ///
+  /// In id, this message translates to:
+  /// **'Hafal {known} · Belum {notYet}'**
+  String freeStudySummary(int known, int notYet);
+
+  /// No description provided for @freeStudyRepeat.
+  ///
+  /// In id, this message translates to:
+  /// **'Ulangi yang belum ({count})'**
+  String freeStudyRepeat(int count);
+
+  /// No description provided for @freeStudyAddToReview.
+  ///
+  /// In id, this message translates to:
+  /// **'Masukkan ke review harian'**
+  String get freeStudyAddToReview;
+
+  /// No description provided for @freeStudyAdded.
+  ///
+  /// In id, this message translates to:
+  /// **'Sudah masuk review'**
+  String get freeStudyAdded;
+
+  /// No description provided for @freeStudyAllKnown.
+  ///
+  /// In id, this message translates to:
+  /// **'Semua sudah hafal. Mantap!'**
+  String get freeStudyAllKnown;
+
+  /// No description provided for @freeStudyRecallReading.
+  ///
+  /// In id, this message translates to:
+  /// **'Huruf apa ini?'**
+  String get freeStudyRecallReading;
+
+  /// No description provided for @freeStudyRecallKanji.
+  ///
+  /// In id, this message translates to:
+  /// **'Kanji apa yang artinya ini?'**
+  String get freeStudyRecallKanji;
 }
 
 class _AppLocalizationsDelegate

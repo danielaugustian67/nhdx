@@ -13,6 +13,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
 import '../../core/widgets/xp_chip.dart';
 import '../../l10n/app_localizations.dart';
+import '../free_study/free_study_screen.dart';
 import '../kana/games/memory_match_screen.dart';
 import '../kana/games/speed_drill_screen.dart';
 import '../kana/games/writing_screen.dart';
@@ -123,11 +124,14 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     ).push<bool>(MaterialPageRoute(builder: (_) => page, fullscreenDialog: true));
     if (done == true) {
       ref.read(pathProgressProvider.notifier).complete(node.id);
-      // Kana and words met in a passed lesson join the daily review (PRD F6, F7).
+      // Kana, kanji and words met in a passed lesson join the daily review
+      // (PRD F6, F7).
       if (node.type == NodeType.intro && vocab) {
         final words = [for (final w in node.items.cast<VocabWord>()) (id: w.id, label: w.literal)];
         writeUserDb(ref.read(userDbProvider.future), (db) => addWordCards(db, words));
-      } else if (node.type == NodeType.intro && !kanji) {
+      } else if (node.type == NodeType.intro && kanji) {
+        addKanjiCards(ref, node.items.map((k) => k.literal));
+      } else if (node.type == NodeType.intro) {
         addKanaCards(ref, node.items.map((k) => k.literal));
       }
     }
@@ -139,6 +143,15 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       rootNavigator: true,
     ).push(MaterialPageRoute(builder: (_) => const ReviewScreen(), fullscreenDialog: true));
     // Counts depend on the clock; refresh them after a session.
+    ref.invalidate(cardCountsProvider);
+  }
+
+  Future<void> _freeStudy() async {
+    await Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push(MaterialPageRoute(builder: (_) => const FreeStudyScreen()));
+    // Cards may have gone into the daily review.
     ref.invalidate(cardCountsProvider);
   }
 
@@ -170,6 +183,21 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     }
 
     return Scaffold(
+      // Hafalan Bebas: any kana, kanji or words as flashcards, no rules. The
+      // top bar has no room left for it on a narrow phone.
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'free-study',
+        elevation: 2,
+        onPressed: _freeStudy,
+        backgroundColor: c.surfaceHigh,
+        foregroundColor: c.ink,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.control),
+          side: BorderSide(color: c.line),
+        ),
+        icon: const Icon(Icons.psychology_rounded),
+        label: Text(AppLocalizations.of(context).freeStudy),
+      ),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         // Only closes the lesson bubble; nothing for a screen reader.
@@ -281,7 +309,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             ),
           ),
         ],
-        const SliverToBoxAdapter(child: SizedBox(height: AppSpace.xxxl)),
+        // Room for the last lesson above the Hafalan Bebas button.
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpace.xxxl + 56)),
       ],
     );
   }

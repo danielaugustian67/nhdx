@@ -1415,4 +1415,80 @@ class AppLocalizationsEn extends AppLocalizations {
   String nodeLockedLabel(String title) {
     return '$title, locked';
   }
+
+  @override
+  String get freeStudy => 'Free study';
+
+  @override
+  String get freeStudyHint =>
+      'Pick the groups to memorise. No scores, no limits.';
+
+  @override
+  String freeStudyContinue(String title) {
+    return 'Continue: $title';
+  }
+
+  @override
+  String freeStudyNotYetGroup(int count) {
+    return 'Not memorised yet ($count)';
+  }
+
+  @override
+  String freeStudyStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Start ($count cards)',
+      one: 'Start (1 card)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get freeStudyPickFirst => 'Pick a group first';
+
+  @override
+  String get freeStudyShuffle => 'Shuffle';
+
+  @override
+  String get freeStudyMeaningFirst => 'Meaning first';
+
+  @override
+  String get freeStudyKnown => 'Got it';
+
+  @override
+  String get freeStudyNotYet => 'Not yet';
+
+  @override
+  String get freeStudySwipeHint => 'Swipe right if you know it, left if not';
+
+  @override
+  String freeStudyGroupLabel(String title, int known, int total) {
+    return '$title, $known of $total memorised';
+  }
+
+  @override
+  String freeStudySummary(int known, int notYet) {
+    return 'Got it $known · Not yet $notYet';
+  }
+
+  @override
+  String freeStudyRepeat(int count) {
+    return 'Repeat the not-yet cards ($count)';
+  }
+
+  @override
+  String get freeStudyAddToReview => 'Add to daily review';
+
+  @override
+  String get freeStudyAdded => 'Added to review';
+
+  @override
+  String get freeStudyAllKnown => 'You know them all. Nice!';
+
+  @override
+  String get freeStudyRecallReading => 'Which character is this?';
+
+  @override
+  String get freeStudyRecallKanji => 'Which kanji means this?';
 }

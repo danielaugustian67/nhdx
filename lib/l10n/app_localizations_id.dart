@@ -1295,4 +1295,75 @@ class AppLocalizationsId extends AppLocalizations {
   String nodeLockedLabel(String title) {
     return '$title, terkunci';
   }
+
+  @override
+  String get freeStudy => 'Hafalan Bebas';
+
+  @override
+  String get freeStudyHint =>
+      'Pilih grup yang mau dihafal. Tanpa nilai, tanpa batas.';
+
+  @override
+  String freeStudyContinue(String title) {
+    return 'Lanjutkan: $title';
+  }
+
+  @override
+  String freeStudyNotYetGroup(int count) {
+    return 'Yang belum hafal ($count)';
+  }
+
+  @override
+  String freeStudyStart(int count) {
+    return 'Mulai ($count kartu)';
+  }
+
+  @override
+  String get freeStudyPickFirst => 'Pilih grup dulu';
+
+  @override
+  String get freeStudyShuffle => 'Acak';
+
+  @override
+  String get freeStudyMeaningFirst => 'Arti dulu';
+
+  @override
+  String get freeStudyKnown => 'Hafal';
+
+  @override
+  String get freeStudyNotYet => 'Belum';
+
+  @override
+  String get freeStudySwipeHint =>
+      'Geser ke kanan kalau hafal, ke kiri kalau belum';
+
+  @override
+  String freeStudyGroupLabel(String title, int known, int total) {
+    return '$title, $known dari $total hafal';
+  }
+
+  @override
+  String freeStudySummary(int known, int notYet) {
+    return 'Hafal $known · Belum $notYet';
+  }
+
+  @override
+  String freeStudyRepeat(int count) {
+    return 'Ulangi yang belum ($count)';
+  }
+
+  @override
+  String get freeStudyAddToReview => 'Masukkan ke review harian';
+
+  @override
+  String get freeStudyAdded => 'Sudah masuk review';
+
+  @override
+  String get freeStudyAllKnown => 'Semua sudah hafal. Mantap!';
+
+  @override
+  String get freeStudyRecallReading => 'Huruf apa ini?';
+
+  @override
+  String get freeStudyRecallKanji => 'Kanji apa yang artinya ini?';
 }

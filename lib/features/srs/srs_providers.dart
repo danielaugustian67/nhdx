@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
 import '../../core/database/user_db.dart';
 import '../../core/study_day.dart';
 import '../kana/kana_providers.dart';
+import '../learn/path_providers.dart';
 import 'sm2.dart';
 
 /// Daily limits (PRD F5), chosen in Settings and synced.
@@ -139,6 +141,16 @@ void addKanaCards(WidgetRef ref, Iterable<String> literals) {
   });
 }
 
+/// Kanji cards show the kanji and ask for its meaning and readings.
+void addKanjiCards(WidgetRef ref, Iterable<String> literals) {
+  final list = literals.toList();
+  writeUserDb(ref.read(userDbProvider.future), (db) async {
+    for (final k in list) {
+      await db.addCard('kanji', k, label: k);
+    }
+  });
+}
+
 void removeWordCard(WidgetRef ref, int wordId) =>
     writeUserDb(ref.read(userDbProvider.future), (db) => db.removeCard('word', '$wordId'));
 
@@ -174,6 +186,7 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
   final db = await ref.read(userDbProvider.future);
   final dict = await ref.read(dictionaryProvider.future);
   final kana = {for (final k in await ref.read(allKanaProvider.future)) k.literal: k};
+  final kanji = {for (final k in await ref.read(allKanjiProvider.future)) k.literal: k};
   final limits = await SrsLimits.load(db);
   final done = await db.doneOn(todayStudyDate());
   final cards = await db.queue(
@@ -189,6 +202,16 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
           final k? => ReviewItem(card: c, front: k.literal, back: k.romaji),
           null => null,
         },
+        'kanji' => switch (kanji[c.itemId]) {
+          final k? => ReviewItem(
+            card: c,
+            front: k.literal,
+            reading: kanjiReadings(k),
+            back: k.meanings.take(3).join(', '),
+            jlpt: k.jlpt,
+          ),
+          null => null,
+        },
         _ => null,
       },
   ];
@@ -200,6 +223,13 @@ Future<int> waitingNewCards(WidgetRef ref) async {
   final db = await ref.read(userDbProvider.future);
   return (await db.watchCardCounts(nowUtc()).first).fresh;
 }
+
+/// On'yomi and kun'yomi on one line, okurigana in brackets:
+/// "イチ・イツ　ひと(つ)".
+String kanjiReadings(Kanji k) => [
+  k.onyomi.take(3).join('・'),
+  k.kunyomi.take(3).map((v) => v.contains('.') ? '${v.replaceFirst('.', '(')})' : v).join('・'),
+].where((s) => s.isNotEmpty).join('　');
 
 ReviewItem? _wordItem(SrsCard c, DictionaryDb dict) {
   final id = int.tryParse(c.itemId);
