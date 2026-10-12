@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:sqlite3/sqlite3.dart';
 
 /// A character taught by a course: a kana or a kanji. Ids are codepoints
@@ -100,6 +102,70 @@ class Kanji implements Glyph {
   String toString() => 'Kanji($literal)';
 }
 
+/// Text in Indonesian and English; [of] picks the app language.
+class Localized {
+  const Localized(this.id, this.en);
+  final String id;
+  final String en;
+
+  String of(String localeName) => localeName.startsWith('id') ? id : en;
+
+  static Localized parse(Object? json) {
+    final m = (json as Map?) ?? const {};
+    return Localized('${m['id'] ?? ''}', '${m['en'] ?? ''}');
+  }
+}
+
+/// An example sentence of a grammar point. [chunks] spell [japanese]
+/// without its final punctuation, for the sentence-building exercise.
+class GrammarExample {
+  const GrammarExample({required this.japanese, required this.kana, required this.translation, this.chunks = const []});
+  final String japanese;
+  final String kana;
+  final Localized translation;
+  final List<String> chunks;
+}
+
+/// A fill-the-gap question: [question] has one ＿＿, [options][answer] fills it.
+class GrammarQuiz {
+  const GrammarQuiz({required this.question, required this.options, required this.answer, required this.translation});
+  final String question;
+  final List<String> options;
+  final int answer;
+  final Localized translation;
+
+  static const gap = '＿＿';
+}
+
+/// One grammar point (PRD F13), from content/grammar/n*.json.
+class GrammarPoint {
+  const GrammarPoint({
+    required this.id,
+    required this.jlpt,
+    required this.orderNo,
+    required this.pattern,
+    required this.formation,
+    required this.meaning,
+    required this.explanation,
+    required this.examples,
+    required this.quiz,
+  });
+
+  /// 'n5-wa-desu'; also the SRS item id of its `grammar` card.
+  final String id;
+  final int jlpt;
+  final int orderNo;
+  final String pattern;
+  final String formation;
+  final Localized meaning;
+  final Localized explanation;
+  final List<GrammarExample> examples;
+  final List<GrammarQuiz> quiz;
+
+  @override
+  String toString() => 'GrammarPoint($id)';
+}
+
 /// Read-only access to `content.db` (kana, KanjiVG strokes, curriculum).
 class ContentDb {
   ContentDb._(this._db);
@@ -157,6 +223,46 @@ class ContentDb {
           kunyomi: split(r['kunyomi'], '、'),
           theme: r['theme'] as String,
           orderNo: r['order_no'] as int,
+        ),
+    ];
+  }
+
+  /// Grammar points, N5 first, in authored order. Empty for a content.db
+  /// built before the grammar table existed.
+  List<GrammarPoint> grammar() {
+    final hasTable = _db.select("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'grammar'").isNotEmpty;
+    if (!hasTable) return const [];
+    return [
+      for (final r in _db.select(
+        'SELECT id, jlpt_level, order_no, pattern, formation, meaning, explanation, examples, quiz '
+        'FROM grammar ORDER BY jlpt_level DESC, order_no',
+      ))
+        GrammarPoint(
+          id: r['id'] as String,
+          jlpt: r['jlpt_level'] as int,
+          orderNo: r['order_no'] as int,
+          pattern: r['pattern'] as String,
+          formation: r['formation'] as String,
+          meaning: Localized.parse(jsonDecode(r['meaning'] as String)),
+          explanation: Localized.parse(jsonDecode(r['explanation'] as String)),
+          examples: [
+            for (final e in jsonDecode(r['examples'] as String) as List)
+              GrammarExample(
+                japanese: e['ja'] as String,
+                kana: e['kana'] as String,
+                translation: Localized.parse(e['tr']),
+                chunks: [for (final c in (e['chunks'] as List? ?? const [])) c as String],
+              ),
+          ],
+          quiz: [
+            for (final q in jsonDecode(r['quiz'] as String) as List)
+              GrammarQuiz(
+                question: q['q'] as String,
+                options: [for (final o in q['options'] as List) o as String],
+                answer: q['answer'] as int,
+                translation: Localized.parse(q['tr']),
+              ),
+          ],
         ),
     ];
   }

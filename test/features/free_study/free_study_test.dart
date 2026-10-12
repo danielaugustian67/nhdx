@@ -14,6 +14,7 @@ import 'package:nihondx/core/theme/app_theme.dart';
 import 'package:nihondx/features/free_study/free_study_providers.dart';
 import 'package:nihondx/features/free_study/free_study_screen.dart';
 import 'package:nihondx/features/learn/kana_path.dart';
+import 'package:nihondx/features/learn/vocab_path.dart';
 import 'package:nihondx/features/srs/review_screen.dart';
 import 'package:nihondx/features/today/today_screen.dart';
 import 'package:nihondx/l10n/app_localizations.dart';
@@ -35,17 +36,25 @@ void main() {
     }
   }
 
-  Future<void> pump(WidgetTester tester, Widget home) async {
+  Future<void> pump(
+    WidgetTester tester,
+    Widget home, {
+    bool dictionary = false,
+    Future<void> Function(UserDb db)? before,
+  }) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     db = UserDb.memory();
     addTearDown(db.close);
+    if (before != null) await tester.runAsync(() => before(db));
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           contentProvider.overrideWith((ref) async => ContentDb.open(contentPath)),
-          dictionaryProvider.overrideWith((ref) => Completer<Never>().future),
+          dictionaryProvider.overrideWith(
+            (ref) => dictionary ? Future.value(DictionaryDb.open(dictPath)) : Completer<Never>().future,
+          ),
           userDbProvider.overrideWith((ref) async => db),
         ],
         child: MaterialApp(
@@ -105,6 +114,89 @@ void main() {
     expect(studyGroups(units, StudyKind.hiragana).map((g) => g.id), ['n1']);
     expect(studyGroups(units, StudyKind.katakana).map((g) => (g.id, g.unit)), [('n3', 1)]);
   });
+
+  test('lists are cut into groups of ten, labelled by position', () {
+    final items = [for (var i = 0; i < 23; i++) VocabWord(DictWord(id: i, kana: 'あ', romaji: 'a', jlpt: 5, gloss: ''))];
+    final groups = listGroups('collection', items);
+    expect(groups.map((g) => (g.id, g.label, g.items.length)), [
+      ('collection-0', '1–10', 10),
+      ('collection-1', '11–20', 10),
+      ('collection-2', '21–23', 3),
+    ]);
+    expect(listGroups('forgotten', const []), isEmpty);
+  });
+
+  testWidgets('Koleksiku studies saved words, empty until a word is saved', (tester) async {
+    await pump(tester, const FreeStudyScreen(), dictionary: true);
+    await tapAndSettle(tester, find.text('Koleksiku'));
+    expect(find.textContaining('Koleksimu masih kosong'), findsOneWidget);
+    await unmount(tester);
+
+    final dict = DictionaryDb.open(dictPath);
+    addTearDown(dict.close);
+    final word = dict.conjugableWords([5]).firstWhere((w) => w.word.kanji == '食べる').word;
+    await pump(
+      tester,
+      const FreeStudyScreen(),
+      dictionary: true,
+      before: (db) => db.setBookmark(word.id, on: true, label: '食べる'),
+    );
+    await tapAndSettle(tester, find.text('Koleksiku'));
+    for (var i = 0; i < 5 && find.text('1–1').evaluate().isEmpty; i++) {
+      await settle(tester);
+    }
+    expect(find.text('1–1'), findsOneWidget);
+    await tapAndSettle(tester, find.bySemanticsLabel(RegExp(r'^食べる, 0 dari 1 hafal')));
+    await tapAndSettle(tester, find.text('Mulai (1 kartu)'));
+    expect(find.text('食べる'), findsOneWidget);
+    await unmount(tester);
+  }, skip: dictSkip != false);
+
+  testWidgets('Sering lupa holds the review cards forgotten most', (tester) async {
+    await pump(
+      tester,
+      const FreeStudyScreen(),
+      dictionary: true,
+      before: (db) async {
+        await db.addCard('kana', 'い', label: 'い');
+        await db.addCard('kana', 'あ', label: 'あ');
+        await db.addCard('kana', 'う', label: 'う');
+        await db.customStatement("UPDATE srs_cards SET lapses = 3 WHERE item_id = 'あ'");
+        await db.customStatement("UPDATE srs_cards SET lapses = 1 WHERE item_id = 'い'");
+      },
+    );
+    await tapAndSettle(tester, find.text('Sering lupa'));
+    for (var i = 0; i < 5 && find.text('1–2').evaluate().isEmpty; i++) {
+      await settle(tester);
+    }
+    // Most forgotten first; う was never forgotten.
+    expect(find.bySemanticsLabel(RegExp(r'^あい, 0 dari 2 hafal')), findsOneWidget);
+    await unmount(tester);
+  }, skip: dictSkip != false);
+
+  testWidgets('resetting clears the marks of the picked groups, or of the whole kind', (tester) async {
+    await pump(
+      tester,
+      const FreeStudyScreen(),
+      before: (db) => db.setSetting(StudyMarksNotifier.knownKey, jsonEncode(['kana:あ', 'kana:い', 'kana:か'])),
+    );
+    expect(find.bySemanticsLabel(RegExp(r'^あいうえお, 2 dari 5 hafal')), findsOneWidget);
+
+    // Only the picked group.
+    await tapAndSettle(tester, find.bySemanticsLabel(RegExp(r'^あいうえお')));
+    await tapAndSettle(tester, find.byTooltip('Reset tanda hafal'));
+    expect(find.textContaining('di 1 grup yang dipilih'), findsOneWidget);
+    await tapAndSettle(tester, find.text('Reset'));
+    expect(find.bySemanticsLabel(RegExp(r'^あいうえお, 0 dari 5 hafal')), findsOneWidget);
+    expect(await savedMarks(tester, StudyMarksNotifier.knownKey), {'kana:か'});
+
+    // Nothing picked: the whole kind, after a confirm.
+    await tapAndSettle(tester, find.byTooltip('Reset tanda hafal'));
+    expect(find.textContaining('Semua tanda Hafal dan Belum di Hiragana'), findsOneWidget);
+    await tapAndSettle(tester, find.text('Reset'));
+    expect(await savedMarks(tester, StudyMarksNotifier.knownKey), isEmpty);
+    await unmount(tester);
+  }, skip: skip != false);
 
   testWidgets('marks cards, undoes, repeats the Belum ones and adds them to review', (tester) async {
     await pump(tester, const FreeStudyScreen());

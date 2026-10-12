@@ -69,6 +69,11 @@ class DictionaryDb {
       isCommon: w['is_common'] == 1,
       verbGroup: w['verb_group'] as String?,
       adjType: w['adj_type'] as String?,
+      posCodes: {
+        for (final s in senses)
+          for (final c in ((s['pos'] as String?) ?? '').split(';'))
+            if (c.isNotEmpty) c,
+      }.toList(),
       kanjiForms: [
         for (final f in forms)
           if (f['kind'] == 'kanji') f['text'] as String,
@@ -186,6 +191,42 @@ class DictionaryDb {
     ];
   }
 
+  /// JLPT verbs and adjectives of [levels] (conjugation drill), most
+  /// frequent first, each with the part-of-speech codes of all its senses.
+  /// Words usually written in kana come without their rare kanji.
+  List<({DictWord word, List<String> pos})> conjugableWords(List<int> levels) {
+    if (levels.isEmpty) return const [];
+    final rows = db.select(
+      'SELECT w.id, w.primary_kana AS kana, w.romaji, w.jlpt_level, '
+      // Usually written in kana (呉れる → くれる): an uncommon kanji spelling of a common kana word.
+      "       CASE WHEN (SELECT f.is_common FROM word_forms f WHERE f.word_id = w.id AND f.kind = 'kanji' "
+      '                  AND f.text = w.primary_kanji LIMIT 1) = 0 '
+      "             AND (SELECT f.is_common FROM word_forms f WHERE f.word_id = w.id AND f.kind = 'kana' "
+      '                  AND f.text = w.primary_kana LIMIT 1) = 1 THEN NULL ELSE w.primary_kanji END AS kanji, '
+      '       (SELECT s.gloss_en FROM word_senses s WHERE s.word_id = w.id ORDER BY s.sense_no LIMIT 1) AS gloss, '
+      "       (SELECT group_concat(s.pos, ';') FROM word_senses s WHERE s.word_id = w.id) AS pos "
+      'FROM words w '
+      'WHERE w.jlpt_level IN (${List.filled(levels.length, '?').join(',')}) '
+      "  AND EXISTS (SELECT 1 FROM word_senses s WHERE s.word_id = w.id AND (s.pos LIKE '%v%' OR s.pos LIKE '%adj%')) "
+      'ORDER BY w.jlpt_level DESC, coalesce(w.freq_rank, 1000000), w.id',
+      levels,
+    );
+    return [
+      for (final r in rows)
+        (
+          word: DictWord(
+            id: r['id'] as int,
+            kana: r['kana'] as String,
+            kanji: r['kanji'] as String?,
+            romaji: (r['romaji'] as String?) ?? '',
+            jlpt: r['jlpt_level'] as int,
+            gloss: _shortGloss((r['gloss'] as String?) ?? ''),
+          ),
+          pos: ((r['pos'] as String?) ?? '').split(';').where((c) => c.isNotEmpty).toSet().toList(),
+        ),
+    ];
+  }
+
   /// "good; excellent; fine; nice" → "good, excellent"
   static String _shortGloss(String gloss) => gloss.split('; ').take(2).join(', ');
 
@@ -208,6 +249,7 @@ class WordEntry {
     required this.isCommon,
     required this.verbGroup,
     required this.adjType,
+    this.posCodes = const [],
     required this.kanjiForms,
     required this.kanaForms,
     required this.senses,
@@ -225,6 +267,10 @@ class WordEntry {
 
   /// i | na | no | taru
   final String? adjType;
+
+  /// JMdict part-of-speech codes of all senses (`v5k`, `adj-i`, …), for
+  /// conjugation.
+  final List<String> posCodes;
 
   /// All spellings, primary first.
   final List<String> kanjiForms;

@@ -116,11 +116,15 @@ final jlptProgressProvider = FutureProvider<Map<int, ({int learned, int total})>
   return {for (final MapEntry(:key, :value) in totals.entries) key: (learned: learned[key] ?? 0, total: value)};
 });
 
-/// Cards forgotten most often (PRD F8 "item tersulit").
+/// Cards forgotten most often (PRD F8 "item tersulit"). A word reviewed in
+/// both directions shows once, with its higher count.
 final hardestCardsProvider = Provider<List<SrsCard>>((ref) {
-  final cards = [
-    for (final c in ref.watch(liveCardsProvider).value ?? const <SrsCard>[])
-      if (c.lapses > 0) c,
-  ]..sort((a, b) => b.lapses.compareTo(a.lapses));
+  final byItem = <String, SrsCard>{};
+  for (final c in ref.watch(liveCardsProvider).value ?? const <SrsCard>[]) {
+    if (c.lapses == 0) continue;
+    final key = '${c.cardType}:${c.itemId}';
+    if ((byItem[key]?.lapses ?? 0) < c.lapses) byItem[key] = c;
+  }
+  final cards = byItem.values.toList()..sort((a, b) => b.lapses.compareTo(a.lapses));
   return cards.take(5).toList();
 });

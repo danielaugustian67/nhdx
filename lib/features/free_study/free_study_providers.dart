@@ -1,28 +1,117 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/content_db.dart';
+import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
+import '../kana/kana_providers.dart';
 import '../learn/kana_path.dart';
 import '../learn/path_providers.dart';
 import '../learn/vocab_path.dart';
+import '../progress/progress_providers.dart';
+import '../word/word_providers.dart';
 
-/// What "Hafalan Bebas" draws its cards from.
-enum StudyKind { hiragana, katakana, kanji, word }
+/// What "Hafalan Bebas" draws its cards from: the path's lessons, the
+/// saved words (Koleksiku), or review cards forgotten at least once.
+enum StudyKind {
+  hiragana,
+  katakana,
+  kanji,
+  word,
+  collection,
+  forgotten;
 
-/// One group in the picker: the items of one "Kenali" lesson of the path.
+  /// Groups come from the path; the others are lists cut into tens.
+  bool get fromPath => index <= word.index;
+}
+
+/// One group in the picker: the items of one "Kenali" lesson of the path, or
+/// ten items of a list.
 class StudyGroup {
-  const StudyGroup({required this.id, required this.unit, required this.items});
+  const StudyGroup({required this.id, required this.unit, required this.items, this.label});
 
-  /// The path node id, stable across releases.
+  /// The path node id, stable across releases ("collection-0" for lists).
   final String id;
 
   /// Unit number within the kind, for the section headers.
   final int unit;
   final List<Glyph> items;
+
+  /// Shown instead of the unit number: "1–10".
+  final String? label;
 }
+
+/// Items per group of a list (Koleksiku, Sering lupa).
+const listGroupSize = 10;
+
+/// [items] in groups of [listGroupSize]; ids "[prefix]-0", "[prefix]-1", ….
+List<StudyGroup> listGroups(String prefix, List<Glyph> items) => [
+  for (var i = 0, from = 0; from < items.length; i++, from += listGroupSize)
+    StudyGroup(
+      id: '$prefix-$i',
+      unit: i + 1,
+      label: '${from + 1}–${min(from + listGroupSize, items.length)}',
+      items: items.sublist(from, min(from + listGroupSize, items.length)),
+    ),
+];
+
+DictWord _dictWord(WordBrief b) =>
+    DictWord(id: b.id, kana: b.kana, kanji: b.kanji, romaji: b.romaji, jlpt: b.jlpt ?? 0, gloss: b.gloss);
+
+/// Saved words, newest first, without those gone from the dictionary.
+final collectionItemsProvider = FutureProvider<List<Glyph>>((ref) async {
+  final saved = await ref.watch(collectionProvider.future);
+  return [
+    for (final (_, brief) in saved)
+      if (brief != null) VocabWord(_dictWord(brief)),
+  ];
+});
+
+/// Kana, kanji and words of review cards forgotten at least once, most
+/// often forgotten first. A word in both directions counts once, with its
+/// higher lapse count.
+final forgottenItemsProvider = FutureProvider<List<Glyph>>((ref) async {
+  final cards = await ref.watch(liveCardsProvider.future);
+  final lapses = <String, ({String type, String id, int lapses})>{};
+  for (final c in cards) {
+    if (c.lapses == 0 || !const {'kana', 'kanji', 'word'}.contains(c.cardType)) continue;
+    final key = '${c.cardType}:${c.itemId}';
+    if ((lapses[key]?.lapses ?? 0) < c.lapses) lapses[key] = (type: c.cardType, id: c.itemId, lapses: c.lapses);
+  }
+  if (lapses.isEmpty) return const [];
+  final sorted = lapses.values.toList()..sort((a, b) => b.lapses.compareTo(a.lapses));
+  // Only what the cards need: the dictionary is the slowest to open.
+  bool any(String type) => sorted.any((c) => c.type == type);
+  final kana = {
+    if (any('kana'))
+      for (final k in await ref.watch(allKanaProvider.future)) k.literal: k,
+  };
+  final kanji = {
+    if (any('kanji'))
+      for (final k in await ref.watch(allKanjiProvider.future)) k.literal: k,
+  };
+  final wordIds = [
+    for (final c in sorted)
+      if (c.type == 'word') ?int.tryParse(c.id),
+  ];
+  final briefs = wordIds.isEmpty
+      ? const <int, WordBrief>{}
+      : (await ref.watch(dictionaryProvider.future)).briefs(wordIds);
+  return [
+    for (final c in sorted)
+      ?switch (c.type) {
+        'kana' => kana[c.id],
+        'kanji' => kanji[c.id],
+        _ => switch (briefs[int.tryParse(c.id)]) {
+          final b? => VocabWord(_dictWord(b)),
+          null => null,
+        },
+      },
+  ];
+});
 
 /// Where an item's "hafal" mark is stored: "kana:あ", "kanji:休", "word:1234".
 String studyKey(Glyph g) => switch (g) {
@@ -48,10 +137,14 @@ List<StudyGroup> studyGroups(List<PathUnit> units, StudyKind kind) {
 
 final studyGroupsProvider = Provider.family<AsyncValue<List<StudyGroup>>, StudyKind>(
   (ref, kind) => switch (kind) {
-    StudyKind.hiragana || StudyKind.katakana => ref.watch(kanaPathProvider),
-    StudyKind.kanji => ref.watch(kanjiPathProvider),
-    StudyKind.word => ref.watch(vocabPathProvider),
-  }.whenData((units) => studyGroups(units, kind)),
+    StudyKind.collection => ref.watch(collectionItemsProvider).whenData((items) => listGroups('collection', items)),
+    StudyKind.forgotten => ref.watch(forgottenItemsProvider).whenData((items) => listGroups('forgotten', items)),
+    _ => switch (kind) {
+      StudyKind.kanji => ref.watch(kanjiPathProvider),
+      StudyKind.word => ref.watch(vocabPathProvider),
+      _ => ref.watch(kanaPathProvider),
+    }.whenData((units) => studyGroups(units, kind)),
+  },
 );
 
 enum StudyMark { known, notYet }
@@ -97,6 +190,17 @@ class StudyMarksNotifier extends Notifier<Map<String, StudyMark>> {
   void set(String key, StudyMark? mark) {
     state = {...state}..remove(key);
     if (mark != null) state = {...state, key: mark};
+    _save();
+  }
+
+  /// Clears the marks of [keys] ("Reset tanda hafal").
+  void clear(Iterable<String> keys) {
+    final drop = keys.toSet();
+    state = {...state}..removeWhere((k, _) => drop.contains(k));
+    _save();
+  }
+
+  void _save() {
     final known = [
       for (final e in state.entries)
         if (e.value == StudyMark.known) e.key,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/database/content_db.dart';
 import '../../core/database/user_db.dart';
 import '../../core/study_day.dart';
 import '../../core/theme/app_colors.dart';
@@ -13,6 +14,8 @@ import '../../core/widgets/game_card.dart';
 import '../../core/widgets/level_badge.dart';
 import '../../core/widgets/progress_ring.dart';
 import '../../l10n/app_localizations.dart';
+import '../free_study/free_study_providers.dart';
+import '../free_study/free_study_session_screen.dart';
 import '../search/quick_search.dart';
 import '../settings/settings_section.dart';
 import '../word/word_detail_screen.dart';
@@ -652,18 +655,20 @@ class _CardStages extends ConsumerWidget {
   }
 }
 
-class _Hardest extends StatelessWidget {
+class _Hardest extends ConsumerWidget {
   const _Hardest({required this.cards});
 
   final List<SrsCard> cards;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
+    final forgotten = ref.watch(forgottenItemsProvider).value ?? const <Glyph>[];
     return GameCard(
       padding: const EdgeInsets.symmetric(vertical: AppSpace.xs),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final card in cards)
             ListTile(
@@ -676,6 +681,23 @@ class _Hardest extends StatelessWidget {
               onTap: card.cardType == 'word' && int.tryParse(card.itemId) != null
                   ? () => openWord(context, int.parse(card.itemId))
                   : null,
+            ),
+          if (forgotten.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpace.m, 0, AppSpace.m, AppSpace.s),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.style_rounded),
+                label: Text('${l10n.hardestStudy} (${forgotten.length})'),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => FreeStudySessionScreen(
+                      items: forgotten,
+                      meaningFirst: ref.read(studyChoiceProvider).meaningFirst,
+                    ),
+                    fullscreenDialog: true,
+                  ),
+                ),
+              ),
             ),
         ],
       ),

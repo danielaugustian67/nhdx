@@ -11,6 +11,8 @@ import '../../core/widgets/chunky_button.dart';
 import '../../core/widgets/level_badge.dart';
 import '../../core/widgets/speak_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../conjugation/conjugation_practice.dart';
+import '../conjugation/conjugation_table.dart';
 import '../learn/path_providers.dart';
 import '../srs/srs_providers.dart';
 import 'bookmark_button.dart';
@@ -110,6 +112,7 @@ class _Body extends ConsumerWidget {
       _ => null,
     };
     final others = [...word.kanjiForms, ...word.kanaForms].where((f) => f != word.headword && f != word.kana);
+    final conjWord = conjWordOf(word);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(AppSpace.screen, 0, AppSpace.screen, AppSpace.xxl),
@@ -171,6 +174,7 @@ class _Body extends ConsumerWidget {
             ),
           ),
         ],
+        if (conjWord != null) ...[_Section(l10n.conjugation), ConjugationTable(word: conjWord)],
         if (others.isNotEmpty) ...[
           _Section(l10n.otherForms),
           Wrap(

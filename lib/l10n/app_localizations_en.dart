@@ -1508,4 +1508,227 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSound => 'Sound';
+
+  @override
+  String get conjugation => 'Conjugation';
+
+  @override
+  String get conjPlain => 'Dictionary form';
+
+  @override
+  String get conjPolite => 'Polite';
+
+  @override
+  String get conjNegative => 'Negative';
+
+  @override
+  String get conjPoliteNegative => 'Polite negative';
+
+  @override
+  String get conjPast => 'Past';
+
+  @override
+  String get conjPolitePast => 'Polite past';
+
+  @override
+  String get conjPastNegative => 'Past negative';
+
+  @override
+  String get conjPolitePastNegative => 'Polite past negative';
+
+  @override
+  String get conjTe => 'Te-form';
+
+  @override
+  String get conjPotential => 'Potential (can …)';
+
+  @override
+  String get conjPassive => 'Passive';
+
+  @override
+  String get conjCausative => 'Causative (make / let …)';
+
+  @override
+  String get conjImperative => 'Imperative';
+
+  @override
+  String get conjVolitional => 'Volitional (let\'s …)';
+
+  @override
+  String get conjConditionalBa => 'Conditional 〜ば';
+
+  @override
+  String get conjConditionalTara => 'Conditional 〜たら';
+
+  @override
+  String get conjWant => 'Want to (〜たい)';
+
+  @override
+  String get conjAdverb => 'Adverb';
+
+  @override
+  String conjShowAll(int count) {
+    return 'All forms ($count)';
+  }
+
+  @override
+  String get conjShowLess => 'Fewer';
+
+  @override
+  String get conjPractice => 'Conjugation practice';
+
+  @override
+  String get conjPracticeBody =>
+      'Put verbs and adjectives into the ます, ない, た, て forms and more.';
+
+  @override
+  String get conjPracticeWord => 'Practise this word';
+
+  @override
+  String get conjVerbs => 'Verbs';
+
+  @override
+  String get conjAdjectives => 'Adjectives';
+
+  @override
+  String get conjWordTypes => 'Word types';
+
+  @override
+  String get conjLevels => 'Word level';
+
+  @override
+  String get conjForms => 'Forms to practise';
+
+  @override
+  String conjStart(int count) {
+    return 'Start ($count questions)';
+  }
+
+  @override
+  String get conjAsk => 'Change to';
+
+  @override
+  String conjAnswerWas(String answer) {
+    return 'The answer: $answer';
+  }
+
+  @override
+  String conjScore(int correct, int total) {
+    return '$correct of $total correct';
+  }
+
+  @override
+  String get conjMistakes => 'To go over again';
+
+  @override
+  String get conjAddMistakes => 'Add mistakes to the review';
+
+  @override
+  String get conjNoWords =>
+      'No words match. Pick other word types, levels or forms.';
+
+  @override
+  String get grammar => 'Grammar';
+
+  @override
+  String get grammarBody =>
+      'Sentence patterns with explanations, examples and practice';
+
+  @override
+  String grammarDoneCount(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
+  String get grammarFormation => 'Formation';
+
+  @override
+  String get grammarExplanation => 'Explanation';
+
+  @override
+  String get grammarExamples => 'Examples';
+
+  @override
+  String get grammarPractice => 'Practice';
+
+  @override
+  String get grammarPracticeMixed => 'Mixed practice';
+
+  @override
+  String get grammarFillGap => 'Fill in the blank';
+
+  @override
+  String get grammarBuild => 'Build the sentence';
+
+  @override
+  String get grammarCheck => 'Check';
+
+  @override
+  String get grammarClear => 'Clear';
+
+  @override
+  String get grammarAddReview => 'Add to review';
+
+  @override
+  String get grammarInReview => 'In your review';
+
+  @override
+  String get grammarDone => 'Done';
+
+  @override
+  String get grammarPassToFinish =>
+      'Get 80% right in practice to mark this pattern done.';
+
+  @override
+  String get grammarAndConjugation => 'Grammar & conjugation';
+
+  @override
+  String get freeStudyCollection => 'My collection';
+
+  @override
+  String get freeStudyForgotten => 'Often forgotten';
+
+  @override
+  String freeStudyRange(int from, int to) {
+    return '$from–$to';
+  }
+
+  @override
+  String get freeStudyCollectionEmpty =>
+      'Your collection is empty. Tap ☆ on a word in the Dictionary to save it, then study it here.';
+
+  @override
+  String get freeStudyForgottenEmpty =>
+      'You haven\'t forgotten any review cards yet. Nice!';
+
+  @override
+  String get freeStudyReset => 'Reset marks';
+
+  @override
+  String get freeStudyResetTitle => 'Reset marks?';
+
+  @override
+  String freeStudyResetSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected groups',
+      one: 'selected group',
+    );
+    return '\"Got it\" and \"Not yet\" marks in the $_temp0 will be cleared.';
+  }
+
+  @override
+  String freeStudyResetAll(String kind) {
+    return 'All \"Got it\" and \"Not yet\" marks in $kind will be cleared.';
+  }
+
+  @override
+  String get freeStudyResetConfirm => 'Reset';
+
+  @override
+  String get freeStudyResetDone => 'Marks cleared';
+
+  @override
+  String get hardestStudy => 'Study them';
 }

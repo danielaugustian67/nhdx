@@ -55,7 +55,7 @@ final kanaPathProvider = Provider<AsyncValue<List<PathUnit>>>(
   (ref) => ref.watch(allKanaProvider).whenData(buildKanaPath),
 );
 
-/// The kanji course (N5 + N4), easiest first, loaded once from content.db.
+/// The kanji course (N5 to N1), easiest first, loaded once from content.db.
 final allKanjiProvider = FutureProvider<List<Kanji>>((ref) async => (await ref.watch(contentProvider.future)).kanji());
 
 final kanjiPathProvider = Provider<AsyncValue<List<PathUnit>>>(
@@ -71,7 +71,7 @@ final activePathProvider = Provider<AsyncValue<List<PathUnit>>>(
   },
 );
 
-/// The vocabulary course: N5 and N4 dictionary words, loaded once, starting
+/// The vocabulary course: N5 to N1 dictionary words, loaded once, starting
 /// at the chosen level (empty for levels without curated content yet).
 final vocabPathProvider = Provider<AsyncValue<List<PathUnit>>>((ref) {
   final level = ref.watch(learningLevelProvider).value ?? LearningLevel.n5;

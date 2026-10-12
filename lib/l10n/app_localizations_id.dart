@@ -1383,4 +1383,226 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get settingsSound => 'Suara';
+
+  @override
+  String get conjugation => 'Konjugasi';
+
+  @override
+  String get conjPlain => 'Bentuk kamus';
+
+  @override
+  String get conjPolite => 'Sopan';
+
+  @override
+  String get conjNegative => 'Negatif';
+
+  @override
+  String get conjPoliteNegative => 'Negatif sopan';
+
+  @override
+  String get conjPast => 'Lampau';
+
+  @override
+  String get conjPolitePast => 'Lampau sopan';
+
+  @override
+  String get conjPastNegative => 'Lampau negatif';
+
+  @override
+  String get conjPolitePastNegative => 'Lampau negatif sopan';
+
+  @override
+  String get conjTe => 'Bentuk te';
+
+  @override
+  String get conjPotential => 'Potensial (bisa …)';
+
+  @override
+  String get conjPassive => 'Pasif (di-…)';
+
+  @override
+  String get conjCausative => 'Kausatif (menyuruh …)';
+
+  @override
+  String get conjImperative => 'Perintah';
+
+  @override
+  String get conjVolitional => 'Ajakan (ayo …)';
+
+  @override
+  String get conjConditionalBa => 'Pengandaian 〜ば';
+
+  @override
+  String get conjConditionalTara => 'Pengandaian 〜たら';
+
+  @override
+  String get conjWant => 'Ingin (〜たい)';
+
+  @override
+  String get conjAdverb => 'Kata keterangan';
+
+  @override
+  String conjShowAll(int count) {
+    return 'Semua bentuk ($count)';
+  }
+
+  @override
+  String get conjShowLess => 'Lebih sedikit';
+
+  @override
+  String get conjPractice => 'Latihan konjugasi';
+
+  @override
+  String get conjPracticeBody =>
+      'Ubah kata kerja dan kata sifat ke bentuk ます, ない, た, て, dan lainnya.';
+
+  @override
+  String get conjPracticeWord => 'Latih kata ini';
+
+  @override
+  String get conjVerbs => 'Kata kerja';
+
+  @override
+  String get conjAdjectives => 'Kata sifat';
+
+  @override
+  String get conjWordTypes => 'Jenis kata';
+
+  @override
+  String get conjLevels => 'Level kata';
+
+  @override
+  String get conjForms => 'Bentuk yang dilatih';
+
+  @override
+  String conjStart(int count) {
+    return 'Mulai ($count soal)';
+  }
+
+  @override
+  String get conjAsk => 'Ubah ke bentuk';
+
+  @override
+  String conjAnswerWas(String answer) {
+    return 'Jawabannya: $answer';
+  }
+
+  @override
+  String conjScore(int correct, int total) {
+    return '$correct dari $total benar';
+  }
+
+  @override
+  String get conjMistakes => 'Yang perlu diulang';
+
+  @override
+  String get conjAddMistakes => 'Masukkan yang salah ke review';
+
+  @override
+  String get conjNoWords =>
+      'Tidak ada kata yang cocok. Pilih jenis kata, level atau bentuk lain.';
+
+  @override
+  String get grammar => 'Tata bahasa';
+
+  @override
+  String get grammarBody =>
+      'Pola kalimat dengan penjelasan, contoh, dan latihan';
+
+  @override
+  String grammarDoneCount(int done, int total) {
+    return '$done dari $total selesai';
+  }
+
+  @override
+  String get grammarFormation => 'Pembentukan';
+
+  @override
+  String get grammarExplanation => 'Penjelasan';
+
+  @override
+  String get grammarExamples => 'Contoh kalimat';
+
+  @override
+  String get grammarPractice => 'Latihan';
+
+  @override
+  String get grammarPracticeMixed => 'Latihan campuran';
+
+  @override
+  String get grammarFillGap => 'Isi bagian yang kosong';
+
+  @override
+  String get grammarBuild => 'Susun kalimatnya';
+
+  @override
+  String get grammarCheck => 'Periksa';
+
+  @override
+  String get grammarClear => 'Hapus';
+
+  @override
+  String get grammarAddReview => 'Tambah ke review';
+
+  @override
+  String get grammarInReview => 'Ada di review';
+
+  @override
+  String get grammarDone => 'Selesai';
+
+  @override
+  String get grammarPassToFinish =>
+      'Benar 80% di latihan untuk menandai pola ini selesai.';
+
+  @override
+  String get grammarAndConjugation => 'Tata bahasa & konjugasi';
+
+  @override
+  String get freeStudyCollection => 'Koleksiku';
+
+  @override
+  String get freeStudyForgotten => 'Sering lupa';
+
+  @override
+  String freeStudyRange(int from, int to) {
+    return '$from–$to';
+  }
+
+  @override
+  String get freeStudyCollectionEmpty =>
+      'Koleksimu masih kosong. Ketuk ☆ pada kata di Kamus untuk menyimpannya, lalu hafalkan di sini.';
+
+  @override
+  String get freeStudyForgottenEmpty =>
+      'Belum ada kartu review yang terlupa. Mantap!';
+
+  @override
+  String get freeStudyReset => 'Reset tanda hafal';
+
+  @override
+  String get freeStudyResetTitle => 'Reset tanda hafal?';
+
+  @override
+  String freeStudyResetSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count grup',
+    );
+    return 'Tanda Hafal dan Belum di $_temp0 yang dipilih akan dihapus.';
+  }
+
+  @override
+  String freeStudyResetAll(String kind) {
+    return 'Semua tanda Hafal dan Belum di $kind akan dihapus.';
+  }
+
+  @override
+  String get freeStudyResetConfirm => 'Reset';
+
+  @override
+  String get freeStudyResetDone => 'Tanda hafal sudah direset';
+
+  @override
+  String get hardestStudy => 'Hafalkan';
 }

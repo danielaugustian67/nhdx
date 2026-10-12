@@ -8,6 +8,7 @@ Build content.db (PRD §9.B) for v1.0:
                 (--with-kanji adds all KanjiVG kanji)
 - courses / lessons / lesson_items
                 curated curriculum from content/curriculum/*.json (if present)
+- grammar       grammar points from content/grammar/n*.json (F13), validated
 - id_redirects, meta
 
 Curriculum file format (one file per course, e.g. content/curriculum/n5.json):
@@ -21,6 +22,25 @@ Curriculum file format (one file per course, e.g. content/curriculum/n5.json):
     }
 
 Word ids are validated against dictionary.db.
+
+Grammar file format (one file per level, e.g. content/grammar/n5.json):
+
+    {
+      "level": 5,
+      "points": [
+        {"id": "n5-wa-desu", "pattern": "〜は〜です",
+         "meaning": {"id": "…", "en": "…"}, "formation": "N₁ は N₂ です",
+         "explanation": {"id": "…", "en": "…"},
+         "examples": [{"ja": "わたしは学生です。", "kana": "…", "tr": {"id": "…", "en": "…"},
+                       "chunks": ["わたしは", "学生", "です"]}],
+         "quiz": [{"q": "これ＿＿本です。", "options": ["は", "を", "に"], "answer": 0,
+                   "tr": {"id": "…", "en": "…"}}]}
+      ]
+    }
+
+"chunks" (optional) are the tiles of the sentence-building exercise and must
+spell the sentence without its final punctuation; each quiz question has one
+＿＿ gap and the right option at "answer".
 """
 
 import argparse
@@ -42,8 +62,9 @@ ROOT = Path(__file__).parent.parent
 SOURCES_DIR = ROOT / "sources"
 OUTPUT_DIR = ROOT / "output"
 CURRICULUM_DIR = ROOT.parent / "content" / "curriculum"
+GRAMMAR_DIR = ROOT.parent / "content" / "grammar"
 
-CONTENT_VERSION = "1.3.0"
+CONTENT_VERSION = "1.4.0"
 
 # (row_group, kana) in gojūon order
 BASIC_ROWS = [
@@ -86,6 +107,17 @@ CREATE TABLE kanji (
 
 CREATE TABLE char_strokes (codepoint INTEGER, stroke_no INTEGER, svg_path TEXT,
                            PRIMARY KEY (codepoint, stroke_no));
+
+CREATE TABLE grammar (
+  id TEXT PRIMARY KEY,               -- 'n5-wa-desu'
+  jlpt_level INTEGER NOT NULL,
+  order_no INTEGER NOT NULL,         -- within the level, as authored
+  pattern TEXT NOT NULL, formation TEXT NOT NULL,
+  meaning TEXT NOT NULL,             -- JSON {"id": …, "en": …}
+  explanation TEXT NOT NULL,         -- JSON {"id": …, "en": …}
+  examples TEXT NOT NULL,            -- JSON [{"ja", "kana", "tr": {id, en}, "chunks"?}]
+  quiz TEXT NOT NULL                 -- JSON [{"q", "options", "answer", "tr": {id, en}}]
+);
 
 CREATE TABLE id_redirects (item_type TEXT NOT NULL, old_id TEXT NOT NULL, new_id TEXT,
                            PRIMARY KEY (item_type, old_id));
@@ -259,6 +291,88 @@ def load_curriculum(conn: sqlite3.Connection, dict_conn: sqlite3.Connection | No
     return stats
 
 
+GAP = "＿＿"
+END_PUNCTUATION = "。！？!?"
+
+
+def _check_point(p: dict, level: int) -> list[str]:
+    """Problems with one grammar point, as messages."""
+    errors = []
+    pid = p.get("id", "?")
+
+    def tr(v, where):
+        if not (isinstance(v, dict) and all(isinstance(v.get(k), str) and v[k].strip() for k in ("id", "en"))):
+            errors.append(f"{pid}: {where} needs non-empty id and en")
+
+    if not re.fullmatch(rf"n{level}-[a-z0-9-]+", pid):
+        errors.append(f"{pid}: id must look like n{level}-name")
+    for key in ("pattern", "formation"):
+        if not (isinstance(p.get(key), str) and p[key].strip()):
+            errors.append(f"{pid}: missing {key}")
+    tr(p.get("meaning"), "meaning")
+    tr(p.get("explanation"), "explanation")
+    examples = p.get("examples") or []
+    if not examples:
+        errors.append(f"{pid}: no examples")
+    for i, e in enumerate(examples, 1):
+        if not (e.get("ja") and e.get("kana")):
+            errors.append(f"{pid}: example {i} needs ja and kana")
+            continue
+        tr(e.get("tr"), f"example {i} tr")
+        chunks = e.get("chunks")
+        if chunks is not None:
+            if len(chunks) < 2 or len(set(chunks)) != len(chunks):
+                errors.append(f"{pid}: example {i} needs 2+ distinct chunks")
+            if "".join(chunks) != e["ja"].rstrip(END_PUNCTUATION):
+                errors.append(f"{pid}: example {i} chunks {''.join(chunks)} ≠ {e['ja']}")
+    if not any(e.get("chunks") for e in examples):
+        errors.append(f"{pid}: no example with chunks for sentence building")
+    quiz = p.get("quiz") or []
+    if not quiz:
+        errors.append(f"{pid}: no quiz questions")
+    for i, q in enumerate(quiz, 1):
+        options = q.get("options") or []
+        if q.get("q", "").count(GAP) != 1:
+            errors.append(f"{pid}: quiz {i} needs exactly one {GAP}")
+        if not 2 <= len(options) <= 4 or len(set(options)) != len(options):
+            errors.append(f"{pid}: quiz {i} needs 2 to 4 distinct options")
+        if not (isinstance(q.get("answer"), int) and 0 <= q["answer"] < len(options)):
+            errors.append(f"{pid}: quiz {i} answer out of range")
+        tr(q.get("tr"), f"quiz {i} tr")
+    return errors
+
+
+def load_grammar(conn: sqlite3.Connection) -> tuple[dict[int, int], list[str]]:
+    """Points per level, and problems found."""
+    counts: dict[int, int] = {}
+    errors: list[str] = []
+    seen: set[str] = set()
+    if not GRAMMAR_DIR.exists():
+        return counts, errors
+    for path in sorted(GRAMMAR_DIR.glob("*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        level = data["level"]
+        for order_no, p in enumerate(data["points"], 1):
+            problems = _check_point(p, level)
+            if p.get("id") in seen:
+                problems.append(f"{p.get('id')}: duplicate id")
+            seen.add(p.get("id"))
+            if problems:
+                errors += [f"{path.name}: {m}" for m in problems]
+                continue
+
+            def dump(v):
+                return json.dumps(v, ensure_ascii=False, separators=(",", ":"))
+
+            conn.execute(
+                "INSERT INTO grammar VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (p["id"], level, order_no, p["pattern"], p["formation"], dump(p["meaning"]),
+                 dump(p["explanation"]), dump(p["examples"]), dump(p["quiz"])),
+            )
+            counts[level] = counts.get(level, 0) + 1
+    return counts, errors
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--with-kanji", action="store_true",
@@ -324,6 +438,11 @@ def main() -> None:
     for m in cur["missing_words"][:20]:
         print(f"  ✗ unknown word id {m}")
 
+    grammar, grammar_errors = load_grammar(conn)
+    print("  ✓ grammar: " + (" + ".join(f"{n} N{lv}" for lv, n in sorted(grammar.items(), reverse=True)) or "none"))
+    for m in grammar_errors:
+        print(f"  ✗ {m}")
+
     meta = {
         "content_version": CONTENT_VERSION,
         "build_date": datetime.now(timezone.utc).isoformat(),
@@ -349,7 +468,7 @@ def main() -> None:
     print(f"\n  Output: {db_path} ({db_path.stat().st_size / 1024:.0f} KB), "
           f"{gz_path.name} ({gz_path.stat().st_size / 1024:.0f} KB)")
 
-    if missing or cur["missing_words"]:
+    if missing or cur["missing_words"] or grammar_errors:
         sys.exit(1)
 
 

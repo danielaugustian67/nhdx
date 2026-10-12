@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nihondx/core/database/content_db.dart';
 import 'package:nihondx/core/database/providers.dart';
 import 'package:nihondx/core/database/user_db.dart';
 import 'package:nihondx/core/study_day.dart';
@@ -74,4 +76,63 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 10));
   });
+
+  const contentPath = 'data_pipeline/output/content.db';
+  testWidgets('hardest items list a card once and open them for study', (tester) async {
+    tester.view.physicalSize = const Size(390, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final db = UserDb.memory();
+    await tester.runAsync(() async {
+      // あ in both directions counts once, with its higher count.
+      await db.addCard('kana', 'あ', label: 'あ');
+      await db.addCard('kana', 'あ', label: 'あ', direction: 'meaning_to_jp');
+      await db.addCard('kana', 'か', label: 'か');
+      await db.customStatement(
+        "UPDATE srs_cards SET lapses = "
+        "CASE WHEN item_id = 'か' THEN 2 WHEN direction = 'jp_to_meaning' THEN 1 ELSE 4 END",
+      );
+    });
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userDbProvider.overrideWith((ref) async {
+            ref.onDispose(db.close);
+            return db;
+          }),
+          contentProvider.overrideWith((ref) async => ContentDb.open(contentPath)),
+          dictionaryProvider.overrideWith((ref) => Completer<Never>().future),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          locale: const Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const MeScreen(),
+        ),
+      ),
+    );
+    Future<void> settle() async {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+      for (var i = 0; i < 5; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+    }
+
+    await settle();
+    await tester.scrollUntilVisible(find.text('Item tersulit'), 300, scrollable: find.byType(Scrollable).first);
+    await settle();
+    expect(find.text('Lupa 4×'), findsOneWidget);
+    expect(find.text('Lupa 2×'), findsOneWidget);
+    expect(find.text('Lupa 1×'), findsNothing);
+
+    await tester.scrollUntilVisible(find.text('Hafalkan (2)'), 300, scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('Hafalkan (2)'));
+    await settle();
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 10));
+  }, skip: !File(contentPath).existsSync());
 }

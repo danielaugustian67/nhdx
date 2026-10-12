@@ -1,0 +1,671 @@
+{
+  "level": 5,
+  "points": [
+    {
+      "id": "n5-wa-desu",
+      "pattern": "〜は〜です",
+      "meaning": {"id": "A adalah B", "en": "A is B"},
+      "formation": "N₁ は N₂ です",
+      "explanation": {
+        "id": "Pola kalimat paling dasar. は (dibaca \"wa\") menandai topik, です membuat kalimat menjadi sopan.",
+        "en": "The most basic sentence. は (read \"wa\") marks the topic; です makes the sentence polite."
+      },
+      "examples": [
+        {"ja": "わたしは学生です。", "kana": "わたしはがくせいです。", "tr": {"id": "Saya pelajar.", "en": "I am a student."}, "chunks": ["わたしは", "学生", "です"]},
+        {"ja": "田中さんは先生です。", "kana": "たなかさんはせんせいです。", "tr": {"id": "Pak Tanaka adalah guru.", "en": "Mr Tanaka is a teacher."}, "chunks": ["田中さんは", "先生", "です"]}
+      ],
+      "quiz": [
+        {"q": "これ＿＿本です。", "options": ["は", "を", "に"], "answer": 0, "tr": {"id": "Ini buku.", "en": "This is a book."}},
+        {"q": "わたしは医者＿＿。", "options": ["です", "ます", "を"], "answer": 0, "tr": {"id": "Saya dokter.", "en": "I am a doctor."}}
+      ]
+    },
+    {
+      "id": "n5-ja-arimasen",
+      "pattern": "〜じゃありません",
+      "meaning": {"id": "A bukan B", "en": "A is not B"},
+      "formation": "N₁ は N₂ じゃありません（ではありません）",
+      "explanation": {
+        "id": "Bentuk negatif dari です. ではありません lebih resmi, じゃありません lebih umum dalam percakapan.",
+        "en": "The negative of です. ではありません is more formal; じゃありません is common in speech."
+      },
+      "examples": [
+        {"ja": "わたしは先生じゃありません。", "kana": "わたしはせんせいじゃありません。", "tr": {"id": "Saya bukan guru.", "en": "I am not a teacher."}, "chunks": ["わたしは", "先生", "じゃありません"]},
+        {"ja": "これはわたしのかばんではありません。", "kana": "これはわたしのかばんではありません。", "tr": {"id": "Ini bukan tas saya.", "en": "This is not my bag."}, "chunks": ["これは", "わたしの", "かばん", "ではありません"]}
+      ],
+      "quiz": [
+        {"q": "山田さんは学生＿＿。", "options": ["じゃありません", "じゃです", "ありません"], "answer": 0, "tr": {"id": "Yamada bukan pelajar.", "en": "Yamada is not a student."}},
+        {"q": "それはペン＿＿ありません。", "options": ["では", "には", "を"], "answer": 0, "tr": {"id": "Itu bukan pulpen.", "en": "That is not a pen."}}
+      ]
+    },
+    {
+      "id": "n5-ka",
+      "pattern": "〜か",
+      "meaning": {"id": "penanda pertanyaan", "en": "question marker"},
+      "formation": "Kalimat sopan + か",
+      "explanation": {
+        "id": "Tambahkan か di akhir kalimat sopan untuk bertanya. Intonasinya naik; tanda tanya tidak wajib.",
+        "en": "Add か to the end of a polite sentence to ask a question. The pitch rises; a question mark is optional."
+      },
+      "examples": [
+        {"ja": "あなたは学生ですか。", "kana": "あなたはがくせいですか。", "tr": {"id": "Apakah kamu pelajar?", "en": "Are you a student?"}, "chunks": ["あなたは", "学生", "ですか"]},
+        {"ja": "これは何ですか。", "kana": "これはなんですか。", "tr": {"id": "Ini apa?", "en": "What is this?"}, "chunks": ["これは", "何", "ですか"]}
+      ],
+      "quiz": [
+        {"q": "トイレはどこです＿＿。", "options": ["か", "よ", "を"], "answer": 0, "tr": {"id": "Toiletnya di mana?", "en": "Where is the toilet?"}},
+        {"q": "あの人はだれです＿＿。", "options": ["か", "を", "は"], "answer": 0, "tr": {"id": "Orang itu siapa?", "en": "Who is that person?"}}
+      ]
+    },
+    {
+      "id": "n5-no",
+      "pattern": "〜の〜",
+      "meaning": {"id": "milik; … dari …", "en": "'s; of"},
+      "formation": "N₁ の N₂",
+      "explanation": {
+        "id": "の menghubungkan dua kata benda. Pemilik atau keterangan di depan, benda utamanya di belakang: わたしの本 = buku saya.",
+        "en": "の links two nouns. The owner or description comes first, the main noun second: わたしの本 = my book."
+      },
+      "examples": [
+        {"ja": "これはわたしの本です。", "kana": "これはわたしのほんです。", "tr": {"id": "Ini buku saya.", "en": "This is my book."}, "chunks": ["これは", "わたしの", "本", "です"]},
+        {"ja": "日本語の先生はやさしいです。", "kana": "にほんごのせんせいはやさしいです。", "tr": {"id": "Guru bahasa Jepangnya baik hati.", "en": "The Japanese teacher is kind."}, "chunks": ["日本語の", "先生は", "やさしいです"]}
+      ],
+      "quiz": [
+        {"q": "それは田中さん＿＿かさです。", "options": ["の", "が", "を"], "answer": 0, "tr": {"id": "Itu payung Tanaka.", "en": "That is Tanaka's umbrella."}},
+        {"q": "日本＿＿車は高いです。", "options": ["の", "に", "で"], "answer": 0, "tr": {"id": "Mobil Jepang mahal.", "en": "Japanese cars are expensive."}}
+      ]
+    },
+    {
+      "id": "n5-mo",
+      "pattern": "〜も",
+      "meaning": {"id": "juga", "en": "also, too"},
+      "formation": "N も（menggantikan は・が・を）",
+      "explanation": {
+        "id": "も menggantikan は, が atau を untuk berarti \"juga\". Partikel lain seperti に dan で tetap ada: 東京にも.",
+        "en": "も replaces は, が or を to mean \"also\". Other particles such as に and で stay: 東京にも."
+      },
+      "examples": [
+        {"ja": "わたしも学生です。", "kana": "わたしもがくせいです。", "tr": {"id": "Saya juga pelajar.", "en": "I am a student too."}, "chunks": ["わたしも", "学生", "です"]},
+        {"ja": "山田さんもコーヒーを飲みます。", "kana": "やまださんもコーヒーをのみます。", "tr": {"id": "Yamada juga minum kopi.", "en": "Yamada drinks coffee too."}, "chunks": ["山田さんも", "コーヒーを", "飲みます"]}
+      ],
+      "quiz": [
+        {"q": "田中さんは先生です。山田さん＿＿先生です。", "options": ["も", "を", "の"], "answer": 0, "tr": {"id": "Tanaka guru. Yamada juga guru.", "en": "Tanaka is a teacher. Yamada is a teacher too."}},
+        {"q": "犬が好きです。猫＿＿好きです。", "options": ["も", "で", "へ"], "answer": 0, "tr": {"id": "Saya suka anjing. Kucing juga suka.", "en": "I like dogs. I like cats too."}}
+      ]
+    },
+    {
+      "id": "n5-kore-sore-are",
+      "pattern": "これ・それ・あれ・どれ",
+      "meaning": {"id": "ini / itu / itu (jauh) / yang mana", "en": "this / that / that over there / which"},
+      "formation": "これ・それ・あれ・どれ は〜",
+      "explanation": {
+        "id": "Kata tunjuk yang berdiri sendiri. これ dekat pembicara, それ dekat lawan bicara, あれ jauh dari keduanya, どれ untuk bertanya.",
+        "en": "Stand-alone demonstratives. これ is near the speaker, それ near the listener, あれ far from both, and どれ asks which."
+      },
+      "examples": [
+        {"ja": "これはペンです。", "kana": "これはペンです。", "tr": {"id": "Ini pulpen.", "en": "This is a pen."}, "chunks": ["これは", "ペン", "です"]},
+        {"ja": "あなたのかさはどれですか。", "kana": "あなたのかさはどれですか。", "tr": {"id": "Payungmu yang mana?", "en": "Which one is your umbrella?"}, "chunks": ["あなたの", "かさは", "どれですか"]}
+      ],
+      "quiz": [
+        {"q": "＿＿は何ですか。", "options": ["あれ", "これ", "どれ"], "answer": 0, "tr": {"id": "Itu (yang jauh di sana) apa?", "en": "What is that over there?"}},
+        {"q": "田中さんのかばんは＿＿ですか。", "options": ["どれ", "これ", "あれ"], "answer": 0, "tr": {"id": "Tas Tanaka yang mana?", "en": "Which one is Tanaka's bag?"}}
+      ]
+    },
+    {
+      "id": "n5-kono-sono-ano",
+      "pattern": "この・その・あの・どの",
+      "meaning": {"id": "… ini / … itu / … itu (jauh) / … yang mana", "en": "this … / that … / that … over there / which …"},
+      "formation": "この・その・あの・どの + N",
+      "explanation": {
+        "id": "Seperti これ・それ・あれ・どれ, tetapi selalu diikuti kata benda: この本 = buku ini.",
+        "en": "Like これ・それ・あれ・どれ, but always followed by a noun: この本 = this book."
+      },
+      "examples": [
+        {"ja": "この本はおもしろいです。", "kana": "このほんはおもしろいです。", "tr": {"id": "Buku ini menarik.", "en": "This book is interesting."}, "chunks": ["この", "本は", "おもしろいです"]},
+        {"ja": "あの人はだれですか。", "kana": "あのひとはだれですか。", "tr": {"id": "Orang itu siapa?", "en": "Who is that person?"}, "chunks": ["あの", "人は", "だれですか"]}
+      ],
+      "quiz": [
+        {"q": "＿＿かばんはわたしのです。", "options": ["この", "これ", "ここ"], "answer": 0, "tr": {"id": "Tas ini milik saya.", "en": "This bag is mine."}},
+        {"q": "＿＿車が田中さんのですか。", "options": ["どの", "どれ", "どこ"], "answer": 0, "tr": {"id": "Mobil yang mana milik Tanaka?", "en": "Which car is Tanaka's?"}}
+      ]
+    },
+    {
+      "id": "n5-ni-ga-arimasu",
+      "pattern": "〜に〜があります／います",
+      "meaning": {"id": "ada … di …", "en": "there is … in/at …"},
+      "formation": "Tempat に N が あります（benda）／います（makhluk hidup）",
+      "explanation": {
+        "id": "あります untuk benda mati dan tumbuhan, います untuk orang dan hewan. Tempatnya ditandai に, yang ada ditandai が.",
+        "en": "あります is for things and plants, います for people and animals. The place takes に and what exists takes が."
+      },
+      "examples": [
+        {"ja": "机の上に本があります。", "kana": "つくえのうえにほんがあります。", "tr": {"id": "Ada buku di atas meja.", "en": "There is a book on the desk."}, "chunks": ["机の上に", "本が", "あります"]},
+        {"ja": "公園に子どもがいます。", "kana": "こうえんにこどもがいます。", "tr": {"id": "Ada anak-anak di taman.", "en": "There are children in the park."}, "chunks": ["公園に", "子どもが", "います"]}
+      ],
+      "quiz": [
+        {"q": "部屋に猫が＿＿。", "options": ["います", "あります", "です"], "answer": 0, "tr": {"id": "Ada kucing di kamar.", "en": "There is a cat in the room."}},
+        {"q": "駅の前に銀行が＿＿。", "options": ["あります", "います", "します"], "answer": 0, "tr": {"id": "Ada bank di depan stasiun.", "en": "There is a bank in front of the station."}}
+      ]
+    },
+    {
+      "id": "n5-wo",
+      "pattern": "〜を",
+      "meaning": {"id": "penanda objek", "en": "object marker"},
+      "formation": "N を V",
+      "explanation": {
+        "id": "を (dibaca \"o\") menandai objek, yaitu benda yang dikenai perbuatan.",
+        "en": "を (read \"o\") marks the object: the thing the action is done to."
+      },
+      "examples": [
+        {"ja": "わたしはパンを食べます。", "kana": "わたしはパンをたべます。", "tr": {"id": "Saya makan roti.", "en": "I eat bread."}, "chunks": ["わたしは", "パンを", "食べます"]},
+        {"ja": "毎日日本語を勉強します。", "kana": "まいにちにほんごをべんきょうします。", "tr": {"id": "Saya belajar bahasa Jepang setiap hari.", "en": "I study Japanese every day."}}
+      ],
+      "quiz": [
+        {"q": "水＿＿飲みます。", "options": ["を", "が", "に"], "answer": 0, "tr": {"id": "Saya minum air.", "en": "I drink water."}},
+        {"q": "テレビ＿＿見ます。", "options": ["を", "で", "へ"], "answer": 0, "tr": {"id": "Saya menonton TV.", "en": "I watch TV."}}
+      ]
+    },
+    {
+      "id": "n5-de-place",
+      "pattern": "〜で（tempat）",
+      "meaning": {"id": "di (tempat kegiatan)", "en": "at, in (where an action happens)"},
+      "formation": "Tempat で V",
+      "explanation": {
+        "id": "で menandai tempat terjadinya kegiatan. Untuk tempat sesuatu berada (あります／います) pakai に.",
+        "en": "で marks where an action takes place. For where something is (あります／います), use に."
+      },
+      "examples": [
+        {"ja": "わたしは図書館で勉強します。", "kana": "わたしはとしょかんでべんきょうします。", "tr": {"id": "Saya belajar di perpustakaan.", "en": "I study at the library."}, "chunks": ["わたしは", "図書館で", "勉強します"]},
+        {"ja": "公園でテニスをしました。", "kana": "こうえんでテニスをしました。", "tr": {"id": "Saya bermain tenis di taman.", "en": "I played tennis in the park."}}
+      ],
+      "quiz": [
+        {"q": "学校＿＿日本語を勉強します。", "options": ["で", "に", "を"], "answer": 0, "tr": {"id": "Saya belajar bahasa Jepang di sekolah.", "en": "I study Japanese at school."}},
+        {"q": "うち＿＿テレビを見ます。", "options": ["で", "が", "へ"], "answer": 0, "tr": {"id": "Saya menonton TV di rumah.", "en": "I watch TV at home."}}
+      ]
+    },
+    {
+      "id": "n5-de-means",
+      "pattern": "〜で（alat・cara）",
+      "meaning": {"id": "dengan, naik (alat atau cara)", "en": "by, with (means)"},
+      "formation": "N で V",
+      "explanation": {
+        "id": "で juga menandai alat, kendaraan, atau bahasa yang dipakai: バスで行きます = pergi naik bus.",
+        "en": "で also marks the tool, vehicle or language used: バスで行きます = go by bus."
+      },
+      "examples": [
+        {"ja": "日本語で話してください。", "kana": "にほんごではなしてください。", "tr": {"id": "Tolong bicara dalam bahasa Jepang.", "en": "Please speak in Japanese."}, "chunks": ["日本語で", "話して", "ください"]},
+        {"ja": "電車で会社へ行きます。", "kana": "でんしゃでかいしゃへいきます。", "tr": {"id": "Saya pergi ke kantor naik kereta.", "en": "I go to the office by train."}}
+      ],
+      "quiz": [
+        {"q": "タクシー＿＿帰ります。", "options": ["で", "を", "が"], "answer": 0, "tr": {"id": "Saya pulang naik taksi.", "en": "I go home by taxi."}},
+        {"q": "ペン＿＿書いてください。", "options": ["で", "に", "を"], "answer": 0, "tr": {"id": "Tolong tulis dengan pulpen.", "en": "Please write with a pen."}}
+      ]
+    },
+    {
+      "id": "n5-e-ikimasu",
+      "pattern": "〜へ／〜に 行きます",
+      "meaning": {"id": "pergi ke …", "en": "go to …"},
+      "formation": "Tempat へ／に 行きます・来ます・帰ります",
+      "explanation": {
+        "id": "へ (dibaca \"e\") dan に menandai tujuan gerakan. Keduanya bisa dipakai dengan 行きます, 来ます dan 帰ります.",
+        "en": "へ (read \"e\") and に mark where movement goes. Both work with 行きます, 来ます and 帰ります."
+      },
+      "examples": [
+        {"ja": "わたしは日本へ行きます。", "kana": "わたしはにほんへいきます。", "tr": {"id": "Saya pergi ke Jepang.", "en": "I am going to Japan."}, "chunks": ["わたしは", "日本へ", "行きます"]},
+        {"ja": "明日うちに帰ります。", "kana": "あしたうちにかえります。", "tr": {"id": "Besok saya pulang ke rumah.", "en": "I will go home tomorrow."}}
+      ],
+      "quiz": [
+        {"q": "来週、京都＿＿行きます。", "options": ["へ", "を", "で"], "answer": 0, "tr": {"id": "Minggu depan saya pergi ke Kyoto.", "en": "I'm going to Kyoto next week."}},
+        {"q": "何時にうち＿＿帰りますか。", "options": ["に", "を", "の"], "answer": 0, "tr": {"id": "Jam berapa kamu pulang ke rumah?", "en": "What time do you go home?"}}
+      ]
+    },
+    {
+      "id": "n5-ni-time",
+      "pattern": "〜に（waktu）",
+      "meaning": {"id": "pada (waktu)", "en": "at, on (a time)"},
+      "formation": "Waktu に V",
+      "explanation": {
+        "id": "に dipakai untuk waktu yang jelas: jam, tanggal, hari, bulan. Kata seperti 今日, 明日 dan 毎日 tidak memakai に.",
+        "en": "に goes with specific times: clock times, dates, days, months. Words like 今日, 明日 and 毎日 take no に."
+      },
+      "examples": [
+        {"ja": "わたしは七時に起きます。", "kana": "わたしはしちじにおきます。", "tr": {"id": "Saya bangun jam tujuh.", "en": "I get up at seven."}, "chunks": ["わたしは", "七時に", "起きます"]},
+        {"ja": "日曜日に友だちに会います。", "kana": "にちようびにともだちにあいます。", "tr": {"id": "Hari Minggu saya bertemu teman.", "en": "I'm meeting a friend on Sunday."}}
+      ],
+      "quiz": [
+        {"q": "九時＿＿寝ます。", "options": ["に", "で", "を"], "answer": 0, "tr": {"id": "Saya tidur jam sembilan.", "en": "I go to bed at nine."}},
+        {"q": "三月＿＿日本へ行きます。", "options": ["に", "が", "を"], "answer": 0, "tr": {"id": "Bulan Maret saya pergi ke Jepang.", "en": "I'm going to Japan in March."}}
+      ]
+    },
+    {
+      "id": "n5-to",
+      "pattern": "〜と",
+      "meaning": {"id": "dan; bersama", "en": "and; with"},
+      "formation": "N₁ と N₂ ／ Orang と V",
+      "explanation": {
+        "id": "と menghubungkan kata benda (\"A dan B\") atau menandai orang yang diajak melakukan sesuatu (\"bersama\").",
+        "en": "と joins nouns (\"A and B\") or marks the person you do something with (\"with\")."
+      },
+      "examples": [
+        {"ja": "パンと牛乳を買いました。", "kana": "パンとぎゅうにゅうをかいました。", "tr": {"id": "Saya membeli roti dan susu.", "en": "I bought bread and milk."}, "chunks": ["パンと", "牛乳を", "買いました"]},
+        {"ja": "友だちと映画を見ます。", "kana": "ともだちとえいがをみます。", "tr": {"id": "Saya menonton film bersama teman.", "en": "I watch a movie with a friend."}}
+      ],
+      "quiz": [
+        {"q": "母＿＿買い物に行きます。", "options": ["と", "を", "で"], "answer": 0, "tr": {"id": "Saya pergi belanja bersama ibu.", "en": "I go shopping with my mother."}},
+        {"q": "りんご＿＿みかんを食べました。", "options": ["と", "が", "に"], "answer": 0, "tr": {"id": "Saya makan apel dan jeruk.", "en": "I ate apples and mandarins."}}
+      ]
+    },
+    {
+      "id": "n5-masu",
+      "pattern": "〜ます／〜ません",
+      "meaning": {"id": "bentuk sopan (sekarang / akan datang)", "en": "polite present / future"},
+      "formation": "V-ます／V-ません",
+      "explanation": {
+        "id": "Bentuk ます dipakai untuk kebiasaan dan hal yang akan dilakukan. ません adalah bentuk negatifnya.",
+        "en": "The ます form is for habits and things you will do. ません is its negative."
+      },
+      "examples": [
+        {"ja": "毎朝コーヒーを飲みます。", "kana": "まいあさコーヒーをのみます。", "tr": {"id": "Setiap pagi saya minum kopi.", "en": "I drink coffee every morning."}},
+        {"ja": "わたしはお酒を飲みません。", "kana": "わたしはおさけをのみません。", "tr": {"id": "Saya tidak minum minuman keras.", "en": "I don't drink alcohol."}, "chunks": ["わたしは", "お酒を", "飲みません"]}
+      ],
+      "quiz": [
+        {"q": "明日、図書館へ行き＿＿。", "options": ["ます", "ました", "です"], "answer": 0, "tr": {"id": "Besok saya pergi ke perpustakaan.", "en": "I'll go to the library tomorrow."}},
+        {"q": "肉は食べ＿＿。", "options": ["ません", "ます", "ました"], "answer": 0, "tr": {"id": "Saya tidak makan daging.", "en": "I don't eat meat."}}
+      ]
+    },
+    {
+      "id": "n5-mashita",
+      "pattern": "〜ました／〜ませんでした",
+      "meaning": {"id": "bentuk sopan lampau", "en": "polite past"},
+      "formation": "V-ました／V-ませんでした",
+      "explanation": {
+        "id": "Ganti ます dengan ました untuk kejadian yang sudah lewat, dan ません dengan ませんでした untuk negatifnya.",
+        "en": "Replace ます with ました for the past, and ません with ませんでした for the past negative."
+      },
+      "examples": [
+        {"ja": "わたしは手紙を書きました。", "kana": "わたしはてがみをかきました。", "tr": {"id": "Saya menulis surat.", "en": "I wrote a letter."}, "chunks": ["わたしは", "手紙を", "書きました"]},
+        {"ja": "今朝、何も食べませんでした。", "kana": "けさ、なにもたべませんでした。", "tr": {"id": "Tadi pagi saya tidak makan apa-apa.", "en": "I didn't eat anything this morning."}}
+      ],
+      "quiz": [
+        {"q": "きのう、友だちに会い＿＿。", "options": ["ました", "ます", "ません"], "answer": 0, "tr": {"id": "Kemarin saya bertemu teman.", "en": "I met a friend yesterday."}},
+        {"q": "先週は学校へ行き＿＿。", "options": ["ませんでした", "ません", "ましょう"], "answer": 0, "tr": {"id": "Minggu lalu saya tidak pergi ke sekolah.", "en": "I didn't go to school last week."}}
+      ]
+    },
+    {
+      "id": "n5-mashou",
+      "pattern": "〜ましょう",
+      "meaning": {"id": "ayo …", "en": "let's …"},
+      "formation": "V-ましょう",
+      "explanation": {
+        "id": "Mengajak atau mengusulkan untuk melakukan sesuatu bersama.",
+        "en": "Suggests doing something together."
+      },
+      "examples": [
+        {"ja": "いっしょに帰りましょう。", "kana": "いっしょにかえりましょう。", "tr": {"id": "Ayo pulang bersama.", "en": "Let's go home together."}, "chunks": ["いっしょに", "帰りましょう"]},
+        {"ja": "少し休みましょう。", "kana": "すこしやすみましょう。", "tr": {"id": "Ayo istirahat sebentar.", "en": "Let's take a short break."}}
+      ],
+      "quiz": [
+        {"q": "駅で会い＿＿。", "options": ["ましょう", "ましたか", "ません"], "answer": 0, "tr": {"id": "Ayo bertemu di stasiun.", "en": "Let's meet at the station."}},
+        {"q": "十二時ですね。昼ごはんを食べ＿＿。", "options": ["ましょう", "ませんでした", "ました"], "answer": 0, "tr": {"id": "Sudah jam dua belas, ya. Ayo makan siang.", "en": "It's twelve o'clock. Let's have lunch."}}
+      ]
+    },
+    {
+      "id": "n5-masenka",
+      "pattern": "〜ませんか",
+      "meaning": {"id": "maukah …? (ajakan)", "en": "won't you …? (invitation)"},
+      "formation": "V-ませんか",
+      "explanation": {
+        "id": "Cara sopan mengajak orang lain. Lebih halus daripada 〜ましょう karena pilihannya diserahkan kepada lawan bicara.",
+        "en": "A polite invitation. Softer than 〜ましょう because it leaves the choice to the listener."
+      },
+      "examples": [
+        {"ja": "いっしょに映画を見ませんか。", "kana": "いっしょにえいがをみませんか。", "tr": {"id": "Mau menonton film bersama?", "en": "Would you like to watch a movie together?"}, "chunks": ["いっしょに", "映画を", "見ませんか"]},
+        {"ja": "週末、テニスをしませんか。", "kana": "しゅうまつ、テニスをしませんか。", "tr": {"id": "Akhir pekan ini mau main tenis?", "en": "Would you like to play tennis this weekend?"}}
+      ],
+      "quiz": [
+        {"q": "お茶を飲み＿＿。", "options": ["ませんか", "ましたか", "ません"], "answer": 0, "tr": {"id": "Mau minum teh?", "en": "Would you like some tea?"}},
+        {"q": "土曜日、うちへ来＿＿。", "options": ["ませんか", "ません", "ました"], "answer": 0, "tr": {"id": "Hari Sabtu mau datang ke rumah?", "en": "Would you like to come over on Saturday?"}}
+      ]
+    },
+    {
+      "id": "n5-tai",
+      "pattern": "〜たいです",
+      "meaning": {"id": "ingin …", "en": "want to …"},
+      "formation": "V-ます → V-たいです",
+      "explanation": {
+        "id": "Ganti ます dengan たい untuk keinginan pembicara sendiri. たい berubah seperti kata sifat い: たくない, たかった.",
+        "en": "Replace ます with たい for the speaker's own wishes. たい conjugates like an i-adjective: たくない, たかった."
+      },
+      "examples": [
+        {"ja": "日本へ行きたいです。", "kana": "にほんへいきたいです。", "tr": {"id": "Saya ingin pergi ke Jepang.", "en": "I want to go to Japan."}, "chunks": ["日本へ", "行きたい", "です"]},
+        {"ja": "今日は何も食べたくないです。", "kana": "きょうはなにもたべたくないです。", "tr": {"id": "Hari ini saya tidak ingin makan apa-apa.", "en": "I don't want to eat anything today."}}
+      ],
+      "quiz": [
+        {"q": "新しいくつを買い＿＿です。", "options": ["たい", "ます", "たく"], "answer": 0, "tr": {"id": "Saya ingin membeli sepatu baru.", "en": "I want to buy new shoes."}},
+        {"q": "つかれました。今日は出かけ＿＿です。", "options": ["たくない", "たい", "たかった"], "answer": 0, "tr": {"id": "Saya capek. Hari ini saya tidak ingin keluar.", "en": "I'm tired. I don't want to go out today."}}
+      ]
+    },
+    {
+      "id": "n5-ga-suki",
+      "pattern": "〜が好きです",
+      "meaning": {"id": "suka …", "en": "like …"},
+      "formation": "N が 好きです／きらいです",
+      "explanation": {
+        "id": "Hal yang disukai ditandai が, bukan を. Lawannya adalah きらいです (tidak suka).",
+        "en": "What you like takes が, not を. The opposite is きらいです (dislike)."
+      },
+      "examples": [
+        {"ja": "わたしは猫が好きです。", "kana": "わたしはねこがすきです。", "tr": {"id": "Saya suka kucing.", "en": "I like cats."}, "chunks": ["わたしは", "猫が", "好きです"]},
+        {"ja": "田中さんは野菜がきらいです。", "kana": "たなかさんはやさいがきらいです。", "tr": {"id": "Tanaka tidak suka sayur.", "en": "Tanaka dislikes vegetables."}, "chunks": ["田中さんは", "野菜が", "きらいです"]}
+      ],
+      "quiz": [
+        {"q": "わたしは音楽＿＿好きです。", "options": ["が", "を", "で"], "answer": 0, "tr": {"id": "Saya suka musik.", "en": "I like music."}},
+        {"q": "何のスポーツ＿＿好きですか。", "options": ["が", "を", "に"], "answer": 0, "tr": {"id": "Kamu suka olahraga apa?", "en": "What sport do you like?"}}
+      ]
+    },
+    {
+      "id": "n5-ga-hoshii",
+      "pattern": "〜がほしいです",
+      "meaning": {"id": "ingin memiliki …", "en": "want (a thing)"},
+      "formation": "N が ほしいです",
+      "explanation": {
+        "id": "Untuk menginginkan benda. Untuk ingin melakukan sesuatu, pakai 〜たい.",
+        "en": "For wanting a thing. To want to do something, use 〜たい."
+      },
+      "examples": [
+        {"ja": "新しいパソコンがほしいです。", "kana": "あたらしいパソコンがほしいです。", "tr": {"id": "Saya ingin punya komputer baru.", "en": "I want a new computer."}, "chunks": ["新しい", "パソコンが", "ほしいです"]},
+        {"ja": "今、何がいちばんほしいですか。", "kana": "いま、なにがいちばんほしいですか。", "tr": {"id": "Sekarang apa yang paling kamu inginkan?", "en": "What do you want most right now?"}}
+      ],
+      "quiz": [
+        {"q": "車＿＿ほしいです。", "options": ["が", "を", "に"], "answer": 0, "tr": {"id": "Saya ingin punya mobil.", "en": "I want a car."}},
+        {"q": "時間がほしい＿＿。", "options": ["です", "ます", "たい"], "answer": 0, "tr": {"id": "Saya ingin punya waktu.", "en": "I want some time."}}
+      ]
+    },
+    {
+      "id": "n5-te-kudasai",
+      "pattern": "〜てください",
+      "meaning": {"id": "tolong …", "en": "please (do) …"},
+      "formation": "V-て + ください",
+      "explanation": {
+        "id": "Meminta orang lain melakukan sesuatu dengan sopan. Kata kerjanya diubah ke bentuk て.",
+        "en": "Politely asks someone to do something. The verb goes into the て-form."
+      },
+      "examples": [
+        {"ja": "ちょっと待ってください。", "kana": "ちょっとまってください。", "tr": {"id": "Tunggu sebentar.", "en": "Please wait a moment."}, "chunks": ["ちょっと", "待って", "ください"]},
+        {"ja": "ここに名前を書いてください。", "kana": "ここになまえをかいてください。", "tr": {"id": "Tolong tulis nama di sini.", "en": "Please write your name here."}}
+      ],
+      "quiz": [
+        {"q": "もう一度言っ＿＿ください。", "options": ["て", "た", "に"], "answer": 0, "tr": {"id": "Tolong katakan sekali lagi.", "en": "Please say it once more."}},
+        {"q": "窓を開け＿＿ください。", "options": ["て", "って", "た"], "answer": 0, "tr": {"id": "Tolong buka jendelanya.", "en": "Please open the window."}}
+      ]
+    },
+    {
+      "id": "n5-te-imasu",
+      "pattern": "〜ています",
+      "meaning": {"id": "sedang …; keadaan", "en": "is …ing; ongoing state"},
+      "formation": "V-て + います",
+      "explanation": {
+        "id": "Menyatakan kegiatan yang sedang berlangsung (今食べています) atau keadaan hasil suatu perbuatan (結婚しています = sudah menikah).",
+        "en": "Describes an action in progress (今食べています) or a resulting state (結婚しています = is married)."
+      },
+      "examples": [
+        {"ja": "今、雨が降っています。", "kana": "いま、あめがふっています。", "tr": {"id": "Sekarang sedang hujan.", "en": "It is raining now."}},
+        {"ja": "姉は銀行で働いています。", "kana": "あねはぎんこうではたらいています。", "tr": {"id": "Kakak perempuan saya bekerja di bank.", "en": "My older sister works at a bank."}, "chunks": ["姉は", "銀行で", "働いています"]}
+      ],
+      "quiz": [
+        {"q": "弟は今、テレビを見て＿＿。", "options": ["います", "あります", "ください"], "answer": 0, "tr": {"id": "Adik laki-laki saya sedang menonton TV.", "en": "My younger brother is watching TV now."}},
+        {"q": "田中さんはめがねをかけ＿＿います。", "options": ["て", "た", "に"], "answer": 0, "tr": {"id": "Tanaka memakai kacamata.", "en": "Tanaka wears glasses."}}
+      ]
+    },
+    {
+      "id": "n5-temo-ii",
+      "pattern": "〜てもいいです",
+      "meaning": {"id": "boleh …", "en": "may …; it's OK to …"},
+      "formation": "V-て + も いいです",
+      "explanation": {
+        "id": "Memberi atau meminta izin. Untuk bertanya: 〜てもいいですか。",
+        "en": "Gives or asks for permission. As a question: 〜てもいいですか。"
+      },
+      "examples": [
+        {"ja": "このペンを使ってもいいです。", "kana": "このペンをつかってもいいです。", "tr": {"id": "Kamu boleh memakai pulpen ini.", "en": "You may use this pen."}, "chunks": ["このペンを", "使っても", "いいです"]},
+        {"ja": "ここで写真をとってもいいですか。", "kana": "ここでしゃしんをとってもいいですか。", "tr": {"id": "Bolehkah saya memotret di sini?", "en": "May I take photos here?"}}
+      ],
+      "quiz": [
+        {"q": "窓を開けて＿＿いいですか。", "options": ["も", "は", "を"], "answer": 0, "tr": {"id": "Bolehkah saya membuka jendela?", "en": "May I open the window?"}},
+        {"q": "ええ、すわっても＿＿。", "options": ["いいです", "いけません", "ください"], "answer": 0, "tr": {"id": "Ya, silakan duduk.", "en": "Yes, you may sit down."}}
+      ]
+    },
+    {
+      "id": "n5-tewa-ikemasen",
+      "pattern": "〜てはいけません",
+      "meaning": {"id": "tidak boleh …", "en": "must not …"},
+      "formation": "V-て + は いけません",
+      "explanation": {
+        "id": "Larangan yang tegas, misalnya peraturan. Dalam percakapan santai sering menjadi 〜ちゃいけない.",
+        "en": "A firm prohibition, such as a rule. In casual speech it often becomes 〜ちゃいけない."
+      },
+      "examples": [
+        {"ja": "教室で食べてはいけません。", "kana": "きょうしつでたべてはいけません。", "tr": {"id": "Tidak boleh makan di dalam kelas.", "en": "You must not eat in the classroom."}, "chunks": ["教室で", "食べては", "いけません"]},
+        {"ja": "ここでたばこを吸ってはいけません。", "kana": "ここでたばこをすってはいけません。", "tr": {"id": "Di sini tidak boleh merokok.", "en": "You must not smoke here."}}
+      ],
+      "quiz": [
+        {"q": "図書館で話しては＿＿。", "options": ["いけません", "いいです", "ください"], "answer": 0, "tr": {"id": "Di perpustakaan tidak boleh berbicara.", "en": "You must not talk in the library."}},
+        {"q": "この水を飲んで＿＿いけません。", "options": ["は", "も", "を"], "answer": 0, "tr": {"id": "Air ini tidak boleh diminum.", "en": "You must not drink this water."}}
+      ]
+    },
+    {
+      "id": "n5-naide-kudasai",
+      "pattern": "〜ないでください",
+      "meaning": {"id": "tolong jangan …", "en": "please don't …"},
+      "formation": "V-ない + でください",
+      "explanation": {
+        "id": "Meminta dengan sopan agar orang lain tidak melakukan sesuatu. Kata kerjanya diubah ke bentuk ない.",
+        "en": "Politely asks someone not to do something. The verb goes into the ない-form."
+      },
+      "examples": [
+        {"ja": "あまり心配しないでください。", "kana": "あまりしんぱいしないでください。", "tr": {"id": "Jangan terlalu khawatir.", "en": "Please don't worry too much."}, "chunks": ["あまり", "心配しないで", "ください"]},
+        {"ja": "ここに車をとめないでください。", "kana": "ここにくるまをとめないでください。", "tr": {"id": "Tolong jangan parkir mobil di sini.", "en": "Please don't park here."}}
+      ],
+      "quiz": [
+        {"q": "写真をとら＿＿ください。", "options": ["ないで", "なくて", "て"], "answer": 0, "tr": {"id": "Tolong jangan memotret.", "en": "Please don't take photos."}},
+        {"q": "忘れないで＿＿。", "options": ["ください", "います", "ません"], "answer": 0, "tr": {"id": "Tolong jangan lupa.", "en": "Please don't forget."}}
+      ]
+    },
+    {
+      "id": "n5-kara-reason",
+      "pattern": "〜から（alasan）",
+      "meaning": {"id": "karena …", "en": "because …; so"},
+      "formation": "Alasan から、akibat",
+      "explanation": {
+        "id": "から setelah sebuah kalimat menyatakan alasan. Alasannya di depan, akibatnya di belakang.",
+        "en": "から after a clause gives a reason. The reason comes first and the result after."
+      },
+      "examples": [
+        {"ja": "時間がないから、タクシーで行きます。", "kana": "じかんがないから、タクシーでいきます。", "tr": {"id": "Karena tidak ada waktu, saya naik taksi.", "en": "I have no time, so I'll take a taxi."}, "chunks": ["時間がないから、", "タクシーで", "行きます"]},
+        {"ja": "暑いですから、窓を開けましょう。", "kana": "あついですから、まどをあけましょう。", "tr": {"id": "Karena panas, ayo buka jendela.", "en": "It's hot, so let's open the window."}}
+      ],
+      "quiz": [
+        {"q": "雨が降っている＿＿、出かけません。", "options": ["から", "まで", "を"], "answer": 0, "tr": {"id": "Karena sedang hujan, saya tidak keluar.", "en": "It's raining, so I won't go out."}},
+        {"q": "おなかがいっぱいです＿＿、もう食べません。", "options": ["から", "まで", "より"], "answer": 0, "tr": {"id": "Karena sudah kenyang, saya tidak makan lagi.", "en": "I'm full, so I won't eat any more."}}
+      ]
+    },
+    {
+      "id": "n5-ga-but",
+      "pattern": "〜が、〜（tetapi）",
+      "meaning": {"id": "tetapi", "en": "but"},
+      "formation": "Kalimat₁ が、Kalimat₂",
+      "explanation": {
+        "id": "が setelah kalimat sopan berarti \"tetapi\". Dalam percakapan santai sering diganti けど.",
+        "en": "が after a polite clause means \"but\". In casual speech けど is common."
+      },
+      "examples": [
+        {"ja": "この店はおいしいですが、高いです。", "kana": "このみせはおいしいですが、たかいです。", "tr": {"id": "Restoran ini enak, tetapi mahal.", "en": "This restaurant is good, but expensive."}, "chunks": ["この店は", "おいしいですが、", "高いです"]},
+        {"ja": "日本語はむずかしいですが、おもしろいです。", "kana": "にほんごはむずかしいですが、おもしろいです。", "tr": {"id": "Bahasa Jepang sulit, tetapi menarik.", "en": "Japanese is hard, but interesting."}}
+      ],
+      "quiz": [
+        {"q": "行きたいです＿＿、時間がありません。", "options": ["が", "から", "を"], "answer": 0, "tr": {"id": "Saya ingin pergi, tetapi tidak ada waktu.", "en": "I want to go, but I don't have time."}},
+        {"q": "部屋は広いです＿＿、ちょっと暗いです。", "options": ["が", "と", "で"], "answer": 0, "tr": {"id": "Kamarnya luas, tetapi agak gelap.", "en": "The room is spacious, but a little dark."}}
+      ]
+    },
+    {
+      "id": "n5-kara-made",
+      "pattern": "〜から〜まで",
+      "meaning": {"id": "dari … sampai …", "en": "from … to/until …"},
+      "formation": "N₁ から N₂ まで",
+      "explanation": {
+        "id": "Menyatakan titik awal dan titik akhir, baik waktu maupun tempat.",
+        "en": "Marks a starting point and an end point, in time or place."
+      },
+      "examples": [
+        {"ja": "授業は九時から三時までです。", "kana": "じゅぎょうはくじからさんじまでです。", "tr": {"id": "Pelajaran dari jam sembilan sampai jam tiga.", "en": "Classes are from nine to three."}, "chunks": ["授業は", "九時から", "三時まで", "です"]},
+        {"ja": "うちから駅まで歩きます。", "kana": "うちからえきまであるきます。", "tr": {"id": "Saya berjalan kaki dari rumah ke stasiun.", "en": "I walk from home to the station."}, "chunks": ["うちから", "駅まで", "歩きます"]}
+      ],
+      "quiz": [
+        {"q": "銀行は九時＿＿三時までです。", "options": ["から", "まで", "に"], "answer": 0, "tr": {"id": "Bank buka dari jam sembilan sampai jam tiga.", "en": "The bank is open from nine to three."}},
+        {"q": "東京から大阪＿＿しんかんせんで行きます。", "options": ["まで", "から", "を"], "answer": 0, "tr": {"id": "Saya pergi dari Tokyo ke Osaka naik shinkansen.", "en": "I'm going from Tokyo to Osaka by shinkansen."}}
+      ]
+    },
+    {
+      "id": "n5-yori-hou",
+      "pattern": "〜より〜のほうが",
+      "meaning": {"id": "… lebih … daripada …", "en": "… is more … than …"},
+      "formation": "N₁ より N₂ のほうが Adj",
+      "explanation": {
+        "id": "Membandingkan dua hal. Yang \"lebih\" ditandai のほうが, pembandingnya ditandai より.",
+        "en": "Compares two things. The one that is \"more\" takes のほうが; the one compared against takes より."
+      },
+      "examples": [
+        {"ja": "バスより電車のほうが速いです。", "kana": "バスよりでんしゃのほうがはやいです。", "tr": {"id": "Kereta lebih cepat daripada bus.", "en": "Trains are faster than buses."}, "chunks": ["バスより", "電車のほうが", "速いです"]},
+        {"ja": "夏より冬のほうが好きです。", "kana": "なつよりふゆのほうがすきです。", "tr": {"id": "Saya lebih suka musim dingin daripada musim panas.", "en": "I like winter better than summer."}}
+      ],
+      "quiz": [
+        {"q": "犬＿＿猫のほうが好きです。", "options": ["より", "ほう", "から"], "answer": 0, "tr": {"id": "Saya lebih suka kucing daripada anjing.", "en": "I like cats more than dogs."}},
+        {"q": "肉より魚の＿＿が好きです。", "options": ["ほう", "より", "もの"], "answer": 0, "tr": {"id": "Saya lebih suka ikan daripada daging.", "en": "I prefer fish to meat."}}
+      ]
+    },
+    {
+      "id": "n5-ni-iku",
+      "pattern": "〜に行きます（tujuan）",
+      "meaning": {"id": "pergi untuk …", "en": "go (somewhere) to do …"},
+      "formation": "V-ます → V-に 行きます・来ます",
+      "explanation": {
+        "id": "Menyatakan tujuan pergi. Ganti ます dengan に: 買います → 買いに行きます.",
+        "en": "Gives the purpose of going. Replace ます with に: 買います → 買いに行きます."
+      },
+      "examples": [
+        {"ja": "友だちが遊びに来ました。", "kana": "ともだちがあそびにきました。", "tr": {"id": "Teman saya datang untuk bermain.", "en": "A friend came over to hang out."}, "chunks": ["友だちが", "遊びに", "来ました"]},
+        {"ja": "デパートへくつを買いに行きます。", "kana": "デパートへくつをかいにいきます。", "tr": {"id": "Saya pergi ke toserba untuk membeli sepatu.", "en": "I'm going to the department store to buy shoes."}}
+      ],
+      "quiz": [
+        {"q": "公園へ写真をとり＿＿行きます。", "options": ["に", "を", "で"], "answer": 0, "tr": {"id": "Saya pergi ke taman untuk memotret.", "en": "I'm going to the park to take photos."}},
+        {"q": "食堂へ昼ごはんを食べ＿＿行きませんか。", "options": ["に", "て", "を"], "answer": 0, "tr": {"id": "Mau pergi ke kantin untuk makan siang?", "en": "Shall we go to the cafeteria for lunch?"}}
+      ]
+    },
+    {
+      "id": "n5-tekara",
+      "pattern": "〜てから",
+      "meaning": {"id": "setelah …", "en": "after …ing"},
+      "formation": "V-て + から",
+      "explanation": {
+        "id": "Menyatakan urutan: kegiatan pertama selesai, lalu kegiatan kedua dilakukan.",
+        "en": "Shows order: the first action finishes, then the second one follows."
+      },
+      "examples": [
+        {"ja": "手を洗ってから、食べます。", "kana": "てをあらってから、たべます。", "tr": {"id": "Setelah mencuci tangan, saya makan.", "en": "I eat after washing my hands."}, "chunks": ["手を", "洗ってから、", "食べます"]},
+        {"ja": "宿題をしてから、テレビを見ました。", "kana": "しゅくだいをしてから、テレビをみました。", "tr": {"id": "Setelah mengerjakan PR, saya menonton TV.", "en": "I watched TV after doing my homework."}}
+      ],
+      "quiz": [
+        {"q": "シャワーをあびて＿＿、寝ます。", "options": ["から", "まで", "より"], "answer": 0, "tr": {"id": "Setelah mandi, saya tidur.", "en": "I'll go to bed after a shower."}},
+        {"q": "電話をし＿＿から、行きます。", "options": ["て", "た", "に"], "answer": 0, "tr": {"id": "Saya akan pergi setelah menelepon.", "en": "I'll go after making a phone call."}}
+      ]
+    },
+    {
+      "id": "n5-mae-ni",
+      "pattern": "〜まえに",
+      "meaning": {"id": "sebelum …", "en": "before …"},
+      "formation": "V-る ／ N の + まえに",
+      "explanation": {
+        "id": "Kegiatan di belakang dilakukan sebelum kegiatan di depan まえに. Kata kerja sebelum まえに selalu bentuk kamus.",
+        "en": "The second action happens before the one in front of まえに. The verb before まえに is always in dictionary form."
+      },
+      "examples": [
+        {"ja": "寝るまえに、本を読みます。", "kana": "ねるまえに、ほんをよみます。", "tr": {"id": "Sebelum tidur, saya membaca buku.", "en": "I read before going to bed."}, "chunks": ["寝るまえに、", "本を", "読みます"]},
+        {"ja": "食事のまえに、手を洗いましょう。", "kana": "しょくじのまえに、てをあらいましょう。", "tr": {"id": "Ayo cuci tangan sebelum makan.", "en": "Let's wash our hands before the meal."}}
+      ],
+      "quiz": [
+        {"q": "出かける＿＿、電気を消します。", "options": ["まえに", "てから", "あとで"], "answer": 0, "tr": {"id": "Sebelum keluar, saya mematikan lampu.", "en": "I turn off the lights before going out."}},
+        {"q": "日本へ＿＿まえに、日本語を勉強します。", "options": ["行く", "行って", "行きます"], "answer": 0, "tr": {"id": "Sebelum pergi ke Jepang, saya belajar bahasa Jepang.", "en": "I'll study Japanese before going to Japan."}}
+      ]
+    },
+    {
+      "id": "n5-deshou",
+      "pattern": "〜でしょう",
+      "meaning": {"id": "mungkin, barangkali", "en": "probably"},
+      "formation": "Bentuk biasa + でしょう",
+      "explanation": {
+        "id": "Menyatakan dugaan, sering terdengar di ramalan cuaca. Dengan intonasi naik (でしょう？) berarti meminta persetujuan.",
+        "en": "Expresses a guess, often heard in weather forecasts. With rising pitch (でしょう？) it asks for agreement."
+      },
+      "examples": [
+        {"ja": "明日は雨でしょう。", "kana": "あしたはあめでしょう。", "tr": {"id": "Besok mungkin hujan.", "en": "It will probably rain tomorrow."}, "chunks": ["明日は", "雨", "でしょう"]},
+        {"ja": "山田さんはもう帰ったでしょう。", "kana": "やまださんはもうかえったでしょう。", "tr": {"id": "Yamada mungkin sudah pulang.", "en": "Yamada has probably gone home already."}}
+      ],
+      "quiz": [
+        {"q": "あの店は高い＿＿。", "options": ["でしょう", "ましょう", "ません"], "answer": 0, "tr": {"id": "Toko itu mungkin mahal.", "en": "That shop is probably expensive."}},
+        {"q": "明日はたぶん晴れる＿＿。", "options": ["でしょう", "ましょう", "ください"], "answer": 0, "tr": {"id": "Besok mungkin cerah.", "en": "It will probably be sunny tomorrow."}}
+      ]
+    },
+    {
+      "id": "n5-yo-ne",
+      "pattern": "〜よ／〜ね",
+      "meaning": {"id": "partikel akhir: memberi tahu (よ), meminta persetujuan (ね)", "en": "sentence endings: telling (よ), seeking agreement (ね)"},
+      "formation": "Kalimat + よ／ね",
+      "explanation": {
+        "id": "よ menyampaikan hal yang belum diketahui lawan bicara. ね mengajak setuju atau memastikan sesuatu yang sama-sama diketahui.",
+        "en": "よ tells the listener something they don't know yet. ね invites agreement or checks something both people know."
+      },
+      "examples": [
+        {"ja": "今日は暑いですね。", "kana": "きょうはあついですね。", "tr": {"id": "Hari ini panas, ya.", "en": "It's hot today, isn't it?"}, "chunks": ["今日は", "暑いです", "ね"]},
+        {"ja": "この映画はおもしろいですよ。", "kana": "このえいがはおもしろいですよ。", "tr": {"id": "Film ini seru, lho.", "en": "This movie is fun, you know."}}
+      ],
+      "quiz": [
+        {"q": "きれいな花です＿＿。そうですね。", "options": ["ね", "よ", "を"], "answer": 0, "tr": {"id": "Bunganya indah, ya. — Iya, ya.", "en": "What pretty flowers. — Aren't they."}},
+        {"q": "あぶない＿＿！車が来ます。", "options": ["よ", "ね", "か"], "answer": 0, "tr": {"id": "Awas! Ada mobil datang.", "en": "Watch out! A car is coming."}}
+      ]
+    },
+    {
+      "id": "n5-naru",
+      "pattern": "〜くなります／〜になります",
+      "meaning": {"id": "menjadi …", "en": "become …"},
+      "formation": "Adj-い → 〜くなります ／ Adj-な・N + になります",
+      "explanation": {
+        "id": "Menyatakan perubahan. Kata sifat い: ganti い dengan く. Kata sifat な dan kata benda: tambahkan に.",
+        "en": "Describes a change. i-adjectives swap い for く; na-adjectives and nouns add に."
+      },
+      "examples": [
+        {"ja": "弟は医者になりました。", "kana": "おとうとはいしゃになりました。", "tr": {"id": "Adik laki-laki saya menjadi dokter.", "en": "My younger brother became a doctor."}, "chunks": ["弟は", "医者に", "なりました"]},
+        {"ja": "寒くなりましたね。", "kana": "さむくなりましたね。", "tr": {"id": "Sudah jadi dingin, ya.", "en": "It's got cold, hasn't it?"}}
+      ],
+      "quiz": [
+        {"q": "部屋がきれい＿＿なりました。", "options": ["に", "く", "で"], "answer": 0, "tr": {"id": "Kamarnya jadi bersih.", "en": "The room has become clean."}},
+        {"q": "空が暗＿＿なりました。", "options": ["く", "に", "い"], "answer": 0, "tr": {"id": "Langit menjadi gelap.", "en": "The sky has grown dark."}}
+      ]
+    },
+    {
+      "id": "n5-ta-koto",
+      "pattern": "〜たことがあります",
+      "meaning": {"id": "pernah …", "en": "have (ever) …"},
+      "formation": "V-た + ことがあります",
+      "explanation": {
+        "id": "Menyatakan pengalaman. Untuk bertanya: 〜たことがありますか。 Belum pernah: 〜たことがありません.",
+        "en": "Talks about experience. Ask with 〜たことがありますか。; never: 〜たことがありません."
+      },
+      "examples": [
+        {"ja": "すしを食べたことがありますか。", "kana": "すしをたべたことがありますか。", "tr": {"id": "Pernah makan sushi?", "en": "Have you ever eaten sushi?"}, "chunks": ["すしを", "食べた", "ことが", "ありますか"]},
+        {"ja": "富士山に登ったことがあります。", "kana": "ふじさんにのぼったことがあります。", "tr": {"id": "Saya pernah mendaki Gunung Fuji.", "en": "I have climbed Mount Fuji."}}
+      ],
+      "quiz": [
+        {"q": "日本へ行った＿＿があります。", "options": ["こと", "もの", "の"], "answer": 0, "tr": {"id": "Saya pernah pergi ke Jepang.", "en": "I have been to Japan."}},
+        {"q": "その本は読んだことが＿＿。", "options": ["ありません", "いません", "しません"], "answer": 0, "tr": {"id": "Saya belum pernah membaca buku itu.", "en": "I have never read that book."}}
+      ]
+    }
+  ]
+}

@@ -2383,6 +2383,396 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Suara'**
   String get settingsSound;
+
+  /// No description provided for @conjugation.
+  ///
+  /// In id, this message translates to:
+  /// **'Konjugasi'**
+  String get conjugation;
+
+  /// No description provided for @conjPlain.
+  ///
+  /// In id, this message translates to:
+  /// **'Bentuk kamus'**
+  String get conjPlain;
+
+  /// No description provided for @conjPolite.
+  ///
+  /// In id, this message translates to:
+  /// **'Sopan'**
+  String get conjPolite;
+
+  /// No description provided for @conjNegative.
+  ///
+  /// In id, this message translates to:
+  /// **'Negatif'**
+  String get conjNegative;
+
+  /// No description provided for @conjPoliteNegative.
+  ///
+  /// In id, this message translates to:
+  /// **'Negatif sopan'**
+  String get conjPoliteNegative;
+
+  /// No description provided for @conjPast.
+  ///
+  /// In id, this message translates to:
+  /// **'Lampau'**
+  String get conjPast;
+
+  /// No description provided for @conjPolitePast.
+  ///
+  /// In id, this message translates to:
+  /// **'Lampau sopan'**
+  String get conjPolitePast;
+
+  /// No description provided for @conjPastNegative.
+  ///
+  /// In id, this message translates to:
+  /// **'Lampau negatif'**
+  String get conjPastNegative;
+
+  /// No description provided for @conjPolitePastNegative.
+  ///
+  /// In id, this message translates to:
+  /// **'Lampau negatif sopan'**
+  String get conjPolitePastNegative;
+
+  /// No description provided for @conjTe.
+  ///
+  /// In id, this message translates to:
+  /// **'Bentuk te'**
+  String get conjTe;
+
+  /// No description provided for @conjPotential.
+  ///
+  /// In id, this message translates to:
+  /// **'Potensial (bisa …)'**
+  String get conjPotential;
+
+  /// No description provided for @conjPassive.
+  ///
+  /// In id, this message translates to:
+  /// **'Pasif (di-…)'**
+  String get conjPassive;
+
+  /// No description provided for @conjCausative.
+  ///
+  /// In id, this message translates to:
+  /// **'Kausatif (menyuruh …)'**
+  String get conjCausative;
+
+  /// No description provided for @conjImperative.
+  ///
+  /// In id, this message translates to:
+  /// **'Perintah'**
+  String get conjImperative;
+
+  /// No description provided for @conjVolitional.
+  ///
+  /// In id, this message translates to:
+  /// **'Ajakan (ayo …)'**
+  String get conjVolitional;
+
+  /// No description provided for @conjConditionalBa.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengandaian 〜ば'**
+  String get conjConditionalBa;
+
+  /// No description provided for @conjConditionalTara.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengandaian 〜たら'**
+  String get conjConditionalTara;
+
+  /// No description provided for @conjWant.
+  ///
+  /// In id, this message translates to:
+  /// **'Ingin (〜たい)'**
+  String get conjWant;
+
+  /// No description provided for @conjAdverb.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata keterangan'**
+  String get conjAdverb;
+
+  /// No description provided for @conjShowAll.
+  ///
+  /// In id, this message translates to:
+  /// **'Semua bentuk ({count})'**
+  String conjShowAll(int count);
+
+  /// No description provided for @conjShowLess.
+  ///
+  /// In id, this message translates to:
+  /// **'Lebih sedikit'**
+  String get conjShowLess;
+
+  /// No description provided for @conjPractice.
+  ///
+  /// In id, this message translates to:
+  /// **'Latihan konjugasi'**
+  String get conjPractice;
+
+  /// No description provided for @conjPracticeBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Ubah kata kerja dan kata sifat ke bentuk ます, ない, た, て, dan lainnya.'**
+  String get conjPracticeBody;
+
+  /// No description provided for @conjPracticeWord.
+  ///
+  /// In id, this message translates to:
+  /// **'Latih kata ini'**
+  String get conjPracticeWord;
+
+  /// No description provided for @conjVerbs.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata kerja'**
+  String get conjVerbs;
+
+  /// No description provided for @conjAdjectives.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata sifat'**
+  String get conjAdjectives;
+
+  /// No description provided for @conjWordTypes.
+  ///
+  /// In id, this message translates to:
+  /// **'Jenis kata'**
+  String get conjWordTypes;
+
+  /// No description provided for @conjLevels.
+  ///
+  /// In id, this message translates to:
+  /// **'Level kata'**
+  String get conjLevels;
+
+  /// No description provided for @conjForms.
+  ///
+  /// In id, this message translates to:
+  /// **'Bentuk yang dilatih'**
+  String get conjForms;
+
+  /// No description provided for @conjStart.
+  ///
+  /// In id, this message translates to:
+  /// **'Mulai ({count} soal)'**
+  String conjStart(int count);
+
+  /// No description provided for @conjAsk.
+  ///
+  /// In id, this message translates to:
+  /// **'Ubah ke bentuk'**
+  String get conjAsk;
+
+  /// No description provided for @conjAnswerWas.
+  ///
+  /// In id, this message translates to:
+  /// **'Jawabannya: {answer}'**
+  String conjAnswerWas(String answer);
+
+  /// No description provided for @conjScore.
+  ///
+  /// In id, this message translates to:
+  /// **'{correct} dari {total} benar'**
+  String conjScore(int correct, int total);
+
+  /// No description provided for @conjMistakes.
+  ///
+  /// In id, this message translates to:
+  /// **'Yang perlu diulang'**
+  String get conjMistakes;
+
+  /// No description provided for @conjAddMistakes.
+  ///
+  /// In id, this message translates to:
+  /// **'Masukkan yang salah ke review'**
+  String get conjAddMistakes;
+
+  /// No description provided for @conjNoWords.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada kata yang cocok. Pilih jenis kata, level atau bentuk lain.'**
+  String get conjNoWords;
+
+  /// No description provided for @grammar.
+  ///
+  /// In id, this message translates to:
+  /// **'Tata bahasa'**
+  String get grammar;
+
+  /// No description provided for @grammarBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Pola kalimat dengan penjelasan, contoh, dan latihan'**
+  String get grammarBody;
+
+  /// No description provided for @grammarDoneCount.
+  ///
+  /// In id, this message translates to:
+  /// **'{done} dari {total} selesai'**
+  String grammarDoneCount(int done, int total);
+
+  /// No description provided for @grammarFormation.
+  ///
+  /// In id, this message translates to:
+  /// **'Pembentukan'**
+  String get grammarFormation;
+
+  /// No description provided for @grammarExplanation.
+  ///
+  /// In id, this message translates to:
+  /// **'Penjelasan'**
+  String get grammarExplanation;
+
+  /// No description provided for @grammarExamples.
+  ///
+  /// In id, this message translates to:
+  /// **'Contoh kalimat'**
+  String get grammarExamples;
+
+  /// No description provided for @grammarPractice.
+  ///
+  /// In id, this message translates to:
+  /// **'Latihan'**
+  String get grammarPractice;
+
+  /// No description provided for @grammarPracticeMixed.
+  ///
+  /// In id, this message translates to:
+  /// **'Latihan campuran'**
+  String get grammarPracticeMixed;
+
+  /// No description provided for @grammarFillGap.
+  ///
+  /// In id, this message translates to:
+  /// **'Isi bagian yang kosong'**
+  String get grammarFillGap;
+
+  /// No description provided for @grammarBuild.
+  ///
+  /// In id, this message translates to:
+  /// **'Susun kalimatnya'**
+  String get grammarBuild;
+
+  /// No description provided for @grammarCheck.
+  ///
+  /// In id, this message translates to:
+  /// **'Periksa'**
+  String get grammarCheck;
+
+  /// No description provided for @grammarClear.
+  ///
+  /// In id, this message translates to:
+  /// **'Hapus'**
+  String get grammarClear;
+
+  /// No description provided for @grammarAddReview.
+  ///
+  /// In id, this message translates to:
+  /// **'Tambah ke review'**
+  String get grammarAddReview;
+
+  /// No description provided for @grammarInReview.
+  ///
+  /// In id, this message translates to:
+  /// **'Ada di review'**
+  String get grammarInReview;
+
+  /// No description provided for @grammarDone.
+  ///
+  /// In id, this message translates to:
+  /// **'Selesai'**
+  String get grammarDone;
+
+  /// No description provided for @grammarPassToFinish.
+  ///
+  /// In id, this message translates to:
+  /// **'Benar 80% di latihan untuk menandai pola ini selesai.'**
+  String get grammarPassToFinish;
+
+  /// No description provided for @grammarAndConjugation.
+  ///
+  /// In id, this message translates to:
+  /// **'Tata bahasa & konjugasi'**
+  String get grammarAndConjugation;
+
+  /// No description provided for @freeStudyCollection.
+  ///
+  /// In id, this message translates to:
+  /// **'Koleksiku'**
+  String get freeStudyCollection;
+
+  /// No description provided for @freeStudyForgotten.
+  ///
+  /// In id, this message translates to:
+  /// **'Sering lupa'**
+  String get freeStudyForgotten;
+
+  /// No description provided for @freeStudyRange.
+  ///
+  /// In id, this message translates to:
+  /// **'{from}–{to}'**
+  String freeStudyRange(int from, int to);
+
+  /// No description provided for @freeStudyCollectionEmpty.
+  ///
+  /// In id, this message translates to:
+  /// **'Koleksimu masih kosong. Ketuk ☆ pada kata di Kamus untuk menyimpannya, lalu hafalkan di sini.'**
+  String get freeStudyCollectionEmpty;
+
+  /// No description provided for @freeStudyForgottenEmpty.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada kartu review yang terlupa. Mantap!'**
+  String get freeStudyForgottenEmpty;
+
+  /// No description provided for @freeStudyReset.
+  ///
+  /// In id, this message translates to:
+  /// **'Reset tanda hafal'**
+  String get freeStudyReset;
+
+  /// No description provided for @freeStudyResetTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Reset tanda hafal?'**
+  String get freeStudyResetTitle;
+
+  /// No description provided for @freeStudyResetSelected.
+  ///
+  /// In id, this message translates to:
+  /// **'Tanda Hafal dan Belum di {count, plural, other{{count} grup}} yang dipilih akan dihapus.'**
+  String freeStudyResetSelected(int count);
+
+  /// No description provided for @freeStudyResetAll.
+  ///
+  /// In id, this message translates to:
+  /// **'Semua tanda Hafal dan Belum di {kind} akan dihapus.'**
+  String freeStudyResetAll(String kind);
+
+  /// No description provided for @freeStudyResetConfirm.
+  ///
+  /// In id, this message translates to:
+  /// **'Reset'**
+  String get freeStudyResetConfirm;
+
+  /// No description provided for @freeStudyResetDone.
+  ///
+  /// In id, this message translates to:
+  /// **'Tanda hafal sudah direset'**
+  String get freeStudyResetDone;
+
+  /// No description provided for @hardestStudy.
+  ///
+  /// In id, this message translates to:
+  /// **'Hafalkan'**
+  String get hardestStudy;
 }
 
 class _AppLocalizationsDelegate

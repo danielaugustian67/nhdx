@@ -11,6 +11,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
+import '../conjugation/conjugation_drill_screen.dart';
+import '../grammar/grammar_screen.dart';
 import '../word/level_words_screen.dart';
 import '../word/word_providers.dart';
 import '../word/word_tile.dart';
@@ -254,6 +256,7 @@ abstract final class _EmptyState {
   static List<Widget> slivers({required ValueChanged<String> onSearch}) => [
     SliverToBoxAdapter(child: _History(onSearch: onSearch)),
     const SliverToBoxAdapter(child: _WordOfTheDay()),
+    const SliverToBoxAdapter(child: _StudyTools()),
     const SliverToBoxAdapter(child: _BrowseLevels()),
     const SliverToBoxAdapter(child: SizedBox(height: AppSpace.xxl)),
   ];
@@ -332,6 +335,37 @@ class _WordOfTheDay extends ConsumerWidget {
       children: [
         _SectionTitle(AppLocalizations.of(context).wordOfTheDay),
         WordTile(hit: SearchHit.fromBrief(word)),
+      ],
+    );
+  }
+}
+
+/// Ways into grammar (F13) and the conjugation drill (F14).
+class _StudyTools extends StatelessWidget {
+  const _StudyTools();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final c = context.colors;
+
+    Widget tool(String glyph, String title, String body, Widget Function() screen, {bool dialog = false}) => ListTile(
+      leading: CircleAvatar(
+        backgroundColor: c.primary.withValues(alpha: 0.12),
+        child: Text(glyph, locale: const Locale('ja'), style: AppText.bodyJp.copyWith(color: c.primaryText)),
+      ),
+      title: Text(title, style: AppText.body.copyWith(color: c.ink, fontWeight: FontWeight.w600)),
+      subtitle: Text(body, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
+      trailing: Icon(Icons.chevron_right_rounded, color: c.inkMuted),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen(), fullscreenDialog: dialog)),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionTitle(l10n.grammarAndConjugation),
+        tool('文', l10n.grammar, l10n.grammarBody, () => const GrammarScreen()),
+        tool('活', l10n.conjPractice, l10n.conjPracticeBody, () => const ConjugationDrillScreen(), dialog: true),
       ],
     );
   }

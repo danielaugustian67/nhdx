@@ -60,6 +60,29 @@ class _FreeStudyScreenState extends ConsumerState<FreeStudyScreen> {
     if (mounted) setState(_selected.clear);
   }
 
+  Future<void> _confirmReset(Set<String> keys, String body) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.freeStudyResetTitle),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+          ),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.freeStudyResetConfirm)),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    ref.read(studyMarksProvider.notifier).clear(keys);
+    setState(_selected.clear);
+    messenger.showSnackBar(SnackBar(content: Text(l10n.freeStudyResetDone)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -92,10 +115,34 @@ class _FreeStudyScreenState extends ConsumerState<FreeStudyScreen> {
       StudyKind.katakana: l10n.katakana,
       StudyKind.kanji: l10n.trackKanji,
       StudyKind.word: l10n.trackVocab,
+      StudyKind.collection: l10n.freeStudyCollection,
+      StudyKind.forgotten: l10n.freeStudyForgotten,
+    };
+    // Marks the reset would clear: the picked groups, else the whole kind.
+    final resetKeys = {
+      for (final g in selectedGroups.isEmpty ? groups ?? const <StudyGroup>[] : selectedGroups)
+        for (final item in g.items)
+          if (marks.containsKey(studyKey(item))) studyKey(item),
     };
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.freeStudy)),
+      appBar: AppBar(
+        title: Text(l10n.freeStudy),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.restart_alt_rounded),
+            tooltip: l10n.freeStudyReset,
+            onPressed: resetKeys.isEmpty
+                ? null
+                : () => _confirmReset(
+                    resetKeys,
+                    selectedGroups.isEmpty
+                        ? l10n.freeStudyResetAll(labels[kind]!)
+                        : l10n.freeStudyResetSelected(selectedGroups.length),
+                  ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -160,6 +207,17 @@ class _FreeStudyScreenState extends ConsumerState<FreeStudyScreen> {
                   ),
                   if (groups == null)
                     const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+                  else if (groups.isEmpty && !kind.fromPath)
+                    SliverPadding(
+                      padding: const EdgeInsets.all(AppSpace.screen),
+                      sliver: SliverToBoxAdapter(
+                        child: Text(
+                          kind == StudyKind.collection ? l10n.freeStudyCollectionEmpty : l10n.freeStudyForgottenEmpty,
+                          textAlign: TextAlign.center,
+                          style: AppText.body.copyWith(color: c.inkMuted),
+                        ),
+                      ),
+                    )
                   else
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(AppSpace.screen, 0, AppSpace.screen, AppSpace.l),
@@ -178,7 +236,7 @@ class _FreeStudyScreenState extends ConsumerState<FreeStudyScreen> {
                           return _GroupTile(
                             key: ValueKey(g.id),
                             title: _title(g),
-                            unit: l10n.unitNumber(g.unit),
+                            unit: g.label ?? l10n.unitNumber(g.unit),
                             known: known,
                             total: g.items.length,
                             selected: _selected.contains(g.id),
@@ -208,7 +266,7 @@ class _FreeStudyScreenState extends ConsumerState<FreeStudyScreen> {
 /// What a group holds, short enough for a tile: "あいうえお", "日月火水木",
 /// "学生・先生・…".
 String _title(StudyGroup g) {
-  if (g.items.first is VocabWord) {
+  if (g.items.any((i) => i is VocabWord)) {
     final words = g.items.take(2).map((w) => w.literal).join('・');
     return g.items.length > 2 ? '$words…' : words;
   }

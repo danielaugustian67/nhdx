@@ -6,6 +6,10 @@ import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
 import '../../core/database/user_db.dart';
 import '../../core/study_day.dart';
+import '../../l10n/app_localizations.dart';
+import '../conjugation/conjugation.dart';
+import '../conjugation/conjugation_practice.dart';
+import '../grammar/grammar_providers.dart';
 import '../kana/kana_providers.dart';
 import '../learn/path_providers.dart';
 import '../learn/speech_text.dart';
@@ -152,6 +156,17 @@ void addKanjiCards(WidgetRef ref, Iterable<String> literals) {
   });
 }
 
+/// Grammar points (`grammar`, id = point id) or conjugations (`conjugation`,
+/// id = "wordId:form") from an exercise.
+void addPracticeCards(WidgetRef ref, String cardType, Iterable<({String id, String label})> items) {
+  final list = items.toList();
+  writeUserDb(ref.read(userDbProvider.future), (db) async {
+    for (final i in list) {
+      await db.addCard(cardType, i.id, label: i.label);
+    }
+  });
+}
+
 void removeWordCard(WidgetRef ref, int wordId) =>
     writeUserDb(ref.read(userDbProvider.future), (db) => db.removeCard('word', '$wordId'));
 
@@ -165,6 +180,11 @@ class ReviewItem {
     required this.back,
     this.jlpt,
     this.speech,
+    this.prompt,
+    this.backFor,
+    this.backJapanese = false,
+    this.note,
+    this.noteFor,
   });
 
   final SrsCard card;
@@ -179,7 +199,38 @@ class ReviewItem {
   /// Read aloud instead of [reading] or [front] (a kanji's readings).
   final String? speech;
 
+  /// What to do with [front], under it on both faces: "Bentuk sopan 〜ます".
+  final String Function(AppLocalizations l10n)? prompt;
+
+  /// [back] in the app language, when the content has one per language.
+  final String Function(AppLocalizations l10n)? backFor;
+
+  /// [back] is Japanese (a conjugated form), not a meaning.
+  final bool backJapanese;
+
+  /// An example sentence under the answer, with its translation.
+  final String? note;
+  final String Function(AppLocalizations l10n)? noteFor;
+
   String get spoken => speech ?? reading ?? front;
+
+  String backText(AppLocalizations l10n) => backFor?.call(l10n) ?? back;
+
+  /// The same item after a review, with the card's new schedule.
+  ReviewItem withCard(SrsCard card) => ReviewItem(
+    card: card,
+    front: front,
+    reading: reading,
+    romaji: romaji,
+    back: back,
+    jlpt: jlpt,
+    speech: speech,
+    prompt: prompt,
+    backFor: backFor,
+    backJapanese: backJapanese,
+    note: note,
+    noteFor: noteFor,
+  );
 
   /// Meaning → Japanese: the front asks with [back], the answer is [front].
   bool get reversed => card.direction == CardDirection.meaningToJp.value;
@@ -201,6 +252,7 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
   final dict = await ref.read(dictionaryProvider.future);
   final kana = {for (final k in await ref.read(allKanaProvider.future)) k.literal: k};
   final kanji = {for (final k in await ref.read(allKanjiProvider.future)) k.literal: k};
+  final grammar = {for (final g in await ref.read(grammarProvider.future)) g.id: g};
   final limits = await SrsLimits.load(db);
   final done = await db.doneOn(todayStudyDate());
   final cards = await db.queue(
@@ -227,9 +279,50 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
           ),
           null => null,
         },
+        'conjugation' => _conjugationItem(c, dict),
+        'grammar' => switch (grammar[c.itemId]) {
+          final g? => grammarReviewItem(c, g),
+          null => null,
+        },
         _ => null,
       },
   ];
+}
+
+/// "1358280:polite": the word in the dictionary form, asked for that form.
+ReviewItem? _conjugationItem(SrsCard c, DictionaryDb dict) {
+  final [id, formName] = c.itemId.split(':').length == 2 ? c.itemId.split(':') : const ['', ''];
+  final form = ConjForm.parse(formName);
+  final e = int.tryParse(id) == null ? null : dict.entry(int.parse(id));
+  final w = e == null ? null : conjWordOf(e);
+  if (form == null || w == null || !w.conj.forms.contains(form)) return null;
+  final answer = w.conj.conjugate(form);
+  final hint = conjFormHint(form, w.conj.cls);
+  return ReviewItem(
+    card: c,
+    front: w.conj.written,
+    reading: w.conj.written == w.conj.kana ? null : w.conj.kana,
+    back: answer.written == answer.kana ? answer.written : '${answer.written}（${answer.kana}）',
+    backJapanese: true,
+    jlpt: w.word.jlpt > 0 ? w.word.jlpt : null,
+    speech: answer.kana,
+    prompt: (l10n) => [conjFormLabel(l10n, form), if (hint.isNotEmpty) hint].join('  '),
+  );
+}
+
+/// A grammar point: its pattern asks, the meaning and an example answer.
+ReviewItem grammarReviewItem(SrsCard c, GrammarPoint g) {
+  final example = g.examples.isEmpty ? null : g.examples.first;
+  return ReviewItem(
+    card: c,
+    front: g.pattern,
+    back: g.meaning.en,
+    backFor: (l10n) => g.meaning.of(l10n.localeName),
+    jlpt: g.jlpt,
+    speech: example?.kana ?? g.pattern,
+    note: example?.japanese,
+    noteFor: example == null ? null : (l10n) => example.translation.of(l10n.localeName),
+  );
 }
 
 /// New cards in the deck that today's limit holds back (all of them once the

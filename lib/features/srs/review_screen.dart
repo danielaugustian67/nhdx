@@ -116,20 +116,14 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
       final learning = next.state == CardState.learning || next.state == CardState.relearning;
       if (learning && next.interval <= _sameSession) {
         queue.add(
-          ReviewItem(
-            card: item.card.copyWith(
+          item.withCard(
+            item.card.copyWith(
               state: next.state.dbName,
               intervalDays: next.intervalDays,
               ease: next.ease,
               reps: next.reps,
               lapses: next.lapses,
             ),
-            front: item.front,
-            reading: item.reading,
-            romaji: item.romaji,
-            back: item.back,
-            jlpt: item.jlpt,
-            speech: item.speech,
           ),
         );
       }
@@ -250,7 +244,7 @@ class _Face extends StatelessWidget {
             Text(l10n.recallJapanese, style: AppText.label.copyWith(color: c.inkMuted)),
             const SizedBox(height: AppSpace.m),
             Text(
-              item.back,
+              item.backText(l10n),
               textAlign: TextAlign.center,
               maxLines: 6,
               overflow: TextOverflow.ellipsis,
@@ -282,6 +276,15 @@ class _Face extends StatelessWidget {
               style: AppText.displayCard.copyWith(fontSize: size, color: c.ink),
             ),
           ),
+          if (item.prompt case final prompt?) ...[
+            const SizedBox(height: AppSpace.s),
+            Text(
+              prompt(l10n),
+              textAlign: TextAlign.center,
+              locale: ja,
+              style: AppText.title2.copyWith(color: c.primaryText),
+            ),
+          ],
           const SizedBox(height: AppSpace.l),
           if (!back)
             Text(l10n.tapToFlip, style: AppText.bodySmall.copyWith(color: c.inkMuted))
@@ -297,12 +300,21 @@ class _Face extends StatelessWidget {
             ),
             const SizedBox(height: AppSpace.l),
             Text(
-              item.back,
+              item.backText(l10n),
               textAlign: TextAlign.center,
               maxLines: 6,
               overflow: TextOverflow.ellipsis,
-              style: AppText.title2.copyWith(color: c.ink),
+              locale: item.backJapanese ? ja : null,
+              style: item.backJapanese
+                  ? AppText.bodyJp.copyWith(fontSize: 28, fontWeight: FontWeight.w700, color: c.ink)
+                  : AppText.title2.copyWith(color: c.ink),
             ),
+            if (item.note case final note?) ...[
+              const SizedBox(height: AppSpace.m),
+              Text(note, textAlign: TextAlign.center, locale: ja, style: AppText.bodyJp.copyWith(color: c.ink)),
+              if (item.noteFor case final tr?)
+                Text(tr(l10n), textAlign: TextAlign.center, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
+            ],
           ],
         ],
       ),

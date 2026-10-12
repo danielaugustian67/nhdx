@@ -7,8 +7,8 @@
   },
   "content.db": {
     "asset": "assets/db/content.db.gz",
-    "sha256": "07c99434b538f6866b58773a8b5a2e842559e9591a1c8e373bd7c6a2e3c4e0d5",
-    "size": 1303648,
+    "sha256": "19d32830214a5ab1af24689fa207cd050cb7e5a99243514514234397e8bea8ef",
+    "size": 1319387,
     "version": "1.0.0"
   }
 }
