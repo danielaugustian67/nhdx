@@ -2,61 +2,53 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Available theme presets and custom palette generator for Nihondx.
+/// Colour palettes (names are proper names; [custom] is shown localized)
+/// and the colours derived from a custom accent.
 enum ThemePalette {
   sakura(
     id: 'sakura',
     name: 'Sakura Yoru',
-    description: 'Bunga sakura klasik dengan nuansa malam plum (Default)',
     seedColor: Color(0xFFC2406F),
   ),
   matcha(
     id: 'matcha',
     name: 'Matcha Zen',
-    description: 'Ketenangan bambu hijau dan teh tradisional',
     seedColor: Color(0xFF2E7D32),
   ),
   aoi(
     id: 'aoi',
     name: 'Aoi Fuji',
-    description: 'Biru samudra luas dan keanggunan Gunung Fuji',
     seedColor: Color(0xFF1E6091),
   ),
   mikan(
     id: 'mikan',
     name: 'Mikan Sunset',
-    description: 'Kehangatan jeruk mikan dan senja amber',
     seedColor: Color(0xFFE65100),
   ),
   murasaki(
     id: 'murasaki',
     name: 'Murasaki',
-    description: 'Kemewahan bunga wisteria dan ungu malam',
     seedColor: Color(0xFF7E22CE),
   ),
   kuro(
     id: 'kuro',
     name: 'Kuro Slate',
-    description: 'Nuansa monokromatik minimalis & titanium modern',
     seedColor: Color(0xFF64748B),
   ),
   custom(
     id: 'custom',
-    name: 'Kustom Sendiri',
-    description: 'Pilih warna favoritmu secara bebas',
+    name: 'Custom',
     seedColor: null,
   );
 
   const ThemePalette({
     required this.id,
     required this.name,
-    required this.description,
     required this.seedColor,
   });
 
   final String id;
   final String name;
-  final String description;
   final Color? seedColor;
 
   static const settingKey = 'device.theme_palette';

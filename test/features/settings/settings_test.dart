@@ -8,6 +8,7 @@ import 'package:nihondx/core/database/providers.dart';
 import 'package:nihondx/core/database/user_db.dart';
 import 'package:nihondx/core/study_day.dart';
 import 'package:nihondx/core/theme/app_theme.dart';
+import 'package:nihondx/core/theme/theme_palette.dart';
 import 'package:nihondx/features/settings/settings_providers.dart';
 import 'package:nihondx/features/settings/settings_section.dart';
 import 'package:nihondx/features/srs/srs_providers.dart';
@@ -98,6 +99,80 @@ void main() {
     await tester.tap(find.text('Terang'));
     await settle();
     expect(await tester.runAsync(() => db.setting(ThemeChoice.settingKey)), 'light');
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 10));
+  });
+
+  testWidgets('one theme sheet sets mode, palette, custom accent and pure black', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final db = UserDb.memory();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userDbProvider.overrideWith((ref) async {
+            ref.onDispose(db.close);
+            return db;
+          }),
+          dictionaryProvider.overrideWith((ref) => Completer<Never>().future),
+        ],
+        child: MaterialApp(
+          // The app's button themes: the sheet once overflowed with them.
+          theme: AppTheme.dark(),
+          locale: const Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: SingleChildScrollView(child: SettingsSection())),
+        ),
+      ),
+    );
+    Future<void> settle() async {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> tap(Finder finder) async {
+      await tester.ensureVisible(finder);
+      await tester.pump();
+      await tester.tap(finder);
+      await settle();
+    }
+
+    Future<String?> setting(String key) async => await tester.runAsync<String?>(() => db.setting(key));
+
+    await settle();
+    // Colours live under "Tema"; there is no second row for them.
+    expect(find.text('Gelap · Sakura Yoru'), findsOneWidget);
+    expect(find.textContaining('Nuansa'), findsNothing);
+    await tap(find.text('Tema'));
+    expect(find.text('Pratinjau'), findsOneWidget);
+
+    await tap(find.text('Terang'));
+    expect(await setting(ThemeChoice.settingKey), 'light');
+    await tap(find.text('Matcha Zen'));
+    expect(await setting(ThemePalette.settingKey), 'matcha');
+    expect(find.text('Warna aksen'), findsNothing);
+
+    await tap(find.text('Kustom'));
+    expect(await setting(ThemePalette.settingKey), 'custom');
+    expect(await setting(ThemePalette.customColorKey), '${0xFFC2406F}');
+    await tap(find.bySemanticsLabel('#2563EB'));
+    expect(await setting(ThemePalette.customColorKey), '${0xFF2563EB}');
+
+    await tap(find.textContaining('Kode hex'));
+    await tester.enterText(find.byType(TextField), '12z');
+    await tester.pump();
+    await tap(find.text('Terapkan'));
+    expect(find.text('Pakai 6 karakter 0–9 atau A–F'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '3b82f6');
+    await tap(find.text('Terapkan'));
+    expect(await setting(ThemePalette.customColorKey), '${0xFF3B82F6}');
+
+    await tap(find.text('Hitam pekat (AMOLED)'));
+    expect(await setting(ThemePalette.pureBlackKey), 'true');
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 10));

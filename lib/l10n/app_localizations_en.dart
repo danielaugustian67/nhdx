@@ -1731,4 +1731,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hardestStudy => 'Study them';
+
+  @override
+  String get themeNote => 'Pick dark or light and a colour for the whole app.';
+
+  @override
+  String get themeMode => 'Mode';
+
+  @override
+  String get themeColor => 'Colour';
+
+  @override
+  String get themePreview => 'Preview';
+
+  @override
+  String get themePreviewMeaning => 'cherry blossom';
+
+  @override
+  String get themePreviewMain => 'Start';
+
+  @override
+  String get themePreviewOther => 'Details';
+
+  @override
+  String get paletteCustom => 'Custom';
+
+  @override
+  String get paletteSakuraNote => 'Cherry-blossom pink and plum (default)';
+
+  @override
+  String get paletteMatchaNote => 'Calm green of tea and bamboo';
+
+  @override
+  String get paletteAoiNote => 'Ocean blue and Mount Fuji';
+
+  @override
+  String get paletteMikanNote => 'Warm mikan-orange sunset';
+
+  @override
+  String get paletteMurasakiNote => 'Wisteria purple';
+
+  @override
+  String get paletteKuroNote => 'Minimal monochrome slate';
+
+  @override
+  String get paletteCustomNote => 'Pick your own accent colour';
+
+  @override
+  String get themeAccent => 'Accent colour';
+
+  @override
+  String get themeHex => 'Hex code';
+
+  @override
+  String get themeHexHint => '6 characters, e.g. 3B82F6';
+
+  @override
+  String get themeHexInvalid => 'Use 6 characters 0–9 or A–F';
+
+  @override
+  String get themeApply => 'Apply';
+
+  @override
+  String get themePureBlack => 'Pure black (AMOLED)';
+
+  @override
+  String get themePureBlackNote =>
+      'True black background in dark mode; saves battery on OLED screens.';
+
+  @override
+  String get themePureBlackLight => 'Only applies in dark mode.';
 }

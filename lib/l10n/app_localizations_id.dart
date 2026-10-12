@@ -1605,4 +1605,75 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get hardestStudy => 'Hafalkan';
+
+  @override
+  String get themeNote =>
+      'Pilih gelap atau terang dan warna untuk seluruh aplikasi.';
+
+  @override
+  String get themeMode => 'Mode';
+
+  @override
+  String get themeColor => 'Warna';
+
+  @override
+  String get themePreview => 'Pratinjau';
+
+  @override
+  String get themePreviewMeaning => 'bunga sakura';
+
+  @override
+  String get themePreviewMain => 'Mulai';
+
+  @override
+  String get themePreviewOther => 'Detail';
+
+  @override
+  String get paletteCustom => 'Kustom';
+
+  @override
+  String get paletteSakuraNote => 'Merah muda sakura dan plum (bawaan)';
+
+  @override
+  String get paletteMatchaNote => 'Hijau teh dan bambu yang tenang';
+
+  @override
+  String get paletteAoiNote => 'Biru laut dan Gunung Fuji';
+
+  @override
+  String get paletteMikanNote => 'Jingga hangat jeruk mikan';
+
+  @override
+  String get paletteMurasakiNote => 'Ungu bunga wisteria';
+
+  @override
+  String get paletteKuroNote => 'Abu-abu monokrom yang minimalis';
+
+  @override
+  String get paletteCustomNote => 'Pilih warna aksenmu sendiri';
+
+  @override
+  String get themeAccent => 'Warna aksen';
+
+  @override
+  String get themeHex => 'Kode hex';
+
+  @override
+  String get themeHexHint => '6 karakter, mis. 3B82F6';
+
+  @override
+  String get themeHexInvalid => 'Pakai 6 karakter 0–9 atau A–F';
+
+  @override
+  String get themeApply => 'Terapkan';
+
+  @override
+  String get themePureBlack => 'Hitam pekat (AMOLED)';
+
+  @override
+  String get themePureBlackNote =>
+      'Latar hitam murni di mode gelap, hemat baterai di layar OLED.';
+
+  @override
+  String get themePureBlackLight => 'Hanya berlaku di mode gelap.';
 }

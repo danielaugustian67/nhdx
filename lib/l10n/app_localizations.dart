@@ -2773,6 +2773,144 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Hafalkan'**
   String get hardestStudy;
+
+  /// No description provided for @themeNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Pilih gelap atau terang dan warna untuk seluruh aplikasi.'**
+  String get themeNote;
+
+  /// No description provided for @themeMode.
+  ///
+  /// In id, this message translates to:
+  /// **'Mode'**
+  String get themeMode;
+
+  /// No description provided for @themeColor.
+  ///
+  /// In id, this message translates to:
+  /// **'Warna'**
+  String get themeColor;
+
+  /// No description provided for @themePreview.
+  ///
+  /// In id, this message translates to:
+  /// **'Pratinjau'**
+  String get themePreview;
+
+  /// No description provided for @themePreviewMeaning.
+  ///
+  /// In id, this message translates to:
+  /// **'bunga sakura'**
+  String get themePreviewMeaning;
+
+  /// No description provided for @themePreviewMain.
+  ///
+  /// In id, this message translates to:
+  /// **'Mulai'**
+  String get themePreviewMain;
+
+  /// No description provided for @themePreviewOther.
+  ///
+  /// In id, this message translates to:
+  /// **'Detail'**
+  String get themePreviewOther;
+
+  /// No description provided for @paletteCustom.
+  ///
+  /// In id, this message translates to:
+  /// **'Kustom'**
+  String get paletteCustom;
+
+  /// No description provided for @paletteSakuraNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Merah muda sakura dan plum (bawaan)'**
+  String get paletteSakuraNote;
+
+  /// No description provided for @paletteMatchaNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Hijau teh dan bambu yang tenang'**
+  String get paletteMatchaNote;
+
+  /// No description provided for @paletteAoiNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Biru laut dan Gunung Fuji'**
+  String get paletteAoiNote;
+
+  /// No description provided for @paletteMikanNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Jingga hangat jeruk mikan'**
+  String get paletteMikanNote;
+
+  /// No description provided for @paletteMurasakiNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Ungu bunga wisteria'**
+  String get paletteMurasakiNote;
+
+  /// No description provided for @paletteKuroNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Abu-abu monokrom yang minimalis'**
+  String get paletteKuroNote;
+
+  /// No description provided for @paletteCustomNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Pilih warna aksenmu sendiri'**
+  String get paletteCustomNote;
+
+  /// No description provided for @themeAccent.
+  ///
+  /// In id, this message translates to:
+  /// **'Warna aksen'**
+  String get themeAccent;
+
+  /// No description provided for @themeHex.
+  ///
+  /// In id, this message translates to:
+  /// **'Kode hex'**
+  String get themeHex;
+
+  /// No description provided for @themeHexHint.
+  ///
+  /// In id, this message translates to:
+  /// **'6 karakter, mis. 3B82F6'**
+  String get themeHexHint;
+
+  /// No description provided for @themeHexInvalid.
+  ///
+  /// In id, this message translates to:
+  /// **'Pakai 6 karakter 0–9 atau A–F'**
+  String get themeHexInvalid;
+
+  /// No description provided for @themeApply.
+  ///
+  /// In id, this message translates to:
+  /// **'Terapkan'**
+  String get themeApply;
+
+  /// No description provided for @themePureBlack.
+  ///
+  /// In id, this message translates to:
+  /// **'Hitam pekat (AMOLED)'**
+  String get themePureBlack;
+
+  /// No description provided for @themePureBlackNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Latar hitam murni di mode gelap, hemat baterai di layar OLED.'**
+  String get themePureBlackNote;
+
+  /// No description provided for @themePureBlackLight.
+  ///
+  /// In id, this message translates to:
+  /// **'Hanya berlaku di mode gelap.'**
+  String get themePureBlackLight;
 }
 
 class _AppLocalizationsDelegate

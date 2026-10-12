@@ -21,9 +21,8 @@ import '../reminders/reminder_plan.dart';
 import '../reminders/reminder_service.dart';
 import '../srs/srs_providers.dart';
 import '../sync/sync_controller.dart';
-import '../../core/theme/theme_palette.dart';
 import 'settings_providers.dart';
-import 'theme_customizer_sheet.dart';
+import 'theme_sheet.dart';
 
 /// Settings at the bottom of "Saya" (PRD F9): one row per setting showing its
 /// value; a tap opens a sheet with the choices. Learning settings sync,
@@ -171,23 +170,8 @@ class SettingsSection extends ConsumerWidget {
           ),
           _SettingTile(
             title: l10n.theme,
-            value: themeName(look.theme),
-            onTap: () => _pick<ThemeChoice>(
-              context,
-              title: l10n.theme,
-              selected: look.theme,
-              options: [for (final t in ThemeChoice.values) (t, themeName(t), null)],
-              onSelected: (v) => saveSetting(ref, ThemeChoice.settingKey, v.name),
-            ),
-          ),
-          _SettingTile(
-            title: 'Warna & Nuansa Tema',
-            value: look.palette == ThemePalette.custom
-                ? (look.customColor != null
-                    ? 'Kustom (#${Color(look.customColor!).toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()})'
-                    : 'Kustom')
-                : look.palette.name,
-            onTap: () => ThemeCustomizerSheet.show(context),
+            value: '${themeName(look.theme)} · ${paletteName(l10n, look.palette)}',
+            onTap: () => ThemeSheet.show(context),
           ),
           _SettingTile(
             title: l10n.textSize,
