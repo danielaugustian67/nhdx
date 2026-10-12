@@ -71,6 +71,16 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(vocab ? l10n.newWords : l10n.newCharacters),
+        actions: [
+          TextButton(
+            onPressed: () => setState(() => _exercises = true),
+            child: Text(
+              l10n.skip,
+              style: TextStyle(color: c.primaryText, fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: AppSpace.xs),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(10),
           child: Padding(

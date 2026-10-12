@@ -82,10 +82,19 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     }
     final kanji = node.items.firstOrNull is Kanji;
     final vocab = node.items.firstOrNull is VocabWord;
+    final isDone = ref.read(pathProgressProvider).contains(node.id);
     if (node.type == NodeType.intro || node.type == NodeType.review) {
       ref.read(pathProgressProvider.notifier).start(node.id);
     }
     final Widget page = switch (node.type) {
+      NodeType.intro when isDone => LessonScreen(
+        passMark: node.passMark,
+        exercises: () => _lesson(node).build(
+          mode,
+          count: vocab ? 12 : (node.items.length * 2).clamp(6, 10),
+          weakIds: ref.read(kanaProgressProvider).weakIds,
+        ),
+      ),
       NodeType.intro => LessonIntroScreen(
         items: node.items,
         lesson: _lesson(node),
