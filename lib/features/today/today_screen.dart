@@ -571,23 +571,28 @@ class _UnitPath extends StatelessWidget {
                   final state = stateOf(node);
                   final title = _nodeTitle(l10n, node);
                   final dx = _wave[i % _wave.length] * maxOffset;
+                  // Shift by layout, not Transform.translate: a translated
+                  // node is hit-tested within its untranslated bounds, so a
+                  // far-shifted node (3rd, 7th, …) could not be tapped.
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpace.s),
-                    child: Transform.translate(
-                      offset: Offset(dx, 0),
-                      child: _PathNodeButton(
-                        key: state == NodeState.current ? currentKey : null,
-                        node: node,
-                        state: state,
-                        label: switch (state) {
-                          NodeState.done => l10n.nodeDoneLabel(title),
-                          NodeState.locked => l10n.nodeLockedLabel(title),
-                          NodeState.current || NodeState.open => title,
-                        },
-                        color: color,
-                        showStartTag: state == NodeState.current && selected != node.id,
-                        onTap: () => onTapNode(node),
-                      ),
+                    padding: EdgeInsets.only(
+                      top: AppSpace.s,
+                      bottom: AppSpace.s,
+                      left: math.max(0, 2 * dx),
+                      right: math.max(0, -2 * dx),
+                    ),
+                    child: _PathNodeButton(
+                      key: state == NodeState.current ? currentKey : null,
+                      node: node,
+                      state: state,
+                      label: switch (state) {
+                        NodeState.done => l10n.nodeDoneLabel(title),
+                        NodeState.locked => l10n.nodeLockedLabel(title),
+                        NodeState.current || NodeState.open => title,
+                      },
+                      color: color,
+                      showStartTag: state == NodeState.current && selected != node.id,
+                      onTap: () => onTapNode(node),
                     ),
                   );
                 },
