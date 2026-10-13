@@ -573,11 +573,24 @@ class UserDb extends _$UserDb {
         (rows) => {for (final r in rows) r.itemId},
       );
 
+  /// Cards of [types] (or, with [exceptTypes], of every other type); all
+  /// cards when [types] is null.
+  Expression<bool> _ofTypes(List<String>? types, bool exceptTypes) => types == null
+      ? const Constant(true)
+      : (exceptTypes ? srsCards.cardType.isNotIn(types) : srsCards.cardType.isIn(types));
+
   /// Today's queue: due cards (learning first, then oldest due), then new
   /// cards in the order they were added. [newLeft] / [reviewLeft] are what
-  /// remains of the daily limits; orphans are skipped (PRD F5).
-  Future<List<SrsCard>> queue({required String nowIso, required int newLeft, required int reviewLeft}) async {
-    final live = srsCards.deletedAt.isNull() & srsCards.isOrphan.equals(0);
+  /// remains of the daily limits; orphans are skipped (PRD F5). [types] and
+  /// [exceptTypes] keep one language's cards.
+  Future<List<SrsCard>> queue({
+    required String nowIso,
+    required int newLeft,
+    required int reviewLeft,
+    List<String>? types,
+    bool exceptTypes = false,
+  }) async {
+    final live = srsCards.deletedAt.isNull() & srsCards.isOrphan.equals(0) & _ofTypes(types, exceptTypes);
     final due =
         await (select(srsCards)
               ..where((t) => live & t.state.equals('new').not() & t.dueAt.isSmallerOrEqualValue(nowIso))
@@ -598,11 +611,12 @@ class UserDb extends _$UserDb {
     return [...due, ...fresh];
   }
 
-  /// Cards due by [nowIso] plus new cards (for badges), ignoring limits.
-  Stream<({int due, int fresh})> watchCardCounts(String nowIso) {
+  /// Cards due by [nowIso] plus new cards (for badges), ignoring limits;
+  /// [types] and [exceptTypes] as in [queue].
+  Stream<({int due, int fresh})> watchCardCounts(String nowIso, {List<String>? types, bool exceptTypes = false}) {
     final count = srsCards.id.count();
     final isNew = srsCards.state.equals('new');
-    final live = srsCards.deletedAt.isNull() & srsCards.isOrphan.equals(0);
+    final live = srsCards.deletedAt.isNull() & srsCards.isOrphan.equals(0) & _ofTypes(types, exceptTypes);
     final dueQ = selectOnly(srsCards)
       ..addColumns([count])
       ..where(live & isNew.not() & srsCards.dueAt.isSmallerOrEqualValue(nowIso));

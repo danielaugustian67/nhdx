@@ -23,6 +23,7 @@ import '../kana/widgets/ink_painter.dart';
 import '../kana/widgets/stroke_animation.dart';
 import '../kana/writing/stroke_scorer.dart';
 import 'lesson.dart';
+import 'study_language.dart';
 
 /// One lesson of mixed exercises (ui-design §5.2): multiple choice, writing,
 /// spelling a dictionary word with kana tiles, reading one in romaji. Every
@@ -107,6 +108,7 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
     if (_index >= _items.length) {
       return Scaffold(
         body: GameResultView(
+          korean: _items.any((e) => e.items.any(isKoreanItem)),
           xp: _xp,
           accuracy: _items.isEmpty ? 0 : _correct / _items.length,
           weak: _weak.toList(),
@@ -507,6 +509,7 @@ class _BuildViewState extends State<_BuildView> {
     final script = switch (ex.script) {
       'katakana' => l10n.katakana,
       'kanji' => l10n.trackKanji,
+      'hangul' => l10n.hangul,
       _ => l10n.hiragana,
     };
     // Kana course: romaji prompt. Kanji course: the kana reading.
@@ -662,7 +665,15 @@ class _ReadViewState extends State<_ReadView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(ex.fromMeaning ? l10n.exRecall : l10n.exRead, style: AppText.title2.copyWith(color: c.ink)),
+        Text(
+          switch ((ex.fromMeaning, ex.word.isKorean)) {
+            (true, false) => l10n.exRecall,
+            (true, true) => l10n.exRecallKorean,
+            (false, false) => l10n.exRead,
+            (false, true) => l10n.exReadKorean,
+          },
+          style: AppText.title2.copyWith(color: c.ink),
+        ),
         const Spacer(),
         if (ex.fromMeaning)
           Text(
@@ -700,7 +711,7 @@ class _ReadViewState extends State<_ReadView> {
           textAlign: TextAlign.center,
           textInputAction: TextInputAction.done,
           style: AppText.title1.copyWith(color: c.ink),
-          decoration: InputDecoration(hintText: l10n.romajiHint),
+          decoration: InputDecoration(hintText: ex.word.isKorean ? l10n.romajaHint : l10n.romajiHint),
           onChanged: (_) => setState(() {}),
           onSubmitted: (_) => _check(),
         ),

@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
-import '../../core/database/providers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
@@ -23,6 +22,7 @@ import '../learn/lesson.dart';
 import '../learn/lesson_intro_screen.dart';
 import '../learn/lesson_screen.dart';
 import '../learn/path_providers.dart';
+import '../learn/study_language.dart';
 import '../learn/vocab_path.dart';
 import '../search/quick_search.dart';
 import '../srs/review_screen.dart';
@@ -59,6 +59,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     node,
     words: ref.read(lessonWordsProvider).value ?? const <DictWord>[],
     allKana: ref.read(allKanaProvider).value ?? const <Kana>[],
+    koWords: ref.read(koDictWordsProvider).value ?? const <DictWord>[],
   );
 
   void _selectTrack(LearnTrack track) {
@@ -68,6 +69,16 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       _selected = null;
       _scrolled = false;
     });
+  }
+
+  Future<void> _pickLanguage(StudyLanguage current) async {
+    final picked = await showModalBottomSheet<StudyLanguage>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (_) => _LanguageSheet(current: current),
+    );
+    if (picked != null && picked != current) selectStudyLanguage(ref, picked);
   }
 
   Future<void> _start(PathNode node, LessonMode mode) async {
@@ -124,16 +135,9 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     ).push<bool>(MaterialPageRoute(builder: (_) => page, fullscreenDialog: true));
     if (done == true) {
       ref.read(pathProgressProvider.notifier).complete(node.id);
-      // Kana, kanji and words met in a passed lesson join the daily review
-      // (PRD F6, F7).
-      if (node.type == NodeType.intro && vocab) {
-        final words = [for (final w in node.items.cast<VocabWord>()) (id: w.id, label: w.literal)];
-        writeUserDb(ref.read(userDbProvider.future), (db) => addWordCards(db, words));
-      } else if (node.type == NodeType.intro && kanji) {
-        addKanjiCards(ref, node.items.map((k) => k.literal));
-      } else if (node.type == NodeType.intro) {
-        addKanaCards(ref, node.items.map((k) => k.literal));
-      }
+      // Kana, kanji, Hangul and words met in a passed lesson join the daily
+      // review (PRD F6, F7).
+      if (node.type == NodeType.intro) addLearnedCards(ref, node.items);
     }
   }
 
@@ -164,15 +168,24 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       if (_following) WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent());
     });
     final track = ref.watch(learnTrackProvider);
+    // Another language (its setting arrives a moment after the pick) opens
+    // its course at the current lesson too.
+    ref.listen(learnTrackProvider, (previous, next) {
+      if (previous?.language == next.language) return;
+      _selected = null;
+      _scrolled = false;
+    });
     final path = ref.watch(activePathProvider);
     final units = path.value ?? const <PathUnit>[];
     final done = ref.watch(pathProgressProvider);
     final xp = ref.watch(kanaProgressProvider.select((p) => p.xp));
+    final language = ref.watch(studyLanguageProvider).value ?? StudyLanguage.ja;
 
     // Load dictionary words and kana early; the bubble enables "Ketik" once
     // they exist, and kanji words need the hiragana for okurigana.
     ref.watch(lessonWordsProvider);
     ref.watch(allKanaProvider);
+    ref.watch(koDictWordsProvider);
 
     // Wait until the path of the chosen course has settled; while switching,
     // the previous course's units are still shown and would be scrolled to.
@@ -182,21 +195,32 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent());
     }
 
+    final fabShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.control),
+      side: BorderSide(color: c.line),
+    );
     return Scaffold(
-      // Hafalan Bebas: any kana, kanji or words as flashcards, no rules. The
-      // top bar has no room left for it on a narrow phone.
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'free-study',
-        elevation: 2,
-        onPressed: _freeStudy,
-        backgroundColor: c.surfaceHigh,
-        foregroundColor: c.ink,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.control),
-          side: BorderSide(color: c.line),
+      // The language being learned (bottom left) and Hafalan Bebas: any kana,
+      // kanji or words as flashcards, no rules (bottom right). The top bar
+      // has no room left for them on a narrow phone.
+      floatingActionButton: SizedBox(
+        width: MediaQuery.sizeOf(context).width - 2 * kFloatingActionButtonMargin,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _LanguageButton(language: language, shape: fabShape, onTap: () => _pickLanguage(language)),
+            FloatingActionButton.extended(
+              heroTag: 'free-study',
+              elevation: 2,
+              onPressed: _freeStudy,
+              backgroundColor: c.surfaceHigh,
+              foregroundColor: c.ink,
+              shape: fabShape,
+              icon: const Icon(Icons.psychology_rounded),
+              label: Text(AppLocalizations.of(context).freeStudy),
+            ),
+          ],
         ),
-        icon: const Icon(Icons.psychology_rounded),
-        label: Text(AppLocalizations.of(context).freeStudy),
       ),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
@@ -382,7 +406,16 @@ class _TrackSwitch extends StatelessWidget {
   static String _label(AppLocalizations l10n, LearnTrack t) => switch (t) {
     LearnTrack.kana => l10n.trackKana,
     LearnTrack.kanji => l10n.trackKanji,
-    LearnTrack.vocab => l10n.trackVocab,
+    LearnTrack.vocab || LearnTrack.koVocab => l10n.trackVocab,
+    LearnTrack.hangul => l10n.trackHangul,
+  };
+
+  static const _glyphs = {
+    LearnTrack.kana: 'あ',
+    LearnTrack.kanji: '漢',
+    LearnTrack.vocab: '語',
+    LearnTrack.hangul: '한',
+    LearnTrack.koVocab: '말',
   };
 
   /// Natural width of the switch (border included).
@@ -399,7 +432,7 @@ class _TrackSwitch extends StatelessWidget {
       selected = math.max(AppSizes.minTap, 2 * _pad + scaler.scale(_glyphSize) + _gap + label.width);
       label.dispose();
     }
-    return 2 * glyphOnly + selected + 2 * _inset + 2;
+    return (LearnTrack.of(track.language).length - 1) * glyphOnly + selected + 2 * _inset + 2;
   }
 
   @override
@@ -471,7 +504,7 @@ class _TrackSwitch extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [segment(LearnTrack.kana, 'あ'), segment(LearnTrack.kanji, '漢'), segment(LearnTrack.vocab, '語')],
+        children: [for (final t in LearnTrack.of(track.language)) segment(t, _glyphs[t]!)],
       ),
     );
   }
@@ -496,6 +529,8 @@ class _ScriptHeader extends StatelessWidget {
               'hiragana' => l10n.hiragana,
               'katakana' => l10n.katakana,
               'vocab' => l10n.vocabLevel(unit.jlpt ?? 5),
+              'hangul' => l10n.hangul,
+              'ko_vocab' => l10n.koreanVocab,
               _ => l10n.kanjiLevel(unit.jlpt ?? 5),
             }, style: AppText.label.copyWith(color: c.inkMuted)),
           ),
@@ -512,6 +547,8 @@ class _UnitBanner extends StatelessWidget {
   final Color color;
 
   String _title(AppLocalizations l10n) {
+    // Korean units: their name from content.db.
+    if (unit.title case final title?) return title.of(l10n.localeName);
     // Vocabulary units: their first words, "人  日本  行く".
     if (unit.script == 'vocab') return unit.introduced.take(3).map((w) => w.literal).join('  ');
     // Kanji units without a theme (N3 to N1): their first kanji.
@@ -648,7 +685,8 @@ class _UnitPath extends StatelessWidget {
   static String _nodeTitle(AppLocalizations l10n, PathNode node) => switch (node.type) {
     NodeType.intro when node.items.firstOrNull is VocabWord => l10n.nodeWords(
       node.items.length,
-      '${node.items.take(3).map((w) => w.literal).join('、')}…',
+      // Korean is written with spaces and Latin commas.
+      '${node.items.take(3).map((w) => w.literal).join(isKoreanItem(node.items.first) ? ', ' : '、')}…',
     ),
     NodeType.intro => l10n.nodeIntro(node.items.map((k) => k.literal).join(' ')),
     NodeType.write => l10n.nodeWrite,
@@ -1032,4 +1070,68 @@ class _RevealOnShowState extends State<_RevealOnShow> {
 
   @override
   Widget build(BuildContext context) => widget.child;
+}
+
+/// The flag of the language being learned; opens [_LanguageSheet].
+class _LanguageButton extends StatelessWidget {
+  const _LanguageButton({required this.language, required this.shape, required this.onTap});
+  final StudyLanguage language;
+  final ShapeBorder shape;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l10n = AppLocalizations.of(context);
+    return FloatingActionButton(
+      heroTag: 'study-language',
+      elevation: 2,
+      tooltip: '${l10n.switchLanguage}: ${studyLanguageName(l10n, language)}',
+      onPressed: onTap,
+      backgroundColor: c.surfaceHigh,
+      shape: shape,
+      child: Text(language.flag, style: const TextStyle(fontSize: 24)),
+    );
+  }
+}
+
+/// Japanese or Korean; pops the language picked.
+class _LanguageSheet extends StatelessWidget {
+  const _LanguageSheet({required this.current});
+  final StudyLanguage current;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppSpace.screen, 0, AppSpace.screen, AppSpace.l),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l10n.studyLanguage, style: AppText.title2.copyWith(color: c.ink)),
+          const SizedBox(height: AppSpace.xs),
+          Text(l10n.studyLanguageNote, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
+          const SizedBox(height: AppSpace.m),
+          for (final l in StudyLanguage.values)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Text(l.flag, style: const TextStyle(fontSize: 28)),
+              title: Text(
+                studyLanguageName(l10n, l),
+                style: AppText.body.copyWith(color: c.ink, fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                l == StudyLanguage.ja ? l10n.languageJapaneseBody : l10n.languageKoreanBody,
+                style: AppText.bodySmall.copyWith(color: c.inkMuted),
+              ),
+              trailing: l == current ? Icon(Icons.check_circle_rounded, color: c.primaryText) : null,
+              selected: l == current,
+              onTap: () => Navigator.pop(context, l),
+            ),
+        ],
+      ),
+    );
+  }
 }

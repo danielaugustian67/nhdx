@@ -18,6 +18,7 @@ import '../../l10n/app_localizations.dart';
 import '../kana/widgets/stroke_animation.dart';
 import '../learn/path_providers.dart';
 import '../learn/speech_text.dart';
+import '../learn/study_language.dart';
 import '../learn/vocab_path.dart';
 import '../srs/srs_providers.dart';
 import 'free_study_providers.dart';
@@ -88,11 +89,7 @@ class _FreeStudySessionScreenState extends ConsumerState<FreeStudySessionScreen>
   });
 
   void _addToReview() {
-    final items = _notYet;
-    final words = [for (final w in items.whereType<VocabWord>()) (id: w.id, label: w.literal)];
-    if (words.isNotEmpty) writeUserDb(ref.read(userDbProvider.future), (db) => addWordCards(db, words));
-    addKanjiCards(ref, items.whereType<Kanji>().map((k) => k.literal));
-    addKanaCards(ref, items.whereType<Kana>().map((k) => k.literal));
+    addLearnedCards(ref, _notYet);
     setState(() => _added = true);
   }
 
@@ -248,7 +245,7 @@ class _Face extends ConsumerWidget {
       final (prompt, ask) = switch (item) {
         Kana k => (l10n.freeStudyRecallReading, k.romaji),
         Kanji k => (l10n.freeStudyRecallKanji, k.meanings.take(3).join(', ')),
-        VocabWord w => (l10n.recallJapanese, w.word.gloss),
+        VocabWord w => (w.word.isKorean ? l10n.recallKorean : l10n.recallJapanese, w.word.gloss),
         _ => (l10n.recallJapanese, literal),
       };
       return card([
@@ -284,7 +281,8 @@ class _Face extends ConsumerWidget {
 
     final content = ref.watch(contentProvider).value;
     final dict = ref.watch(dictionaryProvider).value;
-    Widget strokes() => content == null || literal.length > 2
+    // Hangul has no stroke data.
+    Widget strokes() => content == null || literal.length > 2 || content.strokes(literal.characters.first).isEmpty
         ? const SizedBox.shrink()
         : Padding(
             padding: const EdgeInsets.only(top: AppSpace.l),
@@ -381,7 +379,7 @@ class _Face extends ConsumerWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(w.word.romaji, style: AppText.body.copyWith(color: c.inkMuted)),
-            LevelBadge(w.word.jlpt),
+            if (w.word.jlpt > 0) LevelBadge(w.word.jlpt),
             SpeakButton(speechText(w), size: 24),
           ],
         ),
@@ -446,7 +444,12 @@ class _Summary extends StatelessWidget {
       children: [
         const Spacer(),
         // 済 all memorised · 習 some still to practise.
-        Center(child: HankoStamp(character: notYet == 0 ? '済' : '習')),
+        Center(
+          child: Consumer(
+            builder: (context, ref, _) =>
+                HankoStamp(character: resultStamp(ref.watch(studyLanguageProvider).value, passed: notYet == 0)),
+          ),
+        ),
         const SizedBox(height: AppSpace.xl),
         Text(
           notYet == 0 ? l10n.freeStudyAllKnown : l10n.sessionDone,

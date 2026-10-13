@@ -10,6 +10,7 @@ import 'package:nihondx/core/database/providers.dart';
 import 'package:nihondx/core/database/user_db.dart';
 import 'package:nihondx/core/theme/app_theme.dart';
 import 'package:nihondx/features/learn/path_providers.dart';
+import 'package:nihondx/features/learn/study_language.dart';
 import 'package:nihondx/features/onboarding/learning_level.dart';
 import 'package:nihondx/features/onboarding/onboarding_screen.dart';
 import 'package:nihondx/features/progress/progress_providers.dart';
@@ -67,6 +68,21 @@ void main() {
     expect(await container.read(onboardingNeededProvider.future), isFalse);
   });
 
+  test('a chosen language ends onboarding without a level', () async {
+    final db = UserDb.memory();
+    final container = ProviderContainer(overrides: [userDbProvider.overrideWith((ref) async => db)]);
+    addTearDown(() async {
+      container.dispose();
+      await db.close();
+    });
+    final sub = container.listen(onboardingNeededProvider, (_, _) {});
+    addTearDown(sub.close);
+    expect(await container.read(onboardingNeededProvider.future), isTrue);
+    await db.setSetting(StudyLanguage.settingKey, 'ko');
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    expect(await container.read(onboardingNeededProvider.future), isFalse);
+  });
+
   Future<UserDb> pump(WidgetTester tester, ReminderService service, Widget home) async {
     tester.view.physicalSize = const Size(390, 1600);
     tester.view.devicePixelRatio = 1;
@@ -107,6 +123,15 @@ void main() {
     final db = await pump(tester, service, app(const OnboardingScreen()));
     final next = find.text('Lanjut');
 
+    expect(find.text('Mau belajar bahasa apa?'), findsOneWidget);
+    await tester.tap(next);
+    await settle(tester);
+    expect(find.text('Mau belajar bahasa apa?'), findsOneWidget, reason: 'nothing chosen yet');
+    await tester.tap(find.text('Bahasa Jepang'));
+    await tester.pump();
+    await tester.tap(next);
+    await settle(tester);
+
     expect(find.text('Kamu di level mana?'), findsOneWidget);
     await tester.tap(next);
     await settle(tester);
@@ -135,6 +160,7 @@ void main() {
     expect(await tester.runAsync(() => db.setting('new_per_day')), '20', reason: 'new cards follow the goal');
     expect(await tester.runAsync(() => db.setting(ReminderTime.settingKey)), 'off');
     expect(await tester.runAsync(() => db.setting(LearningLevel.settingKey)), 'n5');
+    expect(await tester.runAsync(() => db.setting(StudyLanguage.settingKey)), 'ja');
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 10));
@@ -148,6 +174,10 @@ void main() {
     expect(find.byType(OnboardingScreen), findsOneWidget);
     expect(find.byType(AppTabBar), findsNothing);
 
+    await tester.tap(find.text('Bahasa Jepang'));
+    await tester.pump();
+    await tester.tap(find.text('Lanjut'));
+    await settle(tester);
     await tester.tap(find.text('Baru mulai dari nol'));
     await tester.pump();
     await tester.tap(find.text('Lanjut'));
@@ -164,6 +194,29 @@ void main() {
     expect(await tester.runAsync(() => db.setting(LearningLevel.settingKey)), 'pre_n5');
     expect(find.byType(OnboardingScreen), findsNothing);
     expect(find.byType(AppTabBar), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 10));
+  });
+
+  testWidgets('Korean skips the level and starts with Hangul', (tester) async {
+    final service = _FakeReminders(granted: true);
+    final db = await pump(tester, service, app(const OnboardingScreen()));
+    await tester.tap(find.text('Bahasa Korea'));
+    await tester.pump();
+    await tester.tap(find.text('Lanjut'));
+    await settle(tester);
+
+    expect(find.text('Kamu di level mana?'), findsNothing);
+    expect(find.text('Berapa lama belajar setiap hari?'), findsOneWidget);
+    await tester.tap(find.text('Lanjut'));
+    await settle(tester);
+    await tester.tap(find.text('Lewati'));
+    await settle(tester);
+
+    expect(await tester.runAsync(() => db.setting(StudyLanguage.settingKey)), 'ko');
+    expect(await tester.runAsync(() => db.setting(LearningLevel.settingKey)), isNull);
+    expect(await tester.runAsync(() => db.setting('device.learn_track.ko')), 'hangul');
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 10));

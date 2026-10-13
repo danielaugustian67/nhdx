@@ -14,6 +14,7 @@ import '../../core/widgets/game_card.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_service.dart';
 import '../auth/delete_account_screen.dart';
+import '../learn/study_language.dart';
 import '../onboarding/learning_level.dart';
 import '../progress/about_screen.dart';
 import '../progress/progress_providers.dart';
@@ -40,6 +41,7 @@ class SettingsSection extends ConsumerWidget {
     final dayStart = ref.watch(dayStartHourProvider).value ?? defaultDayStartHour;
     final look = ref.watch(appearanceProvider).value ?? defaultAppearance;
     final level = ref.watch(learningLevelProvider).value;
+    final studying = ref.watch(studyLanguageProvider).value ?? StudyLanguage.ja;
 
     String goalName(DailyGoal g) => switch (g) {
       DailyGoal.relaxed => l10n.goalRelaxed,
@@ -76,6 +78,25 @@ class SettingsSection extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _GroupLabel(l10n.settingsLearning),
+          _SettingTile(
+            title: l10n.studyLanguage,
+            value: '${studying.flag} ${studyLanguageName(l10n, studying)}',
+            onTap: () => _pick<StudyLanguage>(
+              context,
+              title: l10n.studyLanguage,
+              note: l10n.studyLanguageNote,
+              selected: studying,
+              options: [
+                for (final l in StudyLanguage.values)
+                  (
+                    l,
+                    '${l.flag} ${studyLanguageName(l10n, l)}',
+                    l == StudyLanguage.ja ? l10n.languageJapaneseBody : l10n.languageKoreanBody,
+                  ),
+              ],
+              onSelected: (v) => selectStudyLanguage(ref, v),
+            ),
+          ),
           _SettingTile(
             title: l10n.learningLevel,
             value: level == null ? l10n.levelNotChosen : learningLevelLabel(l10n, level),

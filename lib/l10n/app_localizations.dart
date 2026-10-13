@@ -2911,6 +2911,138 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Hanya berlaku di mode gelap.'**
   String get themePureBlackLight;
+
+  /// No description provided for @studyLanguage.
+  ///
+  /// In id, this message translates to:
+  /// **'Bahasa yang dipelajari'**
+  String get studyLanguage;
+
+  /// No description provided for @studyLanguageNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Kemajuan tiap bahasa disimpan terpisah, jadi kamu bisa bolak-balik kapan saja.'**
+  String get studyLanguageNote;
+
+  /// No description provided for @languageJapanese.
+  ///
+  /// In id, this message translates to:
+  /// **'Bahasa Jepang'**
+  String get languageJapanese;
+
+  /// No description provided for @languageKorean.
+  ///
+  /// In id, this message translates to:
+  /// **'Bahasa Korea'**
+  String get languageKorean;
+
+  /// No description provided for @languageJapaneseBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Hiragana, katakana, kanji, kosakata JLPT dan tata bahasa'**
+  String get languageJapaneseBody;
+
+  /// No description provided for @languageKoreanBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Hangul dan kosakata dasar (TOPIK I)'**
+  String get languageKoreanBody;
+
+  /// No description provided for @languageQuestion.
+  ///
+  /// In id, this message translates to:
+  /// **'Mau belajar bahasa apa?'**
+  String get languageQuestion;
+
+  /// No description provided for @languageQuestionBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Bisa diganti kapan saja lewat tombol bendera di Hari ini atau di Pengaturan.'**
+  String get languageQuestionBody;
+
+  /// No description provided for @switchLanguage.
+  ///
+  /// In id, this message translates to:
+  /// **'Ganti bahasa'**
+  String get switchLanguage;
+
+  /// No description provided for @hangul.
+  ///
+  /// In id, this message translates to:
+  /// **'Hangul'**
+  String get hangul;
+
+  /// No description provided for @trackHangul.
+  ///
+  /// In id, this message translates to:
+  /// **'Hangul'**
+  String get trackHangul;
+
+  /// No description provided for @koreanVocab.
+  ///
+  /// In id, this message translates to:
+  /// **'Kosakata Korea'**
+  String get koreanVocab;
+
+  /// No description provided for @hangulVowels.
+  ///
+  /// In id, this message translates to:
+  /// **'Vokal'**
+  String get hangulVowels;
+
+  /// No description provided for @hangulConsonants.
+  ///
+  /// In id, this message translates to:
+  /// **'Konsonan'**
+  String get hangulConsonants;
+
+  /// No description provided for @hangulSyllables.
+  ///
+  /// In id, this message translates to:
+  /// **'Suku kata'**
+  String get hangulSyllables;
+
+  /// No description provided for @hangulTable.
+  ///
+  /// In id, this message translates to:
+  /// **'Tabel Hangul'**
+  String get hangulTable;
+
+  /// No description provided for @moduleHangulBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Vokal, konsonan & suku kata, 3 game'**
+  String get moduleHangulBody;
+
+  /// No description provided for @exReadKorean.
+  ///
+  /// In id, this message translates to:
+  /// **'Ketik cara bacanya dalam huruf Latin'**
+  String get exReadKorean;
+
+  /// No description provided for @exRecallKorean.
+  ///
+  /// In id, this message translates to:
+  /// **'Ketik kata Koreanya dalam huruf Latin'**
+  String get exRecallKorean;
+
+  /// No description provided for @romajaHint.
+  ///
+  /// In id, this message translates to:
+  /// **'romanisasi'**
+  String get romajaHint;
+
+  /// No description provided for @recallKorean.
+  ///
+  /// In id, this message translates to:
+  /// **'Apa bahasa Koreanya?'**
+  String get recallKorean;
+
+  /// No description provided for @speechUnavailableKorean.
+  ///
+  /// In id, this message translates to:
+  /// **'Suara bahasa Korea belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Korea.'**
+  String get speechUnavailableKorean;
 }
 
 class _AppLocalizationsDelegate

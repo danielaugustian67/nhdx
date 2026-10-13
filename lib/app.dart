@@ -11,6 +11,7 @@ import 'features/auth/auth_service.dart';
 import 'features/auth/sign_in_screen.dart';
 import 'features/collection/collection_screen.dart';
 import 'features/kana/kana_screen.dart';
+import 'features/learn/study_language.dart';
 import 'features/onboarding/learning_level.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/progress/me_screen.dart';
@@ -151,6 +152,7 @@ class _ShellState extends ConsumerState<_Shell> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final shell = widget.shell;
+    final korean = ref.watch(studyLanguageProvider).value == StudyLanguage.ko;
     ref.listen(quickSearchProvider, (_, open) {
       if (open && shell.currentIndex != _dictionaryTab) _select(_dictionaryTab);
     });
@@ -165,7 +167,7 @@ class _ShellState extends ConsumerState<_Shell> {
           // TODO(design): replace Material icons with the chosen line icon set (Phosphor).
           tabs: [
             (icon: const Icon(Icons.circle_outlined), selectedIcon: const Icon(Icons.circle), label: l10n.tabToday),
-            (icon: const _GlyphIcon('あ'), selectedIcon: null, label: l10n.tabKana),
+            (icon: _GlyphIcon(korean ? '한' : 'あ'), selectedIcon: null, label: korean ? l10n.hangul : l10n.tabKana),
             (icon: const Icon(Icons.search), selectedIcon: null, label: l10n.tabDictionary),
             (
               icon: const Icon(Icons.bookmark_border),

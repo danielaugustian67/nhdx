@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/database/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../learn/path_providers.dart';
+import '../learn/study_language.dart';
 
 /// Starting level (PRD F7 → *Pilihan Level Awal*), stored as
 /// `learning_level` and synced. It picks the course on "Hari ini" and where
@@ -61,13 +62,24 @@ final learningLevelProvider = StreamProvider<LearningLevel?>((ref) async* {
   yield* db.watchSetting(LearningLevel.settingKey).map(LearningLevel.parse);
 });
 
-/// A new install without a level and without any learning data starts with
-/// onboarding. Data from before onboarding existed counts as done.
+/// A new install without a language, a level and any learning data starts
+/// with onboarding. Data from before onboarding existed counts as done.
 final onboardingNeededProvider = StreamProvider<bool>((ref) async* {
   final db = await ref.watch(userDbProvider.future);
+  if (await ref.watch(_languageChosenProvider.future)) {
+    yield false;
+    return;
+  }
   yield* db
       .watchSetting(LearningLevel.settingKey)
       .asyncMap((v) async => LearningLevel.parse(v) == null && !await db.hasLearningData());
+});
+
+/// Whether a language to learn was chosen (Japanese learners from before
+/// there was a choice have only a level).
+final _languageChosenProvider = StreamProvider<bool>((ref) async* {
+  final db = await ref.watch(userDbProvider.future);
+  yield* db.watchSetting(StudyLanguage.settingKey).map((v) => v != null).distinct();
 });
 
 /// Saves [level] and opens its course on "Hari ini".

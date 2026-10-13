@@ -9,6 +9,10 @@ Build content.db (PRD §9.B) for v1.0:
 - courses / lessons / lesson_items
                 curated curriculum from content/curriculum/*.json (if present)
 - grammar       grammar points from content/grammar/n*.json (F13), validated
+- hangul, ko_words, ko_groups
+                Korean course: Hangul letters and syllables from
+                content/korean/hangul.json, basic (TOPIK I) words by topic from
+                content/korean/words.json
 - id_redirects, meta
 
 Curriculum file format (one file per course, e.g. content/curriculum/n5.json):
@@ -63,8 +67,9 @@ SOURCES_DIR = ROOT / "sources"
 OUTPUT_DIR = ROOT / "output"
 CURRICULUM_DIR = ROOT.parent / "content" / "curriculum"
 GRAMMAR_DIR = ROOT.parent / "content" / "grammar"
+KOREAN_DIR = ROOT.parent / "content" / "korean"
 
-CONTENT_VERSION = "1.4.0"
+CONTENT_VERSION = "1.5.0"
 
 # (row_group, kana) in gojūon order
 BASIC_ROWS = [
@@ -117,6 +122,29 @@ CREATE TABLE grammar (
   explanation TEXT NOT NULL,         -- JSON {"id": …, "en": …}
   examples TEXT NOT NULL,            -- JSON [{"ja", "kana", "tr": {id, en}, "chunks"?}]
   quiz TEXT NOT NULL                 -- JSON [{"q", "options", "answer", "tr": {id, en}}]
+);
+
+CREATE TABLE hangul (
+  id INTEGER PRIMARY KEY,            -- codepoint (compatibility jamo or syllable)
+  literal TEXT NOT NULL, romaji TEXT NOT NULL,
+  unit TEXT NOT NULL,                -- ko_groups key (kind 'hangul'), one path unit each
+  kind TEXT NOT NULL,                -- vowel|consonant|syllable|final
+  order_no INTEGER NOT NULL
+);
+
+CREATE TABLE ko_words (
+  id INTEGER PRIMARY KEY,            -- 90000000 + crc32(hangul) % 10000000, stable across edits
+  hangul TEXT NOT NULL, romaja TEXT NOT NULL,
+  meaning TEXT NOT NULL,             -- JSON {"id": …, "en": …}
+  topic TEXT NOT NULL,               -- ko_groups key (kind 'words')
+  order_no INTEGER NOT NULL
+);
+
+CREATE TABLE ko_groups (
+  kind TEXT NOT NULL,                -- hangul|words
+  key TEXT NOT NULL, order_no INTEGER NOT NULL,
+  title TEXT NOT NULL,               -- JSON {"id": …, "en": …}
+  PRIMARY KEY (kind, key)
 );
 
 CREATE TABLE id_redirects (item_type TEXT NOT NULL, old_id TEXT NOT NULL, new_id TEXT,
@@ -373,6 +401,94 @@ def load_grammar(conn: sqlite3.Connection) -> tuple[dict[int, int], list[str]]:
     return counts, errors
 
 
+# Revised Romanization of a syllable on its own (no sound changes across
+# syllables): initial, vowel and final jamo in Unicode order.
+_RR_INITIAL = ["g", "kk", "n", "d", "tt", "r", "m", "b", "pp", "s", "ss", "", "j", "jj", "ch", "k", "t", "p", "h"]
+_RR_VOWEL = ["a", "ae", "ya", "yae", "eo", "e", "yeo", "ye", "o", "wa", "wae", "oe", "yo", "u", "wo", "we", "wi",
+             "yu", "eu", "ui", "i"]
+_RR_FINAL = ["", "k", "k", "k", "n", "n", "n", "t", "l", "k", "m", "l", "l", "l", "p", "l", "m", "p", "p", "t", "t",
+             "ng", "t", "t", "k", "t", "p", "t"]
+KO_WORD_ID_BASE = 90_000_000
+
+
+def syllable_romaja(ch: str) -> str:
+    n = ord(ch) - 0xAC00
+    if not 0 <= n < 11172:
+        raise ValueError(f"not a Hangul syllable: {ch}")
+    return _RR_INITIAL[n // 588] + _RR_VOWEL[n % 588 // 28] + _RR_FINAL[n % 28]
+
+
+def ko_word_id(hangul: str) -> int:
+    import zlib
+    return KO_WORD_ID_BASE + zlib.crc32(hangul.encode("utf-8")) % 10_000_000
+
+
+def load_korean(conn: sqlite3.Connection) -> tuple[int, int, list[str]]:
+    """Hangul rows and words inserted, and problems found."""
+    errors: list[str] = []
+    hangul_path, words_path = KOREAN_DIR / "hangul.json", KOREAN_DIR / "words.json"
+    if not hangul_path.exists() or not words_path.exists():
+        return 0, 0, errors
+
+    def dump(v):
+        return json.dumps(v, ensure_ascii=False, separators=(",", ":"))
+
+    def check_title(t, where):
+        if not isinstance(t, dict) or not t.get("id") or not t.get("en"):
+            errors.append(f"{where}: title needs id and en")
+
+    rows: list[tuple] = []
+    seen_romaji: set[str] = set()
+    for unit_no, unit in enumerate(json.loads(hangul_path.read_text(encoding="utf-8"))["units"], 1):
+        key = unit["key"]
+        check_title(unit.get("title"), f"hangul {key}")
+        conn.execute("INSERT INTO ko_groups VALUES ('hangul', ?, ?, ?)", (key, unit_no, dump(unit["title"])))
+        items = [(lit, rom, unit["kind"]) for lit, rom in unit.get("letters", [])]
+        syllable_kind = "final" if unit["kind"] == "final" else "syllable"
+        items += [(ch, syllable_romaja(ch), syllable_kind) for ch in unit.get("syllables", "")]
+        for lit, rom, kind in items:
+            if len(lit) != 1:
+                errors.append(f"hangul {key}: {lit!r} is not one character")
+                continue
+            rows.append((ord(lit), lit, rom, key, kind, len(rows) + 1))
+    ids = [r[0] for r in rows]
+    if len(ids) != len(set(ids)):
+        errors.append("hangul: a letter is listed twice")
+    for lit, rom in {(r[1], r[2]) for r in rows if r[4] not in ("syllable", "final")}:
+        if rom in seen_romaji:
+            errors.append(f"hangul: letters share the romanisation {rom!r}")
+        seen_romaji.add(rom)
+    if not errors:
+        conn.executemany("INSERT INTO hangul VALUES (?, ?, ?, ?, ?, ?)", rows)
+
+    words: list[tuple] = []
+    seen: dict[str, set[str]] = {"hangul": set(), "id": set(), "en": set()}
+    for topic_no, topic in enumerate(json.loads(words_path.read_text(encoding="utf-8"))["topics"], 1):
+        key = topic["key"]
+        check_title(topic.get("title"), f"topic {key}")
+        conn.execute("INSERT INTO ko_groups VALUES ('words', ?, ?, ?)", (key, topic_no, dump(topic["title"])))
+        for w in topic["words"]:
+            if len(w) != 4 or not all(isinstance(v, str) and v for v in w):
+                errors.append(f"topic {key}: {w!r} needs [hangul, romaja, id, en]")
+                continue
+            hangul, romaja, mid, men = w
+            if not re.fullmatch(r"[가-힣 ]+", hangul):
+                errors.append(f"topic {key}: {hangul!r} is not written in Hangul syllables")
+            if not re.fullmatch(r"[a-z' -]+", romaja):
+                errors.append(f"topic {key}: {hangul} romaja {romaja!r} is not lower-case Latin")
+            # Unique spellings and meanings, so a question never has two right answers.
+            for field, value in (("hangul", hangul), ("id", mid), ("en", men)):
+                if value in seen[field]:
+                    errors.append(f"topic {key}: {field} {value!r} is used twice")
+                seen[field].add(value)
+            words.append((ko_word_id(hangul), hangul, romaja, dump({"id": mid, "en": men}), key, len(words) + 1))
+    if len({w[0] for w in words}) != len(words):
+        errors.append("ko_words: two words share an id; change the spelling or the id scheme")
+    if not errors:
+        conn.executemany("INSERT INTO ko_words VALUES (?, ?, ?, ?, ?, ?)", words)
+    return len(rows), len(words), errors
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--with-kanji", action="store_true",
@@ -443,6 +559,11 @@ def main() -> None:
     for m in grammar_errors:
         print(f"  ✗ {m}")
 
+    hangul_rows, ko_words, korean_errors = load_korean(conn)
+    print(f"  ✓ korean: {hangul_rows} hangul, {ko_words} words")
+    for m in korean_errors:
+        print(f"  ✗ {m}")
+
     meta = {
         "content_version": CONTENT_VERSION,
         "build_date": datetime.now(timezone.utc).isoformat(),
@@ -468,7 +589,7 @@ def main() -> None:
     print(f"\n  Output: {db_path} ({db_path.stat().st_size / 1024:.0f} KB), "
           f"{gz_path.name} ({gz_path.stat().st_size / 1024:.0f} KB)")
 
-    if missing or cur["missing_words"] or grammar_errors:
+    if missing or cur["missing_words"] or grammar_errors or korean_errors:
         sys.exit(1)
 
 

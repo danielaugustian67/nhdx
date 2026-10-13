@@ -8,8 +8,10 @@ import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
 import '../kana/kana_providers.dart';
+import '../learn/hangul_path.dart';
 import '../learn/kana_path.dart';
 import '../learn/path_providers.dart';
+import '../learn/study_language.dart';
 import '../learn/vocab_path.dart';
 import '../progress/progress_providers.dart';
 import '../word/word_providers.dart';
@@ -21,11 +23,20 @@ enum StudyKind {
   katakana,
   kanji,
   word,
+  hangul,
+  koWord,
   collection,
   forgotten;
 
   /// Groups come from the path; the others are lists cut into tens.
-  bool get fromPath => index <= word.index;
+  bool get fromPath => this != collection && this != forgotten;
+
+  /// The sources shown while learning [language] (Koleksiku holds
+  /// dictionary words, so Japanese only).
+  static List<StudyKind> of(StudyLanguage language) => switch (language) {
+    StudyLanguage.ja => const [hiragana, katakana, kanji, word, collection, forgotten],
+    StudyLanguage.ko => const [hangul, koWord, forgotten],
+  };
 }
 
 /// One group in the picker: the items of one "Kenali" lesson of the path, or
@@ -70,14 +81,16 @@ final collectionItemsProvider = FutureProvider<List<Glyph>>((ref) async {
   ];
 });
 
-/// Kana, kanji and words of review cards forgotten at least once, most
-/// often forgotten first. A word in both directions counts once, with its
-/// higher lapse count.
+/// Kana, kanji and words (or Hangul and Korean words, while learning
+/// Korean) of review cards forgotten at least once, most often forgotten
+/// first. A word in both directions counts once, with its higher lapse count.
 final forgottenItemsProvider = FutureProvider<List<Glyph>>((ref) async {
   final cards = await ref.watch(liveCardsProvider.future);
+  final korean = await ref.watch(studyLanguageProvider.future) == StudyLanguage.ko;
+  final types = korean ? koreanCardTypes.toSet() : const {'kana', 'kanji', 'word'};
   final lapses = <String, ({String type, String id, int lapses})>{};
   for (final c in cards) {
-    if (c.lapses == 0 || !const {'kana', 'kanji', 'word'}.contains(c.cardType)) continue;
+    if (c.lapses == 0 || !types.contains(c.cardType)) continue;
     final key = '${c.cardType}:${c.itemId}';
     if ((lapses[key]?.lapses ?? 0) < c.lapses) lapses[key] = (type: c.cardType, id: c.itemId, lapses: c.lapses);
   }
@@ -93,6 +106,15 @@ final forgottenItemsProvider = FutureProvider<List<Glyph>>((ref) async {
     if (any('kanji'))
       for (final k in await ref.watch(allKanjiProvider.future)) k.literal: k,
   };
+  final hangul = {
+    if (any('hangul'))
+      for (final k in (await ref.watch(hangulProvider.future)).letters) k.literal: k,
+  };
+  final language = ref.watch(contentLanguageProvider);
+  final koWords = {
+    if (any('ko_word'))
+      for (final w in (await ref.watch(koWordsProvider.future)).words) '${w.id}': koDictWord(w, language),
+  };
   final wordIds = [
     for (final c in sorted)
       if (c.type == 'word') ?int.tryParse(c.id),
@@ -105,6 +127,11 @@ final forgottenItemsProvider = FutureProvider<List<Glyph>>((ref) async {
       ?switch (c.type) {
         'kana' => kana[c.id],
         'kanji' => kanji[c.id],
+        'hangul' => hangul[c.id],
+        'ko_word' => switch (koWords[c.id]) {
+          final w? => VocabWord(w),
+          null => null,
+        },
         _ => switch (briefs[int.tryParse(c.id)]) {
           final b? => VocabWord(_dictWord(b)),
           null => null,
@@ -113,10 +140,13 @@ final forgottenItemsProvider = FutureProvider<List<Glyph>>((ref) async {
   ];
 });
 
-/// Where an item's "hafal" mark is stored: "kana:あ", "kanji:休", "word:1234".
+/// Where an item's "hafal" mark is stored: "kana:あ", "kanji:休", "word:1234",
+/// "hangul:ㄱ", "ko_word:90001234".
 String studyKey(Glyph g) => switch (g) {
+  VocabWord(:final word) when word.isKorean => 'ko_word:${g.id}',
   VocabWord() => 'word:${g.id}',
   Kanji() => 'kanji:${g.literal}',
+  Kana(isHangul: true) => 'hangul:${g.literal}',
   _ => 'kana:${g.literal}',
 };
 
@@ -142,6 +172,8 @@ final studyGroupsProvider = Provider.family<AsyncValue<List<StudyGroup>>, StudyK
     _ => switch (kind) {
       StudyKind.kanji => ref.watch(kanjiPathProvider),
       StudyKind.word => ref.watch(vocabPathProvider),
+      StudyKind.hangul => ref.watch(hangulPathProvider),
+      StudyKind.koWord => ref.watch(koVocabPathProvider),
       _ => ref.watch(kanaPathProvider),
     }.whenData((units) => studyGroups(units, kind)),
   },

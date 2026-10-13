@@ -1,5 +1,7 @@
 import 'package:sqlite3/sqlite3.dart';
 
+import 'content_db.dart';
+
 /// Read-only access to `dictionary.db` (PRD §9.A).
 ///
 /// SQLite is bundled by `package:sqlite3` (build hooks), not taken from the
@@ -337,6 +339,10 @@ class DictWord {
 
   /// First meaning, at most two glosses.
   final String gloss;
+
+  /// A word of the Korean course dressed as a dictionary word: [kana] is
+  /// the Hangul, [romaji] the romanization, [jlpt] 0.
+  bool get isKorean => id >= koWordIdBase;
 
   @override
   String toString() => 'DictWord($kana)';

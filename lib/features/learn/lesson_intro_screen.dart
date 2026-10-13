@@ -74,7 +74,8 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
 
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
-    final content = vocab ? null : ref.watch(contentProvider).value;
+    // Stroke order for kana and kanji; Hangul has no stroke data.
+    final content = vocab || (item is Kana && item.isHangul) ? null : ref.watch(contentProvider).value;
     // Loaded up front so the first card is read aloud straight away.
     ref.watch(speechAutoplayProvider);
     final last = _index == widget.items.length - 1;
@@ -202,7 +203,7 @@ class _WordInfo extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(word.romaji, style: AppText.body.copyWith(color: c.inkMuted)),
-            LevelBadge(word.jlpt),
+            if (word.jlpt > 0) LevelBadge(word.jlpt),
           ],
         ),
         const SizedBox(height: AppSpace.l),

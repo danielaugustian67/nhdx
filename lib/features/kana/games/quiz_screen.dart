@@ -10,6 +10,7 @@ import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/xp_chip.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../learn/study_language.dart';
 import '../kana_providers.dart';
 import '../widgets/answer_option.dart';
 import 'game_result_view.dart';
@@ -113,6 +114,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     if (_index >= _questions.length) {
       return Scaffold(
         body: GameResultView(
+          korean: widget.pool.any(isKoreanItem),
           xp: _xp,
           accuracy: _correct / _questions.length,
           weak: _wrong.toList(),

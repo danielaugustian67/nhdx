@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../audio/speech.dart';
+import '../text/hangul.dart';
 import '../theme/app_colors.dart';
 
-/// 🔊 that reads [text] aloud. Without a Japanese voice on the phone it says
-/// where to install one.
+/// 🔊 that reads [text] aloud. Without a Japanese (or, for Hangul, Korean)
+/// voice on the phone it says where to install one.
 class SpeakButton extends ConsumerWidget {
   const SpeakButton(this.text, {super.key, this.size = 28});
 
@@ -22,9 +23,10 @@ class SpeakButton extends ConsumerWidget {
       onPressed: () async {
         final messenger = ScaffoldMessenger.of(context);
         if (!await ref.read(speechProvider).speak(text)) {
+          final message = hasHangul(text) ? l10n.speechUnavailableKorean : l10n.speechUnavailable;
           messenger
             ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(l10n.speechUnavailable)));
+            ..showSnackBar(SnackBar(content: Text(message)));
         }
       },
     );

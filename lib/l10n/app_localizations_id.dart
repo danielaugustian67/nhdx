@@ -1676,4 +1676,74 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get themePureBlackLight => 'Hanya berlaku di mode gelap.';
+
+  @override
+  String get studyLanguage => 'Bahasa yang dipelajari';
+
+  @override
+  String get studyLanguageNote =>
+      'Kemajuan tiap bahasa disimpan terpisah, jadi kamu bisa bolak-balik kapan saja.';
+
+  @override
+  String get languageJapanese => 'Bahasa Jepang';
+
+  @override
+  String get languageKorean => 'Bahasa Korea';
+
+  @override
+  String get languageJapaneseBody =>
+      'Hiragana, katakana, kanji, kosakata JLPT dan tata bahasa';
+
+  @override
+  String get languageKoreanBody => 'Hangul dan kosakata dasar (TOPIK I)';
+
+  @override
+  String get languageQuestion => 'Mau belajar bahasa apa?';
+
+  @override
+  String get languageQuestionBody =>
+      'Bisa diganti kapan saja lewat tombol bendera di Hari ini atau di Pengaturan.';
+
+  @override
+  String get switchLanguage => 'Ganti bahasa';
+
+  @override
+  String get hangul => 'Hangul';
+
+  @override
+  String get trackHangul => 'Hangul';
+
+  @override
+  String get koreanVocab => 'Kosakata Korea';
+
+  @override
+  String get hangulVowels => 'Vokal';
+
+  @override
+  String get hangulConsonants => 'Konsonan';
+
+  @override
+  String get hangulSyllables => 'Suku kata';
+
+  @override
+  String get hangulTable => 'Tabel Hangul';
+
+  @override
+  String get moduleHangulBody => 'Vokal, konsonan & suku kata, 3 game';
+
+  @override
+  String get exReadKorean => 'Ketik cara bacanya dalam huruf Latin';
+
+  @override
+  String get exRecallKorean => 'Ketik kata Koreanya dalam huruf Latin';
+
+  @override
+  String get romajaHint => 'romanisasi';
+
+  @override
+  String get recallKorean => 'Apa bahasa Koreanya?';
+
+  @override
+  String get speechUnavailableKorean =>
+      'Suara bahasa Korea belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Korea.';
 }

@@ -8,6 +8,7 @@ import '../../../core/widgets/chunky_button.dart';
 import '../../../core/widgets/game_card.dart';
 import '../../../core/widgets/hanko_stamp.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../learn/study_language.dart';
 
 /// End-of-game screen shared by all kana games (ui-design §5.7): glowing
 /// stamp, XP, accuracy, kana to practice, "Main lagi" / "Selesai".
@@ -19,6 +20,7 @@ class GameResultView extends StatelessWidget {
     this.detail,
     this.weak = const [],
     this.passMark,
+    this.korean = false,
     required this.onPlayAgain,
   });
 
@@ -34,6 +36,9 @@ class GameResultView extends StatelessWidget {
   /// Extra line, e.g. "14 langkah" or "Combo ×12".
   final String? detail;
   final List<Glyph> weak;
+
+  /// A Hangul game or Korean lesson: the stamp is in Korean.
+  final bool korean;
   final VoidCallback onPlayAgain;
 
   @override
@@ -49,7 +54,7 @@ class GameResultView extends StatelessWidget {
           children: [
             const Spacer(),
             // 済 "done" when passed, 習 "practice" when the lesson must be retried.
-            HankoStamp(character: passed ? '済' : '習'),
+            HankoStamp(character: resultStamp(korean ? StudyLanguage.ko : StudyLanguage.ja, passed: passed)),
             const SizedBox(height: AppSpace.xl),
             Text(passed ? l10n.sessionDone : l10n.almostThere, style: AppText.title1.copyWith(color: c.ink)),
             const SizedBox(height: AppSpace.l),

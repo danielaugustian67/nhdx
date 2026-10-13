@@ -62,13 +62,14 @@ class PathUnit {
     this.rows = const [],
     this.theme,
     this.jlpt,
+    this.title,
     required this.nodes,
   });
 
   final String id;
   final int number;
 
-  /// 'hiragana' | 'katakana' | 'kanji'
+  /// 'hiragana' | 'katakana' | 'kanji' | 'vocab' | 'hangul' | 'ko_vocab'
   final String script;
 
   /// Gojūon rows taught in this unit (a, ka, …), used for the title.
@@ -80,6 +81,9 @@ class PathUnit {
 
   /// Kanji course: 5 = N5, 4 = N4.
   final int? jlpt;
+
+  /// Korean courses: the unit or topic name from content.db.
+  final Localized? title;
   final List<PathNode> nodes;
 
   /// Everything this unit introduces, in order.

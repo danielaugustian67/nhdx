@@ -8,6 +8,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../learn/study_language.dart';
 import '../learn/vocab_path.dart';
 import 'free_study_providers.dart';
 import 'free_study_session_screen.dart';
@@ -27,7 +28,16 @@ class _FreeStudyScreenState extends ConsumerState<FreeStudyScreen> {
   StudyKind? _kind;
   final _selected = <String>{};
 
-  StudyKind get kind => _kind ?? ref.watch(studyChoiceProvider).kind;
+  /// The sources of the language being learned.
+  List<StudyKind> get kinds => StudyKind.of(ref.watch(studyLanguageProvider).value ?? StudyLanguage.ja);
+
+  /// The source picked here, else the last one used if it belongs to the
+  /// language being learned, else its first.
+  StudyKind get kind {
+    final kinds = this.kinds;
+    final k = _kind ?? ref.watch(studyChoiceProvider).kind;
+    return kinds.contains(k) ? k : kinds.first;
+  }
 
   void _setKind(StudyKind k) => setState(() {
     _kind = k;
@@ -115,6 +125,8 @@ class _FreeStudyScreenState extends ConsumerState<FreeStudyScreen> {
       StudyKind.katakana: l10n.katakana,
       StudyKind.kanji: l10n.trackKanji,
       StudyKind.word: l10n.trackVocab,
+      StudyKind.hangul: l10n.hangul,
+      StudyKind.koWord: l10n.koreanVocab,
       StudyKind.collection: l10n.freeStudyCollection,
       StudyKind.forgotten: l10n.freeStudyForgotten,
     };
@@ -160,7 +172,7 @@ class _FreeStudyScreenState extends ConsumerState<FreeStudyScreen> {
                           spacing: AppSpace.s,
                           runSpacing: AppSpace.s,
                           children: [
-                            for (final k in StudyKind.values)
+                            for (final k in kinds)
                               ChoiceChip(label: Text(labels[k]!), selected: k == kind, onSelected: (_) => _setKind(k)),
                           ],
                         ),

@@ -1801,4 +1801,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themePureBlackLight => 'Only applies in dark mode.';
+
+  @override
+  String get studyLanguage => 'Language to learn';
+
+  @override
+  String get studyLanguageNote =>
+      'Each language keeps its own progress, so you can switch back and forth any time.';
+
+  @override
+  String get languageJapanese => 'Japanese';
+
+  @override
+  String get languageKorean => 'Korean';
+
+  @override
+  String get languageJapaneseBody =>
+      'Hiragana, katakana, kanji, JLPT vocabulary and grammar';
+
+  @override
+  String get languageKoreanBody => 'Hangul and basic vocabulary (TOPIK I)';
+
+  @override
+  String get languageQuestion => 'Which language do you want to learn?';
+
+  @override
+  String get languageQuestionBody =>
+      'Switch any time with the flag button on Today or in Settings.';
+
+  @override
+  String get switchLanguage => 'Switch language';
+
+  @override
+  String get hangul => 'Hangul';
+
+  @override
+  String get trackHangul => 'Hangul';
+
+  @override
+  String get koreanVocab => 'Korean vocabulary';
+
+  @override
+  String get hangulVowels => 'Vowels';
+
+  @override
+  String get hangulConsonants => 'Consonants';
+
+  @override
+  String get hangulSyllables => 'Syllables';
+
+  @override
+  String get hangulTable => 'Hangul chart';
+
+  @override
+  String get moduleHangulBody => 'Vowels, consonants & syllables, 3 games';
+
+  @override
+  String get exReadKorean => 'Type how it is read in Latin letters';
+
+  @override
+  String get exRecallKorean => 'Type the Korean word in Latin letters';
+
+  @override
+  String get romajaHint => 'romanization';
+
+  @override
+  String get recallKorean => 'What is it in Korean?';
+
+  @override
+  String get speechUnavailableKorean =>
+      'No Korean voice on this phone yet. Install one in phone Settings › Text-to-speech › Korean.';
 }

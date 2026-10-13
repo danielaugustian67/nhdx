@@ -6,48 +6,71 @@ import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
 import '../kana/kana_providers.dart';
 import '../onboarding/learning_level.dart';
+import 'hangul_path.dart';
 import 'kana_path.dart';
 import 'kanji_path.dart';
 import 'lesson.dart';
+import 'study_language.dart';
 import 'vocab_path.dart';
 
 /// The courses on "Hari ini", each from easiest to hardest.
 enum LearnTrack {
-  kana,
-  kanji,
+  kana(StudyLanguage.ja),
+  kanji(StudyLanguage.ja),
 
   /// JLPT vocabulary (PRD F7); units are not locked.
-  vocab;
+  vocab(StudyLanguage.ja),
+
+  /// Korean letters and syllables.
+  hangul(StudyLanguage.ko),
+
+  /// Basic Korean words by topic; units are not locked.
+  koVocab(StudyLanguage.ko);
+
+  const LearnTrack(this.language);
+  final StudyLanguage language;
 
   /// Whether every lesson can be opened, not only the next one.
-  bool get free => this == vocab;
+  bool get free => this == vocab || this == koVocab;
+
+  static List<LearnTrack> of(StudyLanguage language) => [
+    for (final t in values)
+      if (t.language == language) t,
+  ];
 }
 
-/// Selected course, remembered on this device (`device.learn_track`).
+/// Selected course of the language being learned, remembered on this device
+/// per language (`device.learn_track`, `device.learn_track.ko`).
 final learnTrackProvider = NotifierProvider<LearnTrackNotifier, LearnTrack>(LearnTrackNotifier.new);
 
 class LearnTrackNotifier extends Notifier<LearnTrack> {
   static const settingKey = 'device.learn_track';
 
+  static String keyOf(StudyLanguage language) =>
+      language == StudyLanguage.ja ? settingKey : '$settingKey.${language.name}';
+
   @override
   LearnTrack build() {
-    _load();
-    return LearnTrack.kana;
+    final language = ref.watch(studyLanguageProvider).value ?? StudyLanguage.ja;
+    _load(language);
+    return LearnTrack.of(language).first;
   }
 
-  Future<void> _load() async {
+  Future<void> _load(StudyLanguage language) async {
     try {
-      final saved = await (await ref.read(userDbProvider.future)).setting(settingKey);
-      final track = LearnTrack.values.where((t) => t.name == saved).firstOrNull;
-      if (track != null && ref.mounted) state = track;
+      final saved = await (await ref.read(userDbProvider.future)).setting(keyOf(language));
+      final track = LearnTrack.of(language).where((t) => t.name == saved).firstOrNull;
+      if (track != null && ref.mounted && state.language == language) state = track;
     } catch (e) {
       debugPrint('LearnTrack: user.db not available ($e)');
     }
   }
 
+  /// Remembers [track] for its language; shows it when that language is
+  /// the one being learned.
   void select(LearnTrack track) {
-    state = track;
-    writeUserDb(ref.read(userDbProvider.future), (db) => db.setSetting(settingKey, track.name));
+    if (track.language == state.language) state = track;
+    writeUserDb(ref.read(userDbProvider.future), (db) => db.setSetting(keyOf(track.language), track.name));
   }
 }
 
@@ -68,8 +91,38 @@ final activePathProvider = Provider<AsyncValue<List<PathUnit>>>(
     LearnTrack.kana => ref.watch(kanaPathProvider),
     LearnTrack.kanji => ref.watch(kanjiPathProvider),
     LearnTrack.vocab => ref.watch(vocabPathProvider),
+    LearnTrack.hangul => ref.watch(hangulPathProvider),
+    LearnTrack.koVocab => ref.watch(koVocabPathProvider),
   },
 );
+
+/// Hangul letters and syllables with the titles of their units, loaded once.
+final hangulProvider = FutureProvider<({List<Kana> letters, Map<String, Localized> units})>((ref) async {
+  final db = await ref.watch(contentProvider.future);
+  return (letters: db.hangul(), units: db.koreanGroups('hangul'));
+});
+
+final hangulPathProvider = Provider<AsyncValue<List<PathUnit>>>(
+  (ref) => ref.watch(hangulProvider).whenData((h) => buildHangulPath(h.letters, h.units)),
+);
+
+/// Korean words with the titles of their topics, loaded once.
+final koWordsProvider = FutureProvider<({List<KoWord> words, Map<String, Localized> topics})>((ref) async {
+  final db = await ref.watch(contentProvider.future);
+  return (words: db.koreanWords(), topics: db.koreanGroups('words'));
+});
+
+/// Korean words as dictionary words in the app language, for the Hangul
+/// course's spelling and reading exercises.
+final koDictWordsProvider = Provider<AsyncValue<List<DictWord>>>((ref) {
+  final language = ref.watch(contentLanguageProvider);
+  return ref.watch(koWordsProvider).whenData((k) => [for (final w in k.words) koDictWord(w, language)]);
+});
+
+final koVocabPathProvider = Provider<AsyncValue<List<PathUnit>>>((ref) {
+  final language = ref.watch(contentLanguageProvider);
+  return ref.watch(koWordsProvider).whenData((k) => buildKoreanVocabPath(k.words, k.topics, language: language));
+});
 
 /// The vocabulary course: N5 to N1 dictionary words, loaded once, starting
 /// at the chosen level (empty for levels without curated content yet).
@@ -87,9 +140,15 @@ final lessonWordsProvider = FutureProvider<List<DictWord>>(
   (ref) async => (await ref.watch(dictionaryProvider.future)).jlptWords(),
 );
 
-/// Lesson builder for a node of either course. Without the dictionary (still
+/// Lesson builder for a node of any course. Without the dictionary (still
 /// being installed on first launch) lessons fall back to choice and writing.
-LessonBuilder lessonFor(PathNode node, {required List<DictWord> words, required List<Kana> allKana}) {
+/// Hangul lessons spell and read [koWords] instead.
+LessonBuilder lessonFor(
+  PathNode node, {
+  required List<DictWord> words,
+  required List<Kana> allKana,
+  List<DictWord> koWords = const [],
+}) {
   if (node.items.firstOrNull is VocabWord) {
     return VocabLessonBuilder(focus: node.items.cast<VocabWord>(), pool: node.reviewPool.cast<VocabWord>());
   }
@@ -104,7 +163,8 @@ LessonBuilder lessonFor(PathNode node, {required List<DictWord> words, required 
       dictionary: words,
     );
   }
-  return KanaLessonBuilder(focus: node.kana, pool: node.reviewPool.cast<Kana>(), dictionary: words);
+  final hangul = node.kana.firstOrNull?.isHangul ?? false;
+  return KanaLessonBuilder(focus: node.kana, pool: node.reviewPool.cast<Kana>(), dictionary: hangul ? koWords : words);
 }
 
 /// Completed path node ids, stored in user.db as lesson_progress (the node

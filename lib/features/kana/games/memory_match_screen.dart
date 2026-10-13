@@ -10,6 +10,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../learn/study_language.dart';
 import '../kana_providers.dart';
 import 'game_result_view.dart';
 import 'kana_quiz.dart';
@@ -68,6 +69,7 @@ class _MemoryMatchScreenState extends ConsumerState<MemoryMatchScreen> {
     if (_game.finished) {
       return Scaffold(
         body: GameResultView(
+          korean: widget.pool.any(isKoreanItem),
           xp: _xp,
           accuracy: _game.accuracy,
           detail: l10n.movesCount(_game.moves),

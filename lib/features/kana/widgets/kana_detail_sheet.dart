@@ -10,10 +10,12 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/game_card.dart';
 import '../../../core/widgets/speak_button.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../learn/speech_text.dart';
 import 'stroke_animation.dart';
 
 /// Bottom sheet for one kana (ui-design §5.7): stroke-order animation,
 /// romaji, stroke count, example word from the dictionary, "Latihan menulis".
+/// A Hangul letter has only its romanization and sound (no stroke data).
 class KanaDetailSheet extends ConsumerStatefulWidget {
   const KanaDetailSheet({super.key, required this.kana, required this.onPracticeWriting});
 
@@ -38,7 +40,7 @@ class _KanaDetailSheetState extends ConsumerState<KanaDetailSheet> {
   @override
   void initState() {
     super.initState();
-    autoSpeak(ref, widget.kana.literal);
+    autoSpeak(ref, speechText(widget.kana));
   }
 
   @override
@@ -67,27 +69,39 @@ class _KanaDetailSheetState extends ConsumerState<KanaDetailSheet> {
               children: [
                 Text(widget.kana.romaji, style: AppText.title1.copyWith(color: c.ink)),
                 const SizedBox(width: AppSpace.m),
-                Text(l10n.strokeCount(total), style: AppText.bodySmall.copyWith(color: c.inkMuted)),
+                if (total > 0) Text(l10n.strokeCount(total), style: AppText.bodySmall.copyWith(color: c.inkMuted)),
                 const Spacer(),
-                SpeakButton(widget.kana.literal),
-                TextButton.icon(
-                  onPressed: () => [for (final k in _animations) k.currentState?.replay()],
-                  icon: const Icon(Icons.replay_rounded),
-                  label: Text(l10n.replay),
-                ),
+                SpeakButton(speechText(widget.kana)),
+                if (total > 0)
+                  TextButton.icon(
+                    onPressed: () => [for (final k in _animations) k.currentState?.replay()],
+                    icon: const Icon(Icons.replay_rounded),
+                    label: Text(l10n.replay),
+                  ),
               ],
             ),
             const SizedBox(height: AppSpace.m),
             GameCard(
               color: c.bg,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var i = 0; i < chars.length; i++)
-                    if (strokes[i].isNotEmpty)
-                      StrokeAnimation(key: _animations[i], paths: strokes[i], size: chars.length == 1 ? 220 : 150),
-                ],
-              ),
+              child: total == 0
+                  ? Center(
+                      child: Text(
+                        widget.kana.literal,
+                        style: TextStyle(fontSize: 140, height: 1.2, color: c.ink),
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (var i = 0; i < chars.length; i++)
+                          if (strokes[i].isNotEmpty)
+                            StrokeAnimation(
+                              key: _animations[i],
+                              paths: strokes[i],
+                              size: chars.length == 1 ? 220 : 150,
+                            ),
+                      ],
+                    ),
             ),
             if (example != null) ...[
               const SizedBox(height: AppSpace.l),

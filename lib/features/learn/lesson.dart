@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
+import '../../core/text/hangul.dart';
 import '../../core/text/normalize.dart';
 import '../../core/text/romaji_to_kana.dart';
 import '../kana/games/kana_quiz.dart';
@@ -122,7 +123,7 @@ class BuildExercise extends Exercise {
   /// The spelling to build, e.g. "あか" or "青い".
   final String target;
 
-  /// 'hiragana' | 'katakana' | 'kanji', for the instruction.
+  /// 'hiragana' | 'katakana' | 'kanji' | 'hangul', for the instruction.
   final String script;
 
   /// [target] split into tiles (きゃ and every kanji count as one).
@@ -164,8 +165,14 @@ class ReadExercise extends Exercise {
   final List<Glyph> items;
 
   /// Accepts any spelling that converts to the same kana (shi/si, ō/ou,
-  /// "ookii"), so only the reading is tested, not one romanisation.
+  /// "ookii"), so only the reading is tested, not one romanisation. A
+  /// Korean word takes its romanization as pronounced ("hangugeo") or
+  /// syllable by syllable ("hangukeo"), without spaces or hyphens.
   bool check(String typed) {
+    if (word.isKorean) {
+      final t = normalizeRomaja(typed);
+      return t.isNotEmpty && (t == normalizeRomaja(word.romaji) || t == normalizeRomaja(romanizeHangul(word.kana)));
+    }
     final t = typed.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '');
     if (t.isEmpty) return false;
     if (t == word.romaji.toLowerCase()) return true;
@@ -290,7 +297,8 @@ abstract class LessonBuilder {
 }
 
 /// Kana course: kana ↔ romaji questions, writing, and words spelled with
-/// kana tiles / read in romaji.
+/// kana tiles / read in romaji. The Hangul course works the same with
+/// Korean words, without writing (no stroke data for Hangul).
 class KanaLessonBuilder extends LessonBuilder {
   KanaLessonBuilder({required this.focus, required this.pool, List<DictWord> dictionary = const [], super.random}) {
     final byLiteral = {for (final k in pool) k.literal: k};
@@ -309,7 +317,7 @@ class KanaLessonBuilder extends LessonBuilder {
   late final List<SpelledWord> words;
 
   @override
-  List<Glyph> get writable => focus.where((k) => !k.isYoon).toList();
+  List<Glyph> get writable => focus.where((k) => !k.isYoon && !k.isHangul).toList();
 
   @override
   List<Exercise> choices(int n, Set<int> weakIds) => [

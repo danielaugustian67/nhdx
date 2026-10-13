@@ -10,14 +10,17 @@ import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
 import '../../core/widgets/level_badge.dart';
 import '../../l10n/app_localizations.dart';
+import '../learn/path_providers.dart';
+import '../learn/study_language.dart';
 import '../progress/progress_providers.dart';
 import '../reminders/reminder_plan.dart';
 import '../reminders/reminder_service.dart';
 import 'learning_level.dart';
 
-/// First launch (PRD F9, ui-design §5.1): level, daily goal, reminder. Sign-in
-/// comes before this once Auth exists. Everything chosen here can be changed
-/// later in Settings; the level is saved last because it ends onboarding.
+/// First launch (PRD F9, ui-design §5.1): language, level (Japanese only),
+/// daily goal, reminder. Sign-in comes before this once Auth exists.
+/// Everything chosen here can be changed later in Settings; the language and
+/// level are saved last because they end onboarding.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -29,8 +32,13 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 enum _Pick { level, unsure }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  static const _steps = 3;
   int _step = 0;
+
+  StudyLanguage? _language;
+
+  /// Korean has no level step: its courses start from Hangul.
+  bool get _korean => _language == StudyLanguage.ko;
+  int get _steps => _korean ? 3 : 4;
 
   _Pick? _pick;
   LearningLevel? _level;
@@ -59,8 +67,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _finish({required bool remind}) async {
-    final level = _chosen;
-    if (level == null || _finishing) return;
+    final language = _language;
+    final level = _korean ? null : _chosen;
+    if (language == null || (level == null && !_korean) || _finishing) return;
     setState(() => _finishing = true);
     var reminderOn = false;
     if (remind) reminderOn = await ref.read(reminderServiceProvider).requestPermission();
@@ -69,20 +78,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       await _goal.save(db);
       // Refused permission: reminders stay off; Settings can turn them on.
       await db.setSetting(ReminderTime.settingKey, reminderOn ? _reminder.value : 'off');
+      if (!mounted) return;
+      // The course to open on "Hari ini", before what ends onboarding.
+      ref.read(learnTrackProvider.notifier).select(level?.track ?? LearnTrack.hangul);
+      if (level != null) await db.setSetting(LearningLevel.settingKey, level.value);
+      await db.setSetting(StudyLanguage.settingKey, language.name);
     } catch (e) {
       debugPrint('onboarding choices not saved: $e');
     }
-    if (!mounted) return;
-    applyLearningLevel(ref, level);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
-    final page = switch (_step) {
-      0 => _levelPage(l10n, c),
-      1 => _goalPage(l10n, c),
+    // Korean skips the level page.
+    final page = switch (_step + (_korean && _step > 0 ? 1 : 0)) {
+      0 => _languagePage(l10n, c),
+      1 => _levelPage(l10n, c),
+      2 => _goalPage(l10n, c),
       _ => _reminderPage(l10n, c),
     };
     return PopScope(
@@ -162,6 +176,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [button, ?secondary]),
       ),
     ],
+  );
+
+  Widget _languagePage(AppLocalizations l10n, AppColors c) => _layout(
+    children: [
+      _title(c, l10n.languageQuestion, l10n.languageQuestionBody),
+      for (final l in StudyLanguage.values)
+        _Option(
+          title: studyLanguageName(l10n, l),
+          body: l == StudyLanguage.ja ? l10n.languageJapaneseBody : l10n.languageKoreanBody,
+          trailing: Text(l.flag, style: const TextStyle(fontSize: 28)),
+          selected: _language == l,
+          onTap: () => setState(() => _language = l),
+        ),
+    ],
+    button: ChunkyButton(label: l10n.next, onPressed: _language == null ? null : _next),
   );
 
   Widget _levelPage(AppLocalizations l10n, AppColors c) {

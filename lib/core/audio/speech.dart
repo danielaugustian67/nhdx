@@ -5,25 +5,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../database/providers.dart';
+import '../text/hangul.dart';
 
-/// Reads Japanese aloud with the phone's own text-to-speech voice: no audio
-/// files, and offline once the Japanese voice is installed.
+/// Reads Japanese or Korean aloud with the phone's own text-to-speech voice:
+/// no audio files, and offline once the voice is installed.
 abstract interface class Speech {
-  /// Says [text]; false when there is no Japanese voice to say it with.
+  /// Says [text] (Korean when it has Hangul); false when there is no voice
+  /// for its language.
   Future<bool> speak(String text);
 
   Future<void> stop();
 }
 
+/// The voice language for [text].
+String speechLanguageOf(String text) => hasHangul(text) ? 'ko-KR' : 'ja-JP';
+
 class TtsSpeech implements Speech {
   FlutterTts? _tts;
   Future<bool>? _ready;
+  final _available = <String, Future<bool>>{};
+  String? _language;
 
   Future<bool> _init() async {
     try {
       final tts = _tts = FlutterTts();
-      if (await tts.isLanguageAvailable('ja-JP') != true) return false;
-      await tts.setLanguage('ja-JP');
       // A little slower than normal for learners (Android doubles the value,
       // iOS speaks normally at 0.5).
       await tts.setSpeechRate(Platform.isIOS ? 0.45 : 0.42);
@@ -34,12 +39,27 @@ class TtsSpeech implements Speech {
     }
   }
 
+  Future<bool> _isAvailable(String language) async {
+    try {
+      return await _tts!.isLanguageAvailable(language) == true;
+    } catch (e) {
+      debugPrint('Speech: $language not available ($e)');
+      return false;
+    }
+  }
+
   @override
   Future<bool> speak(String text) async {
     if (text.trim().isEmpty) return true;
     if (!await (_ready ??= _init())) return false;
+    final language = speechLanguageOf(text);
+    if (!await _available.putIfAbsent(language, () => _isAvailable(language))) return false;
     try {
       await _tts!.stop();
+      if (_language != language) {
+        await _tts!.setLanguage(language);
+        _language = language;
+      }
       await _tts!.speak(text);
       return true;
     } catch (e) {

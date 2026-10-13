@@ -27,19 +27,25 @@ class Kana implements Glyph {
   @override
   final String literal;
 
-  /// 'hiragana' | 'katakana'
+  /// 'hiragana' | 'katakana' | 'hangul'
   final String script;
+
+  /// Romaji; Revised Romanization for Hangul.
   final String romaji;
 
   /// Gojūon row: a, ka, sa, … (yōon use the row of their first kana).
+  /// Hangul: the unit key ("vowels", …).
   final String rowGroup;
 
-  /// 'basic' | 'dakuten' | 'handakuten' | 'yoon'
+  /// 'basic' | 'dakuten' | 'handakuten' | 'yoon'; Hangul: 'vowel' |
+  /// 'consonant' | 'syllable' | 'final'.
   final String kind;
   final int orderNo;
   final int? exampleWordId;
 
   bool get isYoon => kind == 'yoon';
+
+  bool get isHangul => script == 'hangul';
 
   @override
   bool operator ==(Object other) => other is Kana && other.id == id;
@@ -166,6 +172,39 @@ class GrammarPoint {
   String toString() => 'GrammarPoint($id)';
 }
 
+/// Ids of Korean words start here, far above the JMdict ids they share
+/// progress maps with.
+const koWordIdBase = 90000000;
+
+/// A basic Korean word (TOPIK I) of the Korean course, from
+/// content/korean/words.json.
+class KoWord {
+  const KoWord({
+    required this.id,
+    required this.hangul,
+    required this.romaja,
+    required this.meaning,
+    required this.topic,
+    required this.orderNo,
+  });
+
+  /// [koWordIdBase] + a hash of [hangul]; also the SRS item id of its
+  /// `ko_word` card.
+  final int id;
+  final String hangul;
+
+  /// Revised Romanization as pronounced ("hangugeo").
+  final String romaja;
+  final Localized meaning;
+
+  /// Key of its topic in [ContentDb.koreanGroups].
+  final String topic;
+  final int orderNo;
+
+  @override
+  String toString() => 'KoWord($hangul)';
+}
+
 /// Read-only access to `content.db` (kana, KanjiVG strokes, curriculum).
 class ContentDb {
   ContentDb._(this._db);
@@ -265,6 +304,53 @@ class ContentDb {
           ],
         ),
     ];
+  }
+
+  bool _hasTable(String name) =>
+      _db.select("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", [name]).isNotEmpty;
+
+  /// Hangul letters and syllables of the Korean course, in course order
+  /// (script 'hangul'). Empty for a content.db built before Korean.
+  List<Kana> hangul() {
+    if (!_hasTable('hangul')) return const [];
+    return [
+      for (final r in _db.select('SELECT id, literal, romaji, unit, kind, order_no FROM hangul ORDER BY order_no'))
+        Kana(
+          id: r['id'] as int,
+          literal: r['literal'] as String,
+          script: 'hangul',
+          romaji: r['romaji'] as String,
+          rowGroup: r['unit'] as String,
+          kind: r['kind'] as String,
+          orderNo: r['order_no'] as int,
+        ),
+    ];
+  }
+
+  /// Korean words by topic, in authored order.
+  List<KoWord> koreanWords() {
+    if (!_hasTable('ko_words')) return const [];
+    return [
+      for (final r in _db.select('SELECT id, hangul, romaja, meaning, topic, order_no FROM ko_words ORDER BY order_no'))
+        KoWord(
+          id: r['id'] as int,
+          hangul: r['hangul'] as String,
+          romaja: r['romaja'] as String,
+          meaning: Localized.parse(jsonDecode(r['meaning'] as String)),
+          topic: r['topic'] as String,
+          orderNo: r['order_no'] as int,
+        ),
+    ];
+  }
+
+  /// Titles of the Hangul units ([kind] 'hangul') or word topics ('words'),
+  /// by key, in course order.
+  Map<String, Localized> koreanGroups(String kind) {
+    if (!_hasTable('ko_groups')) return const {};
+    return {
+      for (final r in _db.select('SELECT key, title FROM ko_groups WHERE kind = ? ORDER BY order_no', [kind]))
+        r['key'] as String: Localized.parse(jsonDecode(r['title'] as String)),
+    };
   }
 
   /// KanjiVG stroke paths (109×109 coordinate box) in stroke order.

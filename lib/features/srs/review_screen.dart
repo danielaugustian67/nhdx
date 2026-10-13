@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/audio/speech.dart';
 import '../../core/database/providers.dart';
 import '../../core/study_day.dart';
+import '../../core/text/hangul.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
@@ -17,6 +18,7 @@ import '../../core/widgets/hanko_stamp.dart';
 import '../../core/widgets/level_badge.dart';
 import '../../core/widgets/speak_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../learn/study_language.dart';
 import '../progress/progress_providers.dart';
 import 'sm2.dart';
 import 'srs_providers.dart';
@@ -241,7 +243,10 @@ class _Face extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(l10n.recallJapanese, style: AppText.label.copyWith(color: c.inkMuted)),
+            Text(
+              hasHangul(item.front) ? l10n.recallKorean : l10n.recallJapanese,
+              style: AppText.label.copyWith(color: c.inkMuted),
+            ),
             const SizedBox(height: AppSpace.m),
             Text(
               item.backText(l10n),
@@ -429,7 +434,7 @@ class _Summary extends ConsumerWidget {
           children: [
             const Spacer(),
             // 済 done · 習 needs practice (many Lagi).
-            HankoStamp(character: accuracy >= 0.8 ? '済' : '習'),
+            HankoStamp(character: resultStamp(ref.watch(studyLanguageProvider).value, passed: accuracy >= 0.8)),
             const SizedBox(height: AppSpace.xl),
             Text(l10n.sessionDone, style: AppText.title1.copyWith(color: c.ink)),
             const SizedBox(height: AppSpace.l),

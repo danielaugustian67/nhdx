@@ -1,0 +1,80 @@
+{
+  "units": [
+    {
+      "key": "vowels",
+      "title": {"id": "Vokal dasar", "en": "Basic vowels"},
+      "kind": "vowel",
+      "letters": [["ㅏ", "a"], ["ㅓ", "eo"], ["ㅗ", "o"], ["ㅜ", "u"], ["ㅡ", "eu"], ["ㅣ", "i"]]
+    },
+    {
+      "key": "consonants1",
+      "title": {"id": "Konsonan ㄱ ㄴ ㄷ ㄹ ㅁ", "en": "Consonants ㄱ ㄴ ㄷ ㄹ ㅁ"},
+      "kind": "consonant",
+      "letters": [["ㄱ", "g"], ["ㄴ", "n"], ["ㄷ", "d"], ["ㄹ", "r/l"], ["ㅁ", "m"]]
+    },
+    {
+      "key": "consonants2",
+      "title": {"id": "Konsonan ㅂ ㅅ ㅇ ㅈ ㅎ", "en": "Consonants ㅂ ㅅ ㅇ ㅈ ㅎ"},
+      "kind": "consonant",
+      "letters": [["ㅂ", "b"], ["ㅅ", "s"], ["ㅇ", "ng"], ["ㅈ", "j"], ["ㅎ", "h"]]
+    },
+    {
+      "key": "syllables_a",
+      "title": {"id": "Suku kata 가 나 다", "en": "Syllables 가 나 다"},
+      "kind": "syllable",
+      "syllables": "가나다라마바사아자하"
+    },
+    {
+      "key": "syllables_o_u",
+      "title": {"id": "Suku kata 고 구", "en": "Syllables 고 구"},
+      "kind": "syllable",
+      "syllables": "고노도로모보소오조호구누두루무부수우주후"
+    },
+    {
+      "key": "syllables_eo_i",
+      "title": {"id": "Suku kata 거 기", "en": "Syllables 거 기"},
+      "kind": "syllable",
+      "syllables": "거너더러머버서어저허기니디리미비시이지히"
+    },
+    {
+      "key": "y_vowels",
+      "title": {"id": "Vokal ㅑ ㅕ ㅛ ㅠ ㅐ ㅔ", "en": "Vowels ㅑ ㅕ ㅛ ㅠ ㅐ ㅔ"},
+      "kind": "vowel",
+      "letters": [["ㅑ", "ya"], ["ㅕ", "yeo"], ["ㅛ", "yo"], ["ㅠ", "yu"], ["ㅐ", "ae"], ["ㅔ", "e"]]
+    },
+    {
+      "key": "syllables_y",
+      "title": {"id": "Suku kata 야 여 요 유 애 에", "en": "Syllables 야 여 요 유 애 에"},
+      "kind": "syllable",
+      "syllables": "야여요유애에개내대배새재해"
+    },
+    {
+      "key": "aspirated",
+      "title": {"id": "Konsonan aspirasi", "en": "Aspirated consonants"},
+      "kind": "consonant",
+      "letters": [["ㅊ", "ch"], ["ㅋ", "k"], ["ㅌ", "t"], ["ㅍ", "p"]],
+      "syllables": "차카타파치키티피"
+    },
+    {
+      "key": "tense",
+      "title": {"id": "Konsonan ganda", "en": "Tense consonants"},
+      "kind": "consonant",
+      "letters": [["ㄲ", "kk"], ["ㄸ", "tt"], ["ㅃ", "pp"], ["ㅆ", "ss"], ["ㅉ", "jj"]],
+      "syllables": "까따빠싸짜"
+    },
+    {
+      "key": "compound_vowels",
+      "title": {"id": "Vokal gabungan", "en": "Compound vowels"},
+      "kind": "vowel",
+      "letters": [["ㅒ", "yae"], ["ㅖ", "ye"], ["ㅘ", "wa"], ["ㅙ", "wae"], ["ㅚ", "oe"], ["ㅝ", "wo"],
+                  ["ㅞ", "we"], ["ㅟ", "wi"], ["ㅢ", "ui"]],
+      "syllables": "와워위의외왜"
+    },
+    {
+      "key": "final",
+      "title": {"id": "Huruf akhir (batchim)", "en": "Final consonants (batchim)"},
+      "kind": "final",
+      "syllables": "각간갈감갑강갓"
+    }
+  ]
+}

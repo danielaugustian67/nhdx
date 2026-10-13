@@ -7,11 +7,13 @@ import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/game_card.dart';
 import '../../l10n/app_localizations.dart';
+import '../learn/study_language.dart';
 import '../search/quick_search.dart';
 import 'games/memory_match_screen.dart';
 import 'games/quiz_screen.dart';
 import 'games/speed_drill_screen.dart';
 import 'games/writing_screen.dart';
+import 'hangul_screen.dart';
 import 'kana_layout.dart';
 import 'kana_providers.dart';
 import 'widgets/kana_detail_sheet.dart';
@@ -20,6 +22,7 @@ import 'widgets/kana_tile.dart';
 enum KanaGame { quiz, match, speed, write }
 
 /// Kana module (ui-design §5.7): script switch, four games, gojūon table.
+/// While learning Korean the tab shows [HangulScreen] instead.
 class KanaScreen extends ConsumerWidget {
   const KanaScreen({super.key});
 
@@ -39,6 +42,7 @@ class KanaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (ref.watch(studyLanguageProvider).value == StudyLanguage.ko) return const HangulScreen();
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
     final selection = ref.watch(kanaSelectionProvider);

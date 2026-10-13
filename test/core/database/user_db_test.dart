@@ -154,6 +154,20 @@ void main() {
       expect(await db.watchCardCounts(now).first, (due: 2, fresh: 1));
     });
 
+    test('the queue and counts keep one language\'s card types', () async {
+      const now = '2026-10-11T05:00:00.000Z';
+      await db.addCard('kana', 'あ', label: 'あ');
+      await db.addCard('hangul', 'ㄱ', label: 'ㄱ');
+      await db.addCard('ko_word', '90000001', label: '물');
+      const korean = ['hangul', 'ko_word'];
+      final ko = await db.queue(nowIso: now, newLeft: 10, reviewLeft: 10, types: korean);
+      expect([for (final c in ko) c.itemId], ['ㄱ', '90000001']);
+      final ja = await db.queue(nowIso: now, newLeft: 10, reviewLeft: 10, types: korean, exceptTypes: true);
+      expect([for (final c in ja) c.itemId], ['あ']);
+      expect(await db.watchCardCounts(now, types: korean).first, (due: 0, fresh: 2));
+      expect(await db.watchCardCounts(now, types: korean, exceptTypes: true).first, (due: 0, fresh: 1));
+    });
+
     test('an answer writes a review log and today\'s stats', () async {
       await db.addCard('kana', 'あ', label: 'あ');
       final card = (await db.select(db.srsCards).get()).single;

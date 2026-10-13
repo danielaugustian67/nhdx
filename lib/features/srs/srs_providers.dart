@@ -6,6 +6,7 @@ import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
 import '../../core/database/user_db.dart';
 import '../../core/study_day.dart';
+import '../../core/text/hangul.dart';
 import '../../l10n/app_localizations.dart';
 import '../conjugation/conjugation.dart';
 import '../conjugation/conjugation_practice.dart';
@@ -13,6 +14,8 @@ import '../grammar/grammar_providers.dart';
 import '../kana/kana_providers.dart';
 import '../learn/path_providers.dart';
 import '../learn/speech_text.dart';
+import '../learn/study_language.dart';
+import '../learn/vocab_path.dart';
 import 'sm2.dart';
 
 /// Daily limits (PRD F5), chosen in Settings and synced.
@@ -55,14 +58,20 @@ final studyWordIdsProvider = StreamProvider<Set<int>>((ref) async* {
   yield* db.watchCardItems('word').map((ids) => {for (final id in ids) ?int.tryParse(id)});
 });
 
-/// Due and new card counts for the review button; [fresh] only counts the new
-/// cards today's limit still lets in. Re-evaluated when cards change; "now"
-/// is taken when the provider is (re)built.
+/// The card types of [language]: the Korean ones, or every other type.
+({List<String> types, bool exceptTypes}) cardTypesOf(StudyLanguage language) =>
+    (types: koreanCardTypes, exceptTypes: language == StudyLanguage.ja);
+
+/// Due and new card counts for the review button, for the language being
+/// learned; [fresh] only counts the new cards today's limit still lets in.
+/// Re-evaluated when cards change; "now" is taken when the provider is
+/// (re)built.
 final cardCountsProvider = StreamProvider<({int due, int fresh})>((ref) async* {
   final db = await ref.watch(userDbProvider.future);
   // Rebuilt when the limit changes.
   ref.watch(srsLimitsProvider);
-  yield* db.watchCardCounts(nowUtc()).asyncMap((c) async {
+  final of = cardTypesOf(await ref.watch(studyLanguageProvider.future));
+  yield* db.watchCardCounts(nowUtc(), types: of.types, exceptTypes: of.exceptTypes).asyncMap((c) async {
     final left = await newLeftToday(db);
     return (due: c.due, fresh: c.fresh < left ? c.fresh : left);
   });
@@ -110,14 +119,34 @@ final cardDirectionProvider = StreamProvider<CardDirection>((ref) async* {
 void setCardDirection(WidgetRef ref, CardDirection d) =>
     writeUserDb(ref.read(userDbProvider.future), (db) => db.setSetting(CardDirection.settingKey, d.value));
 
-/// Adds word cards in the direction(s) chosen in Settings.
-Future<void> addWordCards(UserDb db, Iterable<({int id, String label})> words) async {
+/// Adds word cards ([type] `word`, or `ko_word` for Korean words) in the
+/// direction(s) chosen in Settings.
+Future<void> addWordCards(UserDb db, Iterable<({int id, String label})> words, {String type = 'word'}) async {
   final directions = CardDirection.parse(await db.setting(CardDirection.settingKey)).cardDirections;
   for (final w in words) {
     for (final d in directions) {
-      await db.addCard('word', '${w.id}', label: w.label, direction: d);
+      await db.addCard(type, '${w.id}', label: w.label, direction: d);
     }
   }
+}
+
+/// Review cards for kana, kanji, Hangul and words met in a lesson or free
+/// study, each with the card type of its course.
+void addLearnedCards(WidgetRef ref, Iterable<Glyph> items) {
+  final list = items.toList();
+  final vocab = list.whereType<VocabWord>();
+  final words = [for (final w in vocab.where((w) => !w.word.isKorean)) (id: w.id, label: w.literal)];
+  final koWords = [for (final w in vocab.where((w) => w.word.isKorean)) (id: w.id, label: w.literal)];
+  writeUserDb(ref.read(userDbProvider.future), (db) async {
+    if (words.isNotEmpty) await addWordCards(db, words);
+    if (koWords.isNotEmpty) await addWordCards(db, koWords, type: 'ko_word');
+    for (final k in list.whereType<Kana>()) {
+      await db.addCard(k.isHangul ? 'hangul' : 'kana', k.literal, label: k.literal);
+    }
+    for (final k in list.whereType<Kanji>()) {
+      await db.addCard('kanji', k.literal, label: k.literal);
+    }
+  });
 }
 
 void addWordCard(WidgetRef ref, int wordId, String label) =>
@@ -244,26 +273,48 @@ class ReviewItem {
   );
 }
 
-/// Today's review session, resolved against the dictionary and kana table.
-/// Cards whose item is gone are left out (they show as orphans elsewhere).
-/// Loaded fresh for every session: the queue depends on the clock.
+/// Today's review session of the language being learned, resolved against
+/// the dictionary, kana, Hangul and Korean word tables. Cards whose item is
+/// gone are left out (they show as orphans elsewhere). Loaded fresh for
+/// every session: the queue depends on the clock.
 Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
   final db = await ref.read(userDbProvider.future);
-  final dict = await ref.read(dictionaryProvider.future);
+  final language = await readStudyLanguage(db);
+  // Korean cards never need the dictionary, the slowest to open.
+  final dict = language == StudyLanguage.ko ? null : await ref.read(dictionaryProvider.future);
   final kana = {for (final k in await ref.read(allKanaProvider.future)) k.literal: k};
   final kanji = {for (final k in await ref.read(allKanjiProvider.future)) k.literal: k};
   final grammar = {for (final g in await ref.read(grammarProvider.future)) g.id: g};
+  final hangul = {for (final k in (await ref.read(hangulProvider.future)).letters) k.literal: k};
+  final koWords = {for (final w in (await ref.read(koWordsProvider.future)).words) '${w.id}': w};
   final limits = await SrsLimits.load(db);
   final done = await db.doneOn(todayStudyDate());
+  final of = cardTypesOf(language);
   final cards = await db.queue(
     nowIso: nowUtc(),
     newLeft: await newLeftToday(db),
     reviewLeft: limits.reviewsPerDay - done.reviewCount,
+    types: of.types,
+    exceptTypes: of.exceptTypes,
   );
   return [
     for (final c in cards)
       ?switch (c.cardType) {
-        'word' => _wordItem(c, dict),
+        'word' => dict == null ? null : _wordItem(c, dict),
+        'hangul' => switch (hangul[c.itemId]) {
+          final k? => ReviewItem(card: c, front: k.literal, back: k.romaji, speech: hangulSpeech(k.literal)),
+          null => null,
+        },
+        'ko_word' => switch (koWords[c.itemId]) {
+          final w? => ReviewItem(
+            card: c,
+            front: w.hangul,
+            romaji: w.romaja,
+            back: w.meaning.en,
+            backFor: (l10n) => w.meaning.of(l10n.localeName),
+          ),
+          null => null,
+        },
         'kana' => switch (kana[c.itemId]) {
           final k? => ReviewItem(card: c, front: k.literal, back: k.romaji),
           null => null,
@@ -279,7 +330,7 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
           ),
           null => null,
         },
-        'conjugation' => _conjugationItem(c, dict),
+        'conjugation' => dict == null ? null : _conjugationItem(c, dict),
         'grammar' => switch (grammar[c.itemId]) {
           final g? => grammarReviewItem(c, g),
           null => null,
@@ -325,11 +376,12 @@ ReviewItem grammarReviewItem(SrsCard c, GrammarPoint g) {
   );
 }
 
-/// New cards in the deck that today's limit holds back (all of them once the
-/// queue is empty).
+/// New cards of the language being learned that today's limit holds back
+/// (all of them once the queue is empty).
 Future<int> waitingNewCards(WidgetRef ref) async {
   final db = await ref.read(userDbProvider.future);
-  return (await db.watchCardCounts(nowUtc()).first).fresh;
+  final of = cardTypesOf(await readStudyLanguage(db));
+  return (await db.watchCardCounts(nowUtc(), types: of.types, exceptTypes: of.exceptTypes).first).fresh;
 }
 
 /// On'yomi and kun'yomi on one line, okurigana in brackets:
