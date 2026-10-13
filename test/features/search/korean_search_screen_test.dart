@@ -98,6 +98,9 @@ void main() {
     expect(find.byType(KoreanWordScreen), findsOneWidget);
     expect(find.text('sagwa'), findsOneWidget);
     expect(find.text('Arti dari Wiktionary (bahasa Inggris)'), findsOneWidget);
+    // Parts of speech follow the app language.
+    expect(find.textContaining('Kata benda'), findsWidgets);
+    expect(find.textContaining('Noun'), findsNothing);
 
     await tester.tap(find.text('Tambah ke belajar'));
     await settle(tester);
@@ -107,6 +110,17 @@ void main() {
 
     await unmount(tester);
   }, skip: skip);
+
+  test('part of speech labels in Indonesian and English', () {
+    final id = lookupAppLocalizations(const Locale('id'));
+    final en = lookupAppLocalizations(const Locale('en'));
+    expect(posLabel(id, 'noun'), 'Kata benda');
+    expect(posLabel(en, 'noun'), 'Noun');
+    expect(posLabel(id, 'verb'), 'Kata kerja');
+    expect(posLabel(en, 'adj'), 'Adjective');
+    expect(posLabel(id, 'unknown'), 'unknown');
+    expect(posLabel(id, null), isNull);
+  });
 
   testWidgets('Koleksi shows Korean bookmarks only, without JLPT chips', (tester) async {
     final dict = KoreanDictDb.open(koreanPath);

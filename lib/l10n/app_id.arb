@@ -603,5 +603,19 @@
   "wiktionarySource": "Sumber: Wiktionary, CC BY-SA 4.0",
   "koreanProgress": "Kemajuan bahasa Korea",
   "lettersOf": "{learned} dari {total} huruf",
-  "@lettersOf": {"placeholders": {"learned": {"type": "int"}, "total": {"type": "int"}}}
+  "@lettersOf": {"placeholders": {"learned": {"type": "int"}, "total": {"type": "int"}}},
+  "posNoun": "Kata benda",
+  "posVerb": "Kata kerja",
+  "posAdjective": "Kata sifat",
+  "posAdverb": "Kata keterangan",
+  "posInterjection": "Kata seru",
+  "posNumeral": "Kata bilangan",
+  "posPronoun": "Kata ganti",
+  "posDeterminer": "Kata penentu",
+  "posParticle": "Partikel",
+  "posPhrase": "Frasa",
+  "posCounter": "Kata penggolong",
+  "posProverb": "Peribahasa",
+  "posContraction": "Kontraksi",
+  "posName": "Nama diri"
 }

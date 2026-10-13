@@ -1923,4 +1923,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String lettersOf(int learned, int total) {
     return '$learned of $total letters';
   }
+
+  @override
+  String get posNoun => 'Noun';
+
+  @override
+  String get posVerb => 'Verb';
+
+  @override
+  String get posAdjective => 'Adjective';
+
+  @override
+  String get posAdverb => 'Adverb';
+
+  @override
+  String get posInterjection => 'Interjection';
+
+  @override
+  String get posNumeral => 'Numeral';
+
+  @override
+  String get posPronoun => 'Pronoun';
+
+  @override
+  String get posDeterminer => 'Determiner';
+
+  @override
+  String get posParticle => 'Particle';
+
+  @override
+  String get posPhrase => 'Phrase';
+
+  @override
+  String get posCounter => 'Counter';
+
+  @override
+  String get posProverb => 'Proverb';
+
+  @override
+  String get posContraction => 'Contraction';
+
+  @override
+  String get posName => 'Proper noun';
 }

@@ -1798,4 +1798,46 @@ class AppLocalizationsId extends AppLocalizations {
   String lettersOf(int learned, int total) {
     return '$learned dari $total huruf';
   }
+
+  @override
+  String get posNoun => 'Kata benda';
+
+  @override
+  String get posVerb => 'Kata kerja';
+
+  @override
+  String get posAdjective => 'Kata sifat';
+
+  @override
+  String get posAdverb => 'Kata keterangan';
+
+  @override
+  String get posInterjection => 'Kata seru';
+
+  @override
+  String get posNumeral => 'Kata bilangan';
+
+  @override
+  String get posPronoun => 'Kata ganti';
+
+  @override
+  String get posDeterminer => 'Kata penentu';
+
+  @override
+  String get posParticle => 'Partikel';
+
+  @override
+  String get posPhrase => 'Frasa';
+
+  @override
+  String get posCounter => 'Kata penggolong';
+
+  @override
+  String get posProverb => 'Peribahasa';
+
+  @override
+  String get posContraction => 'Kontraksi';
+
+  @override
+  String get posName => 'Nama diri';
 }

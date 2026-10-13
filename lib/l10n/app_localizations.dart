@@ -3127,6 +3127,90 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'{learned} dari {total} huruf'**
   String lettersOf(int learned, int total);
+
+  /// No description provided for @posNoun.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata benda'**
+  String get posNoun;
+
+  /// No description provided for @posVerb.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata kerja'**
+  String get posVerb;
+
+  /// No description provided for @posAdjective.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata sifat'**
+  String get posAdjective;
+
+  /// No description provided for @posAdverb.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata keterangan'**
+  String get posAdverb;
+
+  /// No description provided for @posInterjection.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata seru'**
+  String get posInterjection;
+
+  /// No description provided for @posNumeral.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata bilangan'**
+  String get posNumeral;
+
+  /// No description provided for @posPronoun.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata ganti'**
+  String get posPronoun;
+
+  /// No description provided for @posDeterminer.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata penentu'**
+  String get posDeterminer;
+
+  /// No description provided for @posParticle.
+  ///
+  /// In id, this message translates to:
+  /// **'Partikel'**
+  String get posParticle;
+
+  /// No description provided for @posPhrase.
+  ///
+  /// In id, this message translates to:
+  /// **'Frasa'**
+  String get posPhrase;
+
+  /// No description provided for @posCounter.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata penggolong'**
+  String get posCounter;
+
+  /// No description provided for @posProverb.
+  ///
+  /// In id, this message translates to:
+  /// **'Peribahasa'**
+  String get posProverb;
+
+  /// No description provided for @posContraction.
+  ///
+  /// In id, this message translates to:
+  /// **'Kontraksi'**
+  String get posContraction;
+
+  /// No description provided for @posName.
+  ///
+  /// In id, this message translates to:
+  /// **'Nama diri'**
+  String get posName;
 }
 
 class _AppLocalizationsDelegate

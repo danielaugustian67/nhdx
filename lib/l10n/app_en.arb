@@ -510,5 +510,19 @@
   "wiktionaryMeanings": "Meanings from Wiktionary",
   "wiktionarySource": "Source: Wiktionary, CC BY-SA 4.0",
   "koreanProgress": "Korean progress",
-  "lettersOf": "{learned} of {total} letters"
+  "lettersOf": "{learned} of {total} letters",
+  "posNoun": "Noun",
+  "posVerb": "Verb",
+  "posAdjective": "Adjective",
+  "posAdverb": "Adverb",
+  "posInterjection": "Interjection",
+  "posNumeral": "Numeral",
+  "posPronoun": "Pronoun",
+  "posDeterminer": "Determiner",
+  "posParticle": "Particle",
+  "posPhrase": "Phrase",
+  "posCounter": "Counter",
+  "posProverb": "Proverb",
+  "posContraction": "Contraction",
+  "posName": "Proper noun"
 }

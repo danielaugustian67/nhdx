@@ -81,23 +81,24 @@ class _StudyBar extends ConsumerWidget {
   }
 }
 
-/// Wiktionary's part of speech in words (as the Japanese dictionary shows
-/// JMdict's, in English).
-const _posLabels = {
-  'noun': 'Noun',
-  'verb': 'Verb',
-  'adj': 'Adjective',
-  'adv': 'Adverb',
-  'intj': 'Interjection',
-  'num': 'Numeral',
-  'pron': 'Pronoun',
-  'det': 'Determiner',
-  'particle': 'Particle',
-  'phrase': 'Phrase',
-  'counter': 'Counter',
-  'proverb': 'Proverb',
-  'contraction': 'Contraction',
-  'name': 'Proper noun',
+/// Wiktionary's part of speech in the app language (Settings → Language).
+String? posLabel(AppLocalizations l10n, String? pos) => switch (pos) {
+  null => null,
+  'noun' => l10n.posNoun,
+  'verb' => l10n.posVerb,
+  'adj' => l10n.posAdjective,
+  'adv' => l10n.posAdverb,
+  'intj' => l10n.posInterjection,
+  'num' => l10n.posNumeral,
+  'pron' => l10n.posPronoun,
+  'det' => l10n.posDeterminer,
+  'particle' => l10n.posParticle,
+  'phrase' => l10n.posPhrase,
+  'counter' => l10n.posCounter,
+  'proverb' => l10n.posProverb,
+  'contraction' => l10n.posContraction,
+  'name' => l10n.posName,
+  _ => pos,
 };
 
 class _Body extends ConsumerWidget {
@@ -160,7 +161,7 @@ class _Body extends ConsumerWidget {
             Padding(
               padding: EdgeInsets.only(top: g == 0 ? AppSpace.s : AppSpace.m, bottom: AppSpace.xs),
               child: Text(
-                [?_posLabels[sense.pos] ?? sense.pos, ?sense.hanja].join(' · '),
+                [?posLabel(l10n, sense.pos), ?sense.hanja].join(' · '),
                 locale: _ko,
                 style: AppText.label.copyWith(color: c.primaryText),
               ),
