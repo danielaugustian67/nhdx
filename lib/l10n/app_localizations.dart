@@ -3043,6 +3043,90 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Suara bahasa Korea belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Korea.'**
   String get speechUnavailableKorean;
+
+  /// No description provided for @streakReminder.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengingat streak'**
+  String get streakReminder;
+
+  /// No description provided for @streakReminderNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Malam hari, hanya bila streak sedang berjalan dan hari ini belum belajar.'**
+  String get streakReminderNote;
+
+  /// No description provided for @streakReminderTime.
+  ///
+  /// In id, this message translates to:
+  /// **'Jam pengingat streak'**
+  String get streakReminderTime;
+
+  /// No description provided for @streakReminderChannelNote.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengingat malam saat streak akan terputus'**
+  String get streakReminderChannelNote;
+
+  /// No description provided for @reminderStreakRisk.
+  ///
+  /// In id, this message translates to:
+  /// **'Hari ini belum ada stempel. Belajar beberapa menit agar streak tidak terputus.'**
+  String get reminderStreakRisk;
+
+  /// No description provided for @reminderStreakFreeze.
+  ///
+  /// In id, this message translates to:
+  /// **'Hari ini belum ada stempel. Pembekuan streak akan menjaganya, tapi belajar sebentar membuat streak terus bertambah.'**
+  String get reminderStreakFreeze;
+
+  /// No description provided for @xpTotal.
+  ///
+  /// In id, this message translates to:
+  /// **'Total {xp} XP'**
+  String xpTotal(int xp);
+
+  /// No description provided for @koreanSearchHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Cari Hangul, romanisasi atau arti'**
+  String get koreanSearchHint;
+
+  /// No description provided for @browseByTopic.
+  ///
+  /// In id, this message translates to:
+  /// **'Telusuri per topik'**
+  String get browseByTopic;
+
+  /// No description provided for @koreanCourseWord.
+  ///
+  /// In id, this message translates to:
+  /// **'Kursus: {topic}'**
+  String koreanCourseWord(String topic);
+
+  /// No description provided for @wiktionaryMeanings.
+  ///
+  /// In id, this message translates to:
+  /// **'Arti dari Wiktionary (bahasa Inggris)'**
+  String get wiktionaryMeanings;
+
+  /// No description provided for @wiktionarySource.
+  ///
+  /// In id, this message translates to:
+  /// **'Sumber: Wiktionary, CC BY-SA 4.0'**
+  String get wiktionarySource;
+
+  /// No description provided for @koreanProgress.
+  ///
+  /// In id, this message translates to:
+  /// **'Kemajuan bahasa Korea'**
+  String get koreanProgress;
+
+  /// No description provided for @lettersOf.
+  ///
+  /// In id, this message translates to:
+  /// **'{learned} dari {total} huruf'**
+  String lettersOf(int learned, int total);
 }
 
 class _AppLocalizationsDelegate

@@ -10,5 +10,11 @@
     "sha256": "a4df4fe6e2570969b1dc8b85edad7b314aa6f04096a5a0c4649e95072c896dd1",
     "size": 1343087,
     "version": "1.0.0"
+  },
+  "korean.db": {
+    "asset": "assets/db/korean.db.gz",
+    "sha256": "a020690e21f17147ebd320959a31e2b9aef09e7d7f2a0a009c5bc99b5717e652",
+    "size": 6787450,
+    "version": "1.0.0"
   }
 }

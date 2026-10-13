@@ -401,9 +401,9 @@ class _AccountTiles extends ConsumerWidget {
   }
 }
 
-/// Daily reminder on/off and its time (PRD F9). Permission is asked when it
-/// is switched on, never at launch; a refusal leaves it off and points to the
-/// phone's settings.
+/// Daily and streak reminders on/off and their times (PRD F9). Permission is
+/// asked when one is switched on, never at launch; a refusal leaves it off and
+/// points to the phone's settings.
 class _ReminderTiles extends ConsumerWidget {
   const _ReminderTiles();
 
@@ -412,13 +412,14 @@ class _ReminderTiles extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
     final time = ref.watch(reminderTimeProvider).value;
+    final streakTime = ref.watch(streakReminderTimeProvider).value;
     String format(ReminderTime t) => DateFormat.Hm(l10n.localeName).format(DateTime(2000, 1, 1, t.hour, t.minute));
 
-    Future<void> switchOn() async {
+    Future<void> switchOn(String key, ReminderTime suggested) async {
       final service = ref.read(reminderServiceProvider);
       final messenger = ScaffoldMessenger.of(context);
       if (await service.requestPermission()) {
-        saveSetting(ref, ReminderTime.settingKey, ReminderTime.suggested.value);
+        saveSetting(ref, key, suggested.value);
         return;
       }
       messenger.showSnackBar(
@@ -429,14 +430,14 @@ class _ReminderTiles extends ConsumerWidget {
       );
     }
 
-    Future<void> pickTime(ReminderTime current) async {
+    Future<void> pickTime(String key, ReminderTime current, String help) async {
       final picked = await showTimePicker(
         context: context,
         initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
-        helpText: l10n.reminderTime,
+        helpText: help,
       );
       if (picked == null) return;
-      saveSetting(ref, ReminderTime.settingKey, ReminderTime(picked.hour, picked.minute).value);
+      saveSetting(ref, key, ReminderTime(picked.hour, picked.minute).value);
     }
 
     return Column(
@@ -446,9 +447,30 @@ class _ReminderTiles extends ConsumerWidget {
           title: Text(l10n.dailyReminder, style: AppText.body.copyWith(color: c.ink)),
           subtitle: Text(l10n.reminderNote, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
           value: time != null,
-          onChanged: (on) => on ? switchOn() : saveSetting(ref, ReminderTime.settingKey, 'off'),
+          onChanged: (on) => on
+              ? switchOn(ReminderTime.settingKey, ReminderTime.suggested)
+              : saveSetting(ref, ReminderTime.settingKey, 'off'),
         ),
-        if (time != null) _SettingTile(title: l10n.reminderTime, value: format(time), onTap: () => pickTime(time)),
+        if (time != null)
+          _SettingTile(
+            title: l10n.reminderTime,
+            value: format(time),
+            onTap: () => pickTime(ReminderTime.settingKey, time, l10n.reminderTime),
+          ),
+        SwitchListTile(
+          title: Text(l10n.streakReminder, style: AppText.body.copyWith(color: c.ink)),
+          subtitle: Text(l10n.streakReminderNote, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
+          value: streakTime != null,
+          onChanged: (on) => on
+              ? switchOn(StreakReminder.settingKey, StreakReminder.suggested)
+              : saveSetting(ref, StreakReminder.settingKey, 'off'),
+        ),
+        if (streakTime != null)
+          _SettingTile(
+            title: l10n.streakReminderTime,
+            value: format(streakTime),
+            onTap: () => pickTime(StreakReminder.settingKey, streakTime, l10n.streakReminderTime),
+          ),
       ],
     );
   }

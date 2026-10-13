@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihondx/core/database/providers.dart';
 import 'package:nihondx/core/theme/app_theme.dart';
+import 'package:nihondx/features/learn/study_language.dart';
 import 'package:nihondx/features/search/search_screen.dart';
 import 'package:nihondx/l10n/app_localizations.dart';
 
@@ -24,7 +25,10 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [dictionaryProvider.overrideWith((ref) => Completer<Never>().future)],
+          overrides: [
+            dictionaryProvider.overrideWith((ref) => Completer<Never>().future),
+            studyLanguageProvider.overrideWith((ref) => Stream.value(StudyLanguage.ja)),
+          ],
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             theme: theme,

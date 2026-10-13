@@ -84,6 +84,76 @@ void main() {
     expect(plan.first.at, DateTime(2026, 10, 13, 2));
   });
 
+  group('streak reminder', () {
+    const evening = ReminderTime(21, 0);
+    final morning = DateTime(2026, 10, 11, 10);
+    Set<String> run(String from, String to) => {for (var d = from; d.compareTo(to) <= 0; d = addDays(d, 1)) d};
+
+    test('it follows the daily reminder until set on its own', () {
+      expect(StreakReminder.resolve(null, dailyOn: true), StreakReminder.suggested);
+      expect(StreakReminder.resolve(null, dailyOn: false), isNull);
+      expect(StreakReminder.resolve('off', dailyOn: true), isNull);
+      expect(StreakReminder.resolve('22:30', dailyOn: false), const ReminderTime(22, 30));
+    });
+
+    test('tonight when the streak is not kept yet, and not after it would end', () {
+      final plan = planStreakReminders(
+        now: morning,
+        time: evening,
+        active: run('2026-10-09', '2026-10-10'),
+        frozen: const {},
+        l10n: en,
+      );
+      expect(plan, hasLength(1));
+      expect(plan.single.at, DateTime(2026, 10, 11, 21));
+      expect(plan.single.title, '2-day streak');
+      expect(plan.single.body, en.reminderStreakRisk);
+      expect(plan.single.streak, isTrue);
+    });
+
+    test('studied today: tomorrow evening instead', () {
+      final plan = planStreakReminders(
+        now: morning,
+        time: evening,
+        active: run('2026-10-09', '2026-10-11'),
+        frozen: const {},
+        l10n: en,
+      );
+      expect([for (final r in plan) r.at], [DateTime(2026, 10, 12, 21)]);
+      expect(plan.single.title, '3-day streak');
+    });
+
+    test('a held freeze keeps the streak one more evening', () {
+      final plan = planStreakReminders(
+        now: morning,
+        time: evening,
+        active: run('2026-10-04', '2026-10-10'),
+        frozen: const {},
+        l10n: en,
+      );
+      expect([for (final r in plan) (r.at.day, r.body)], [(11, en.reminderStreakFreeze), (12, en.reminderStreakRisk)]);
+    });
+
+    test('no streak, no reminder; none next to a daily reminder that day', () {
+      expect(
+        planStreakReminders(now: morning, time: evening, active: const {}, frozen: const {}, l10n: en),
+        isEmpty,
+      );
+      final daily = [PlannedReminder(DateTime(2026, 10, 11, 21, 30), en.reminderPlain)];
+      expect(
+        planStreakReminders(
+          now: morning,
+          time: evening,
+          active: run('2026-10-09', '2026-10-10'),
+          frozen: const {},
+          l10n: en,
+          daily: daily,
+        ),
+        isEmpty,
+      );
+    });
+  });
+
   test('the context counts new cards only up to the daily new limit', () async {
     final db = UserDb.memory();
     addTearDown(db.close);
@@ -149,6 +219,33 @@ void main() {
     await settle(tester);
     expect(find.text('Jam pengingat'), findsNothing);
     expect(await tester.runAsync(() => db.setting(ReminderTime.settingKey)), 'off');
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 10));
+  });
+
+  testWidgets('the streak reminder comes on with the daily one, or on its own at 21.00', (tester) async {
+    final service = _FakeReminders(granted: true);
+    final db = await pumpSettings(tester, service);
+    expect(find.text('Jam pengingat streak'), findsNothing);
+
+    await tester.tap(find.text('Pengingat harian'));
+    await settle(tester);
+    expect(find.text('Jam pengingat streak'), findsOneWidget);
+    expect(find.text('21.00'), findsOneWidget);
+
+    await tester.tap(find.text('Pengingat harian'));
+    await settle(tester);
+    expect(find.text('Jam pengingat streak'), findsNothing);
+    await tester.tap(find.text('Pengingat streak'));
+    await settle(tester);
+    expect(service.asked, 2);
+    expect(find.text('Jam pengingat streak'), findsOneWidget);
+    expect(await tester.runAsync(() => db.setting(StreakReminder.settingKey)), '21:00');
+
+    await tester.tap(find.text('Pengingat streak'));
+    await settle(tester);
+    expect(await tester.runAsync(() => db.setting(StreakReminder.settingKey)), 'off');
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 10));

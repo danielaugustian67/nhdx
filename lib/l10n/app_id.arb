@@ -586,5 +586,22 @@
   "exRecallKorean": "Ketik kata Koreanya dalam huruf Latin",
   "romajaHint": "romanisasi",
   "recallKorean": "Apa bahasa Koreanya?",
-  "speechUnavailableKorean": "Suara bahasa Korea belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Korea."
+  "speechUnavailableKorean": "Suara bahasa Korea belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Korea.",
+  "streakReminder": "Pengingat streak",
+  "streakReminderNote": "Malam hari, hanya bila streak sedang berjalan dan hari ini belum belajar.",
+  "streakReminderTime": "Jam pengingat streak",
+  "streakReminderChannelNote": "Pengingat malam saat streak akan terputus",
+  "reminderStreakRisk": "Hari ini belum ada stempel. Belajar beberapa menit agar streak tidak terputus.",
+  "reminderStreakFreeze": "Hari ini belum ada stempel. Pembekuan streak akan menjaganya, tapi belajar sebentar membuat streak terus bertambah.",
+  "xpTotal": "Total {xp} XP",
+  "@xpTotal": {"placeholders": {"xp": {"type": "int"}}},
+  "koreanSearchHint": "Cari Hangul, romanisasi atau arti",
+  "browseByTopic": "Telusuri per topik",
+  "koreanCourseWord": "Kursus: {topic}",
+  "@koreanCourseWord": {"placeholders": {"topic": {"type": "String"}}},
+  "wiktionaryMeanings": "Arti dari Wiktionary (bahasa Inggris)",
+  "wiktionarySource": "Sumber: Wiktionary, CC BY-SA 4.0",
+  "koreanProgress": "Kemajuan bahasa Korea",
+  "lettersOf": "{learned} dari {total} huruf",
+  "@lettersOf": {"placeholders": {"learned": {"type": "int"}, "total": {"type": "int"}}}
 }

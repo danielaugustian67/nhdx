@@ -6,6 +6,7 @@ Sources:
 - JLPT vocabulary lists (community-curated)
 - KanjiVG: stroke order data for kana and kanji, CC BY-SA 3.0
 - KANJIDIC2 (EDRDG): kanji meanings, readings, grade, frequency, JLPT; CC BY-SA 4.0
+- Korean entries of English Wiktionary (kaikki.org / wiktextract): korean.db; CC BY-SA 4.0 and GFDL
 """
 
 import gzip
@@ -32,6 +33,12 @@ DOWNLOADS = {
         "filename": "JMdict.xml",
         "description": "JMdict full (all languages, EDRDG)",
         "compressed": True,
+    },
+    "korean": {
+        "url": "https://kaikki.org/dictionary/Korean/kaikki.org-dictionary-Korean.jsonl",
+        "filename": "korean/kaikki-korean.jsonl",
+        "description": "Korean entries of English Wiktionary (kaikki.org)",
+        "compressed": False,
     },
     "kanjidic": {
         "url": "http://www.edrdg.org/kanjidic/kanjidic2.xml.gz",
@@ -165,10 +172,10 @@ def main() -> None:
     use_full = "--full" in sys.argv
 
     if use_full:
-        print("\n[1/4] JMdict (full, all languages)")
+        print("\n[1/5] JMdict (full, all languages)")
         info = DOWNLOADS["jmdict_full"]
     else:
-        print("\n[1/4] JMdict (English only)")
+        print("\n[1/5] JMdict (English only)")
         info = DOWNLOADS["jmdict"]
 
     download_file(
@@ -178,14 +185,19 @@ def main() -> None:
         compressed=info["compressed"],
     )
 
-    print("\n[2/4] JLPT vocabulary lists")
+    print("\n[2/5] JLPT vocabulary lists")
     download_jlpt_lists()
 
-    print("\n[3/4] KanjiVG (stroke order for kana and kanji)")
+    print("\n[3/5] KanjiVG (stroke order for kana and kanji)")
     download_kanjivg()
 
-    print("\n[4/4] KANJIDIC2 (kanji course)")
+    print("\n[4/5] KANJIDIC2 (kanji course)")
     info = DOWNLOADS["kanjidic"]
+    download_file(info["url"], SOURCES_DIR / info["filename"], info["description"], info["compressed"])
+
+    print("\n[5/5] Korean Wiktionary (Korean dictionary)")
+    info = DOWNLOADS["korean"]
+    (SOURCES_DIR / info["filename"]).parent.mkdir(exist_ok=True)
     download_file(info["url"], SOURCES_DIR / info["filename"], info["description"], info["compressed"])
 
     print("\n" + "=" * 60)

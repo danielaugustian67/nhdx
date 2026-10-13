@@ -115,6 +115,17 @@ final forgottenItemsProvider = FutureProvider<List<Glyph>>((ref) async {
     if (any('ko_word'))
       for (final w in (await ref.watch(koWordsProvider.future)).words) '${w.id}': koDictWord(w, language),
   };
+  // Korean words added from the dictionary are not in the course.
+  final koExtra = [
+    for (final c in sorted)
+      if (c.type == 'ko_word' && !koWords.containsKey(c.id)) ?int.tryParse(c.id),
+  ];
+  if (koExtra.isNotEmpty) {
+    final dict = await ref.watch(koreanDictProvider.future);
+    for (final b in dict.briefs(koExtra, language: language).values) {
+      koWords['${b.id}'] = DictWord(id: b.id, kana: b.kana, romaji: b.romaji, jlpt: 0, gloss: b.gloss);
+    }
+  }
   final wordIds = [
     for (final c in sorted)
       if (c.type == 'word') ?int.tryParse(c.id),

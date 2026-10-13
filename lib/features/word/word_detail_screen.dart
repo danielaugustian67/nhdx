@@ -16,11 +16,16 @@ import '../conjugation/conjugation_table.dart';
 import '../learn/path_providers.dart';
 import '../srs/srs_providers.dart';
 import 'bookmark_button.dart';
+import 'korean_word_screen.dart';
 import 'word_providers.dart';
 
-/// Opens the detail page of a word above the current tab.
-Future<void> openWord(BuildContext context, int wordId) =>
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => WordDetailScreen(wordId: wordId)));
+/// Opens the detail page of a word above the current tab: the Korean one for
+/// a Korean word id.
+Future<void> openWord(BuildContext context, int wordId) => Navigator.of(context).push(
+  MaterialPageRoute(
+    builder: (_) => wordId >= koWordIdBase ? KoreanWordScreen(wordId: wordId) : WordDetailScreen(wordId: wordId),
+  ),
+);
 
 /// Word detail (PRD F2, ui-design §5.4): reading above a large headword,
 /// romaji, JLPT, word class, numbered senses grouped by part of speech,

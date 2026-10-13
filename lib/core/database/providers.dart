@@ -5,10 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../features/search/korean_search_service.dart';
 import '../../features/search/search_service.dart';
 import 'content_db.dart';
 import 'db_installer.dart';
 import 'dictionary_db.dart';
+import 'korean_dict_db.dart';
 import 'user_db.dart';
 
 final _installerProvider = FutureProvider<DbInstaller>((ref) async {
@@ -35,6 +37,16 @@ final contentProvider = FutureProvider<ContentDb>((ref) async {
   return db;
 });
 
+/// Installs and opens korean.db, the Korean dictionary. Only opened while
+/// Korean is being learned.
+final koreanDictProvider = FutureProvider<KoreanDictDb>((ref) async {
+  final installer = await ref.watch(_installerProvider.future);
+  final path = await installer.ensureInstalled('korean.db');
+  final db = KoreanDictDb.open(path);
+  ref.onDispose(db.close);
+  return db;
+});
+
 /// The read-write user.db (progress, bookmarks, SRS, settings). Tests
 /// override it with [UserDb.memory].
 final userDbProvider = FutureProvider<UserDb>((ref) async {
@@ -57,3 +69,7 @@ final searchServiceProvider = FutureProvider<SearchService>((ref) async {
   final dict = await ref.watch(dictionaryProvider.future);
   return SearchService(dict.db);
 });
+
+final koreanSearchServiceProvider = FutureProvider<KoreanSearchService>(
+  (ref) async => KoreanSearchService(await ref.watch(koreanDictProvider.future)),
+);

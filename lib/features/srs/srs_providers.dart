@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
+import '../../core/database/korean_dict_db.dart';
 import '../../core/database/providers.dart';
 import '../../core/database/user_db.dart';
 import '../../core/study_day.dart';
@@ -56,6 +57,12 @@ final srsLimitsProvider = StreamProvider<SrsLimits>((ref) async* {
 final studyWordIdsProvider = StreamProvider<Set<int>>((ref) async* {
   final db = await ref.watch(userDbProvider.future);
   yield* db.watchCardItems('word').map((ids) => {for (final id in ids) ?int.tryParse(id)});
+});
+
+/// Korean word ids with a `ko_word` card (course or dictionary).
+final studyKoWordIdsProvider = StreamProvider<Set<int>>((ref) async* {
+  final db = await ref.watch(userDbProvider.future);
+  yield* db.watchCardItems('ko_word').map((ids) => {for (final id in ids) ?int.tryParse(id)});
 });
 
 /// The card types of [language]: the Korean ones, or every other type.
@@ -149,8 +156,11 @@ void addLearnedCards(WidgetRef ref, Iterable<Glyph> items) {
   });
 }
 
-void addWordCard(WidgetRef ref, int wordId, String label) =>
-    writeUserDb(ref.read(userDbProvider.future), (db) => addWordCards(db, [(id: wordId, label: label)]));
+/// A dictionary word's cards: `ko_word` for a Korean word id.
+void addWordCard(WidgetRef ref, int wordId, String label) => writeUserDb(
+  ref.read(userDbProvider.future),
+  (db) => addWordCards(db, [(id: wordId, label: label)], type: wordId >= koWordIdBase ? 'ko_word' : 'word'),
+);
 
 /// Adds the next [count] words of a JLPT level that have no card yet, most
 /// common first (empty-state "Tambah 10 kata N5").
@@ -297,6 +307,15 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
     types: of.types,
     exceptTypes: of.exceptTypes,
   );
+  // Korean words added from the dictionary are not in the course tables.
+  KoreanDictDb? koDict;
+  if (cards.any((c) => c.cardType == 'ko_word' && !koWords.containsKey(c.itemId))) {
+    try {
+      koDict = await ref.read(koreanDictProvider.future);
+    } catch (e) {
+      debugPrint('korean.db not opened for review: $e');
+    }
+  }
   return [
     for (final c in cards)
       ?switch (c.cardType) {
@@ -313,7 +332,16 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
             back: w.meaning.en,
             backFor: (l10n) => w.meaning.of(l10n.localeName),
           ),
-          null => null,
+          null => switch (koDict?.entry(int.tryParse(c.itemId) ?? -1)) {
+            final e? => ReviewItem(
+              card: c,
+              front: e.hangul,
+              romaji: e.romaja,
+              back: e.gloss,
+              backFor: (l10n) => e.meaning(l10n.localeName),
+            ),
+            null => null,
+          },
         },
         'kana' => switch (kana[c.itemId]) {
           final k? => ReviewItem(card: c, front: k.literal, back: k.romaji),

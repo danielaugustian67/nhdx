@@ -16,6 +16,7 @@ import '../../core/widgets/progress_ring.dart';
 import '../../l10n/app_localizations.dart';
 import '../free_study/free_study_providers.dart';
 import '../free_study/free_study_session_screen.dart';
+import '../learn/study_language.dart';
 import '../search/quick_search.dart';
 import '../settings/settings_section.dart';
 import '../word/word_detail_screen.dart';
@@ -33,6 +34,7 @@ class MeScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
     final hardest = ref.watch(hardestCardsProvider);
+    final korean = ref.watch(studyLanguageProvider).value == StudyLanguage.ko;
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -47,11 +49,14 @@ class MeScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: AppSpace.l),
-            const _GoalCard(),
+            const GoalCard(),
             _Section(title: l10n.tabToday, child: const _TodayStats()),
             _Section(title: l10n.activity, child: const _ActivityChart()),
             _Section(title: l10n.stampBook, child: const _StampBook()),
-            _Section(title: l10n.jlptProgress, child: const _JlptProgress()),
+            if (korean)
+              _Section(title: l10n.koreanProgress, child: const _KoreanProgress())
+            else
+              _Section(title: l10n.jlptProgress, child: const _JlptProgress()),
             _Section(title: l10n.cardStages, child: const _CardStages()),
             if (hardest.isNotEmpty)
               _Section(
@@ -90,9 +95,10 @@ class _Section extends StatelessWidget {
 }
 
 /// Ring with today's cards next to the streak, shown as stamps for the last
-/// seven days rather than a flame count (ui-design §7).
-class _GoalCard extends ConsumerWidget {
-  const _GoalCard();
+/// seven days rather than a flame count (ui-design §7). Also in the streak
+/// sheet on Hari ini.
+class GoalCard extends ConsumerWidget {
+  const GoalCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -637,6 +643,64 @@ class _JlptProgress extends ConsumerWidget {
   }
 }
 
+/// Hangul letters and course words studied, as bars like the JLPT ones.
+class _KoreanProgress extends ConsumerWidget {
+  const _KoreanProgress();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final c = context.colors;
+    final progress = ref.watch(koreanProgressProvider).value;
+    if (progress == null) return const SizedBox(height: 64);
+    return GameCard(
+      child: Column(
+        children: [
+          for (final (label, p, text) in [
+            ('한글', progress.hangul, l10n.lettersOf(progress.hangul.learned, progress.hangul.total)),
+            ('단어', progress.words, l10n.wordsOf(progress.words.learned, progress.words.total)),
+          ])
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpace.xs + 2),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 48,
+                    child: Text(
+                      label,
+                      locale: const Locale('ko'),
+                      style: AppText.label.copyWith(color: c.primaryText),
+                    ),
+                  ),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: LinearProgressIndicator(
+                        value: p.total == 0 ? 0 : p.learned / p.total,
+                        minHeight: 4,
+                        color: c.primary,
+                        backgroundColor: c.line,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpace.m),
+                  SizedBox(
+                    width: 128,
+                    child: Text(
+                      text,
+                      textAlign: TextAlign.end,
+                      style: AppText.bodySmall.copyWith(color: c.inkMuted),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CardStages extends ConsumerWidget {
   const _CardStages();
 
@@ -674,11 +738,11 @@ class _Hardest extends ConsumerWidget {
             ListTile(
               title: Text(
                 card.labelSnapshot,
-                locale: const Locale('ja'),
+                locale: Locale(koreanCardTypes.contains(card.cardType) ? 'ko' : 'ja'),
                 style: AppText.rowHeadword.copyWith(color: c.ink),
               ),
               trailing: Text(l10n.lapsesCount(card.lapses), style: AppText.bodySmall.copyWith(color: c.seal)),
-              onTap: card.cardType == 'word' && int.tryParse(card.itemId) != null
+              onTap: (card.cardType == 'word' || card.cardType == 'ko_word') && int.tryParse(card.itemId) != null
                   ? () => openWord(context, int.parse(card.itemId))
                   : null,
             ),

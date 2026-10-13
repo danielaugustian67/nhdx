@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/database/providers.dart';
 import '../../core/database/user_db.dart';
 import '../../core/study_day.dart';
+import '../learn/path_providers.dart';
+import '../learn/study_language.dart';
 import '../srs/srs_providers.dart';
 import '../word/word_providers.dart';
 import 'streak.dart';
@@ -81,9 +83,18 @@ final liveCardsProvider = StreamProvider<List<SrsCard>>((ref) async* {
 /// Cards per learning stage. "Mature" follows the usual 21-day mark.
 typedef CardStages = ({int fresh, int learning, int young, int mature});
 
+/// The live cards of the language being learned.
+final languageCardsProvider = Provider<List<SrsCard>>((ref) {
+  final korean = ref.watch(studyLanguageProvider).value == StudyLanguage.ko;
+  return [
+    for (final c in ref.watch(liveCardsProvider).value ?? const <SrsCard>[])
+      if (koreanCardTypes.contains(c.cardType) == korean) c,
+  ];
+});
+
 final cardStagesProvider = Provider<CardStages>((ref) {
   var (fresh, learning, young, mature) = (0, 0, 0, 0);
-  for (final c in ref.watch(liveCardsProvider).value ?? const <SrsCard>[]) {
+  for (final c in ref.watch(languageCardsProvider)) {
     switch (c.state) {
       case 'new':
         fresh++;
@@ -120,11 +131,30 @@ final jlptProgressProvider = FutureProvider<Map<int, ({int learned, int total})>
 /// both directions shows once, with its higher count.
 final hardestCardsProvider = Provider<List<SrsCard>>((ref) {
   final byItem = <String, SrsCard>{};
-  for (final c in ref.watch(liveCardsProvider).value ?? const <SrsCard>[]) {
+  for (final c in ref.watch(languageCardsProvider)) {
     if (c.lapses == 0) continue;
     final key = '${c.cardType}:${c.itemId}';
     if ((byItem[key]?.lapses ?? 0) < c.lapses) byItem[key] = c;
   }
   final cards = byItem.values.toList()..sort((a, b) => b.lapses.compareTo(a.lapses));
   return cards.take(5).toList();
+});
+
+/// Items studied out of how many there are.
+typedef Studied = ({int learned, int total});
+
+/// Hangul letters and Korean course words studied (any card past "new"),
+/// the Korean counterpart of [jlptProgressProvider].
+final koreanProgressProvider = FutureProvider<({Studied hangul, Studied words})>((ref) async {
+  final cards = await ref.watch(liveCardsProvider.future);
+  final letters = {for (final k in (await ref.watch(hangulProvider.future)).letters) k.literal};
+  final words = {for (final w in (await ref.watch(koWordsProvider.future)).words) '${w.id}'};
+  Set<String> studied(String type) => {
+    for (final c in cards)
+      if (c.cardType == type && c.state != 'new') c.itemId,
+  };
+  return (
+    hangul: (learned: studied('hangul').intersection(letters).length, total: letters.length),
+    words: (learned: studied('ko_word').intersection(words).length, total: words.length),
+  );
 });

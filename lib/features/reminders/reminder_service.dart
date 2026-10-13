@@ -72,23 +72,26 @@ class ReminderService {
   Future<void> schedule(List<PlannedReminder> plan, AppLocalizations l10n) async {
     if (!await _init()) return;
     await _plugin.cancelAllPendingNotifications();
-    final details = NotificationDetails(
+    NotificationDetails details(String channel, String name, String note) => NotificationDetails(
       android: AndroidNotificationDetails(
-        'daily_reminder',
-        l10n.reminderChannel,
-        channelDescription: l10n.reminderChannelNote,
+        channel,
+        name,
+        channelDescription: note,
         importance: Importance.defaultImportance,
         priority: Priority.defaultPriority,
       ),
       iOS: const DarwinNotificationDetails(),
     );
+    final daily = details('daily_reminder', l10n.reminderChannel, l10n.reminderChannelNote);
+    // Its own channel, so the phone's settings can mute one kind.
+    final streak = details('streak_reminder', l10n.streakReminder, l10n.streakReminderChannelNote);
     for (final (i, r) in plan.indexed) {
       await _plugin.zonedSchedule(
         id: i + 1,
-        title: l10n.appTitle,
+        title: r.title ?? l10n.appTitle,
         body: r.body,
         scheduledDate: tz.TZDateTime.from(r.at, tz.local),
-        notificationDetails: details,
+        notificationDetails: r.streak ? streak : daily,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       );
     }
@@ -101,8 +104,9 @@ class ReminderService {
 
   Future<void> _last = Future.value();
 
-  /// Re-plans the reminders from the saved time and today's progress, or
-  /// cancels them when reminders are off. Calls run one after another.
+  /// Re-plans the daily and streak reminders from their saved times and
+  /// today's progress, or cancels them when both are off. Calls run one after
+  /// another.
   /// Errors are logged: a missed re-plan only leaves the previous plan.
   Future<void> refresh(Future<UserDb> userDb, Locale locale) {
     if (!supported) return Future.value();
@@ -110,10 +114,18 @@ class ReminderService {
       try {
         final db = await userDb;
         final time = ReminderTime.parse(await db.setting(ReminderTime.settingKey));
-        if (time == null) return await cancel();
+        final streakTime = StreakReminder.resolve(await db.setting(StreakReminder.settingKey), dailyOn: time != null);
+        if (time == null && streakTime == null) return await cancel();
         final l10n = await AppLocalizations.delegate.load(locale);
-        final context = await loadReminderContext(db);
-        await schedule(planReminders(now: DateTime.now(), time: time, context: context, l10n: l10n), l10n);
+        final now = DateTime.now();
+        final daily = time == null
+            ? <PlannedReminder>[]
+            : planReminders(now: now, time: time, context: await loadReminderContext(db), l10n: l10n);
+        final (:active, :frozen) = await loadStreakDays(db);
+        final streak = streakTime == null
+            ? <PlannedReminder>[]
+            : planStreakReminders(now: now, time: streakTime, active: active, frozen: frozen, l10n: l10n, daily: daily);
+        await schedule([...daily, ...streak], l10n);
       } catch (e) {
         debugPrint('reminders not re-planned: $e');
       }
@@ -126,6 +138,13 @@ final reminderServiceProvider = Provider<ReminderService>((ref) => ReminderServi
 final reminderTimeProvider = StreamProvider<ReminderTime?>((ref) async* {
   final db = await ref.watch(userDbProvider.future);
   yield* db.watchSetting(ReminderTime.settingKey).map(ReminderTime.parse);
+});
+
+/// The streak reminder time, null when off ([StreakReminder.resolve]).
+final streakReminderTimeProvider = StreamProvider<ReminderTime?>((ref) async* {
+  final db = await ref.watch(userDbProvider.future);
+  final dailyOn = ref.watch(reminderTimeProvider.select((t) => t.value != null));
+  yield* db.watchSetting(StreakReminder.settingKey).map((v) => StreakReminder.resolve(v, dailyOn: dailyOn));
 });
 
 /// Keeps the scheduled reminders current: re-plans when the reminder time or
@@ -174,6 +193,9 @@ class _ReminderSchedulerState extends ConsumerState<ReminderScheduler> {
   @override
   Widget build(BuildContext context) {
     ref.listen(reminderTimeProvider, (prev, next) {
+      if (prev?.value != next.value && next.hasValue) _refresh();
+    });
+    ref.listen(streakReminderTimeProvider, (prev, next) {
       if (prev?.value != next.value && next.hasValue) _refresh();
     });
     return widget.child;

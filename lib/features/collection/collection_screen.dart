@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
 import '../../core/database/user_db.dart';
 import '../../core/text/normalize.dart';
@@ -11,6 +12,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../search/search_service.dart';
 import '../search/widgets/word_row.dart';
+import '../learn/study_language.dart';
 import '../search/quick_search.dart';
 import '../word/bookmark_button.dart';
 import '../word/word_detail_screen.dart';
@@ -74,6 +76,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
     final all = ref.watch(collectionProvider).value ?? const <(Bookmark, WordBrief?)>[];
+    // Korean words have no JLPT level to filter by.
+    final korean = ref.watch(studyLanguageProvider).value == StudyLanguage.ko;
+    if (korean) _level = null;
     final items = all.where(_matches).toList();
 
     return Scaffold(
@@ -106,25 +111,28 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 ),
               ),
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.screen, vertical: AppSpace.s),
-              child: Row(
-                spacing: AppSpace.s,
-                children: [
-                  for (final level in [null, 5, 4, 3, 2, 1, 0])
-                    ChoiceChip(
-                      label: Text(switch (level) {
-                        null => l10n.allLevels,
-                        0 => l10n.noLevel,
-                        _ => 'N$level',
-                      }),
-                      selected: _level == level,
-                      onSelected: (_) => setState(() => _level = level),
-                    ),
-                ],
+            if (korean)
+              const SizedBox(height: AppSpace.s)
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpace.screen, vertical: AppSpace.s),
+                child: Row(
+                  spacing: AppSpace.s,
+                  children: [
+                    for (final level in [null, 5, 4, 3, 2, 1, 0])
+                      ChoiceChip(
+                        label: Text(switch (level) {
+                          null => l10n.allLevels,
+                          0 => l10n.noLevel,
+                          _ => 'N$level',
+                        }),
+                        selected: _level == level,
+                        onSelected: (_) => setState(() => _level = level),
+                      ),
+                  ],
+                ),
               ),
-            ),
             Divider(color: c.line, height: 1),
           ],
           Expanded(
@@ -187,7 +195,7 @@ class _Orphan extends StatelessWidget {
               children: [
                 Text(
                   mark.labelSnapshot,
-                  locale: const Locale('ja'),
+                  locale: Locale(mark.wordId >= koWordIdBase ? 'ko' : 'ja'),
                   style: AppText.rowHeadword.copyWith(color: c.inkMuted),
                 ),
                 Text(l10n.entryMissing, style: AppText.bodySmall.copyWith(color: c.inkMuted)),

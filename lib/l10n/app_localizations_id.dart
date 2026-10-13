@@ -1746,4 +1746,56 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get speechUnavailableKorean =>
       'Suara bahasa Korea belum ada di HP ini. Pasang lewat Setelan HP › Text-to-speech › Bahasa Korea.';
+
+  @override
+  String get streakReminder => 'Pengingat streak';
+
+  @override
+  String get streakReminderNote =>
+      'Malam hari, hanya bila streak sedang berjalan dan hari ini belum belajar.';
+
+  @override
+  String get streakReminderTime => 'Jam pengingat streak';
+
+  @override
+  String get streakReminderChannelNote =>
+      'Pengingat malam saat streak akan terputus';
+
+  @override
+  String get reminderStreakRisk =>
+      'Hari ini belum ada stempel. Belajar beberapa menit agar streak tidak terputus.';
+
+  @override
+  String get reminderStreakFreeze =>
+      'Hari ini belum ada stempel. Pembekuan streak akan menjaganya, tapi belajar sebentar membuat streak terus bertambah.';
+
+  @override
+  String xpTotal(int xp) {
+    return 'Total $xp XP';
+  }
+
+  @override
+  String get koreanSearchHint => 'Cari Hangul, romanisasi atau arti';
+
+  @override
+  String get browseByTopic => 'Telusuri per topik';
+
+  @override
+  String koreanCourseWord(String topic) {
+    return 'Kursus: $topic';
+  }
+
+  @override
+  String get wiktionaryMeanings => 'Arti dari Wiktionary (bahasa Inggris)';
+
+  @override
+  String get wiktionarySource => 'Sumber: Wiktionary, CC BY-SA 4.0';
+
+  @override
+  String get koreanProgress => 'Kemajuan bahasa Korea';
+
+  @override
+  String lettersOf(int learned, int total) {
+    return '$learned dari $total huruf';
+  }
 }

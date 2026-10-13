@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/database/providers.dart';
+import 'core/text/hangul.dart';
 import 'core/theme/app_text.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_tab_bar.dart';
@@ -182,7 +183,7 @@ class _ShellState extends ConsumerState<_Shell> {
   }
 }
 
-/// A kana drawn as a tab icon, in the icon color of the navigation bar.
+/// A kana (or Hangul) drawn as a tab icon, in the icon color of the navigation bar.
 class _GlyphIcon extends StatelessWidget {
   const _GlyphIcon(this.glyph);
   final String glyph;
@@ -195,8 +196,14 @@ class _GlyphIcon extends StatelessWidget {
       child: Center(
         child: Text(
           glyph,
-          locale: const Locale('ja'),
-          style: TextStyle(fontFamily: AppFonts.jpStroke, fontSize: 21, height: 1, color: icon.color),
+          locale: Locale(hasHangul(glyph) ? 'ko' : 'ja'),
+          // The stroke font has no Hangul; the system Korean font draws it.
+          style: TextStyle(
+            fontFamily: hasHangul(glyph) ? null : AppFonts.jpStroke,
+            fontSize: 21,
+            height: 1,
+            color: icon.color,
+          ),
         ),
       ),
     );

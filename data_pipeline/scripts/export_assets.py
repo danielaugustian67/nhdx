@@ -4,6 +4,7 @@ database lokal"):
 
     assets/db/dictionary.db.gz
     assets/db/content.db.gz
+    assets/db/korean.db.gz
     assets/db/manifest.json   {"dictionary.db": {"sha256": …, "dataset_version": …}, …}
 
 The app compares the manifest sha256 with the one recorded at install time and
@@ -19,7 +20,7 @@ from pathlib import Path
 
 OUTPUT_DIR = Path(__file__).parent.parent / "output"
 ASSETS_DIR = Path(__file__).parent.parent.parent / "assets" / "db"
-DATABASES = ("dictionary.db", "content.db")
+DATABASES = ("dictionary.db", "content.db", "korean.db")
 
 
 def sha256(path: Path) -> str:

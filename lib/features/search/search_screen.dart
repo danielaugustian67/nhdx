@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/providers.dart';
+import '../../core/text/hangul.dart';
 import '../../core/text/normalize.dart';
 import '../../core/text/romaji_to_kana.dart';
 import '../../core/theme/app_colors.dart';
@@ -13,6 +14,9 @@ import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../conjugation/conjugation_drill_screen.dart';
 import '../grammar/grammar_screen.dart';
+import '../learn/path_providers.dart';
+import '../learn/study_language.dart';
+import '../word/korean_topic_words_screen.dart';
 import '../word/level_words_screen.dart';
 import '../word/word_providers.dart';
 import '../word/word_tile.dart';
@@ -23,6 +27,8 @@ import 'search_service.dart';
 /// Kamus tab (ui-design §5.3). The field is never rewritten while typing, so
 /// a system Japanese IME keeps full control of its composing region (PRD
 /// F1.1b); the romaji conversion is shown as a preview below the field.
+/// While Korean is being learned it searches the Korean dictionary instead:
+/// Hangul, romanization or meaning, without the kana modes.
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -99,9 +105,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     writeUserDb(ref.read(userDbProvider.future), (db) => db.addHistory(query));
   }
 
-  String? _preview(SearchMode mode) {
+  String? _preview(SearchMode mode, {required bool korean}) {
     final text = _controller.text.trim();
-    if (text.isEmpty || mode == SearchMode.latin || hasJapanese(text)) return null;
+    if (korean || text.isEmpty || mode == SearchMode.latin || hasJapanese(text)) return null;
     return mode == SearchMode.katakana ? RomajiToKana.toKatakana(text) : RomajiToKana.toHiragana(text);
   }
 
@@ -110,11 +116,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
     final request = ref.watch(searchRequestProvider);
-    final dictionary = ref.watch(dictionaryProvider);
-    final results = ref.watch(searchResultsProvider);
-    final preview = _preview(request.mode);
+    final korean = ref.watch(studyLanguageProvider).value == StudyLanguage.ko;
+    // Only the dictionary of the language being learned is opened.
+    final AsyncValue<Object> dictionary = korean ? ref.watch(koreanDictProvider) : ref.watch(dictionaryProvider);
+    final results = ref.watch(korean ? koreanSearchResultsProvider : searchResultsProvider);
+    final preview = _preview(request.mode, korean: korean);
     ref.listen(quickSearchProvider, (_, open) {
       if (open) _focusField();
+    });
+    // A query in the other language means nothing in the new dictionary.
+    ref.listen(studyLanguageProvider, (before, now) {
+      if (before?.value != null && before?.value != now.value) _clear();
     });
 
     return Scaffold(
@@ -126,13 +138,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             // Scrolling down hides the field, scrolling up a little shows it
             // again (ui-design §5.3).
             SliverFloatingHeader(
-              child: ColoredBox(color: colors.bg, child: _header(context, l10n, colors, request, preview)),
+              child: ColoredBox(
+                color: colors.bg,
+                child: _header(context, l10n, colors, request, preview, korean: korean),
+              ),
             ),
             ...switch (dictionary) {
               AsyncError() => [_MessageSliver(l10n.dictionaryFailed)],
               AsyncLoading() => [_MessageSliver(l10n.preparingDictionary)],
-              _ when request.text.trim().isEmpty => _EmptyState.slivers(onSearch: _searchFor),
-              _ => _results(l10n, results.value ?? const [], request),
+              _ when request.text.trim().isEmpty => _EmptyState.slivers(onSearch: _searchFor, korean: korean),
+              _ => _results(l10n, results.value ?? const [], request, korean: korean),
             },
           ],
         ),
@@ -140,7 +155,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  List<Widget> _results(AppLocalizations l10n, List<SearchHit> hits, SearchRequest request) {
+  List<Widget> _results(AppLocalizations l10n, List<SearchHit> hits, SearchRequest request, {required bool korean}) {
     if (hits.isEmpty) {
       return [
         SliverPadding(
@@ -150,7 +165,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(l10n.searchNoResults(request.text), style: AppText.body.copyWith(color: context.colors.ink)),
-                if (request.mode != SearchMode.latin) ...[
+                if (!korean && request.mode != SearchMode.latin) ...[
                   const SizedBox(height: AppSpace.m),
                   OutlinedButton(
                     onPressed: () => ref.read(searchRequestProvider.notifier).setMode(SearchMode.latin),
@@ -177,8 +192,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     AppLocalizations l10n,
     AppColors colors,
     SearchRequest request,
-    String? preview,
-  ) {
+    String? preview, {
+    required bool korean,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -201,7 +217,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               },
               style: AppText.body.copyWith(color: colors.ink),
               decoration: InputDecoration(
-                hintText: l10n.searchHint,
+                hintText: korean ? l10n.koreanSearchHint : l10n.searchHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _controller.text.isEmpty
                     ? null
@@ -212,29 +228,32 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ),
         // One row (wireframe §5.3); scrolls instead of wrapping on narrow
         // screens or large text. The checkmark keeps selection from being
-        // color-only.
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpace.screen, vertical: AppSpace.s),
-          child: Row(
-            spacing: AppSpace.s,
-            children: [
-              for (final (mode, label) in [
-                (SearchMode.hiragana, l10n.modeHiragana),
-                (SearchMode.katakana, l10n.modeKatakana),
-                (SearchMode.latin, l10n.modeLatin),
-              ])
-                ChoiceChip(
-                  label: Text(label),
-                  selected: request.mode == mode,
-                  onSelected: (_) {
-                    HapticFeedback.selectionClick();
-                    ref.read(searchRequestProvider.notifier).setMode(mode);
-                  },
-                ),
-            ],
+        // color-only. Korean has no kana modes.
+        if (korean)
+          const SizedBox(height: AppSpace.s)
+        else
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpace.screen, vertical: AppSpace.s),
+            child: Row(
+              spacing: AppSpace.s,
+              children: [
+                for (final (mode, label) in [
+                  (SearchMode.hiragana, l10n.modeHiragana),
+                  (SearchMode.katakana, l10n.modeKatakana),
+                  (SearchMode.latin, l10n.modeLatin),
+                ])
+                  ChoiceChip(
+                    label: Text(label),
+                    selected: request.mode == mode,
+                    onSelected: (_) {
+                      HapticFeedback.selectionClick();
+                      ref.read(searchRequestProvider.notifier).setMode(mode);
+                    },
+                  ),
+              ],
+            ),
           ),
-        ),
         if (preview != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(AppSpace.screen, 0, AppSpace.screen, AppSpace.s),
@@ -251,13 +270,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 }
 
 /// Before typing (ui-design §5.3): recent searches, word of the day and
-/// browse by JLPT level.
+/// browse by JLPT level, or by course topic for Korean.
 abstract final class _EmptyState {
-  static List<Widget> slivers({required ValueChanged<String> onSearch}) => [
-    SliverToBoxAdapter(child: _History(onSearch: onSearch)),
-    const SliverToBoxAdapter(child: _WordOfTheDay()),
-    const SliverToBoxAdapter(child: _StudyTools()),
-    const SliverToBoxAdapter(child: _BrowseLevels()),
+  static List<Widget> slivers({required ValueChanged<String> onSearch, required bool korean}) => [
+    SliverToBoxAdapter(
+      child: _History(onSearch: onSearch, korean: korean),
+    ),
+    if (korean) ...const [
+      SliverToBoxAdapter(child: _WordOfTheDay(korean: true)),
+      SliverToBoxAdapter(child: _BrowseTopics()),
+    ] else ...const [
+      SliverToBoxAdapter(child: _WordOfTheDay(korean: false)),
+      SliverToBoxAdapter(child: _StudyTools()),
+      SliverToBoxAdapter(child: _BrowseLevels()),
+    ],
     const SliverToBoxAdapter(child: SizedBox(height: AppSpace.xxl)),
   ];
 }
@@ -282,14 +308,21 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _History extends ConsumerWidget {
-  const _History({required this.onSearch});
+  const _History({required this.onSearch, required this.korean});
   final ValueChanged<String> onSearch;
+
+  /// Hides the other language's searches: Japanese text while Korean is
+  /// being learned, Hangul otherwise.
+  final bool korean;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
-    final history = ref.watch(searchHistoryProvider).value ?? const <String>[];
+    final history = [
+      for (final q in ref.watch(searchHistoryProvider).value ?? const <String>[])
+        if (korean ? !hasJapanese(q) : !hasHangul(q)) q,
+    ];
     if (history.isEmpty) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(AppSpace.screen, AppSpace.l, AppSpace.screen, 0),
@@ -324,11 +357,12 @@ class _History extends ConsumerWidget {
 }
 
 class _WordOfTheDay extends ConsumerWidget {
-  const _WordOfTheDay();
+  const _WordOfTheDay({required this.korean});
+  final bool korean;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final word = ref.watch(wordOfTheDayProvider).value;
+    final word = ref.watch(korean ? koWordOfTheDayProvider : wordOfTheDayProvider).value;
     if (word == null) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -352,9 +386,16 @@ class _StudyTools extends StatelessWidget {
     Widget tool(String glyph, String title, String body, Widget Function() screen, {bool dialog = false}) => ListTile(
       leading: CircleAvatar(
         backgroundColor: c.primary.withValues(alpha: 0.12),
-        child: Text(glyph, locale: const Locale('ja'), style: AppText.bodyJp.copyWith(color: c.primaryText)),
+        child: Text(
+          glyph,
+          locale: const Locale('ja'),
+          style: AppText.bodyJp.copyWith(color: c.primaryText),
+        ),
       ),
-      title: Text(title, style: AppText.body.copyWith(color: c.ink, fontWeight: FontWeight.w600)),
+      title: Text(
+        title,
+        style: AppText.body.copyWith(color: c.ink, fontWeight: FontWeight.w600),
+      ),
       subtitle: Text(body, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
       trailing: Icon(Icons.chevron_right_rounded, color: c.inkMuted),
       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen(), fullscreenDialog: dialog)),
@@ -407,6 +448,60 @@ class _BrowseLevels extends ConsumerWidget {
                   ),
                   onPressed: () =>
                       Navigator.of(context).push(MaterialPageRoute(builder: (_) => LevelWordsScreen(level: level))),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The Korean course topics, each opening its words.
+class _BrowseTopics extends ConsumerWidget {
+  const _BrowseTopics();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final course = ref.watch(koWordsProvider).value;
+    if (course == null) return const SizedBox.shrink();
+    final counts = <String, int>{};
+    for (final w in course.words) {
+      counts[w.topic] = (counts[w.topic] ?? 0) + 1;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionTitle(l10n.browseByTopic),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpace.screen),
+          child: Wrap(
+            spacing: AppSpace.s,
+            runSpacing: AppSpace.s,
+            children: [
+              for (final MapEntry(key: topic, value: title) in course.topics.entries)
+                ActionChip(
+                  label: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: title.of(l10n.localeName),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        if (counts[topic] case final n?)
+                          TextSpan(
+                            text: '  ${l10n.levelWordCount(n)}',
+                            style: TextStyle(color: context.colors.inkMuted),
+                          ),
+                      ],
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => KoreanTopicWordsScreen(topic: topic, title: title.of(l10n.localeName)),
+                    ),
+                  ),
                 ),
             ],
           ),

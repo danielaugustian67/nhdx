@@ -1008,7 +1008,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderPlain =>
-      'Time for a little Japanese. A few minutes is enough.';
+      'Time for a little study. A few minutes is enough.';
 
   @override
   String get quickSearch => 'Search the dictionary';
@@ -1871,4 +1871,56 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get speechUnavailableKorean =>
       'No Korean voice on this phone yet. Install one in phone Settings › Text-to-speech › Korean.';
+
+  @override
+  String get streakReminder => 'Streak reminder';
+
+  @override
+  String get streakReminderNote =>
+      'In the evening, only while a streak is running and you haven\'t studied today.';
+
+  @override
+  String get streakReminderTime => 'Streak reminder time';
+
+  @override
+  String get streakReminderChannelNote =>
+      'An evening nudge when a streak is about to end';
+
+  @override
+  String get reminderStreakRisk =>
+      'No stamp for today yet. A few minutes of study keeps your streak going.';
+
+  @override
+  String get reminderStreakFreeze =>
+      'No stamp for today yet. A streak freeze would cover it, but a short session keeps the streak growing.';
+
+  @override
+  String xpTotal(int xp) {
+    return '$xp XP in total';
+  }
+
+  @override
+  String get koreanSearchHint => 'Search Hangul, romanization or meanings';
+
+  @override
+  String get browseByTopic => 'Browse by topic';
+
+  @override
+  String koreanCourseWord(String topic) {
+    return 'Course: $topic';
+  }
+
+  @override
+  String get wiktionaryMeanings => 'Meanings from Wiktionary';
+
+  @override
+  String get wiktionarySource => 'Source: Wiktionary, CC BY-SA 4.0';
+
+  @override
+  String get koreanProgress => 'Korean progress';
+
+  @override
+  String lettersOf(int learned, int total) {
+    return '$learned of $total letters';
+  }
 }

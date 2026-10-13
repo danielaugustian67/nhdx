@@ -12,8 +12,9 @@ Runs the complete pipeline to generate dictionary.db and content.db:
  8. Finalize dictionary.db (+ .gz, checksum)
  9. Test & benchmark dictionary.db
 10. Build content.db (kana, kana strokes, curriculum)
-11. Download + subset the OFL fonts into ../assets/fonts
-12. Export .gz + manifest.json to ../assets/db for the Flutter app
+11. Build korean.db (Korean dictionary: Wiktionary + the course words)
+12. Download + subset the OFL fonts into ../assets/fonts
+13. Export .gz + manifest.json to ../assets/db for the Flutter app
 
 Usage:
     python build_all.py                  # Run full pipeline
@@ -86,6 +87,12 @@ PIPELINE_STEPS = [
     {
         "name": "Build content.db",
         "script": "build_content_db.py",
+        "args": [],
+        "skippable": False,
+    },
+    {
+        "name": "Build korean.db",
+        "script": "build_korean_dict.py",
         "args": [],
         "skippable": False,
     },

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/providers.dart';
+import '../learn/study_language.dart';
 import 'search_service.dart';
 
 class SearchRequest {
@@ -26,4 +27,14 @@ final searchResultsProvider = FutureProvider<List<SearchHit>>((ref) async {
   if (request.text.trim().isEmpty) return const [];
   final service = await ref.watch(searchServiceProvider.future);
   return service.search(request.text, mode: request.mode);
+});
+
+/// Results in the Korean dictionary for the same request (Korean is being
+/// learned), with meanings in the app language where the word has one.
+final koreanSearchResultsProvider = FutureProvider<List<SearchHit>>((ref) async {
+  final request = ref.watch(searchRequestProvider);
+  if (request.text.trim().isEmpty) return const [];
+  final language = ref.watch(contentLanguageProvider);
+  final service = await ref.watch(koreanSearchServiceProvider.future);
+  return service.search(request.text, language: language);
 });

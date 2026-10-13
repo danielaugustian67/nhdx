@@ -10,7 +10,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
-import '../../core/widgets/xp_chip.dart';
 import '../../l10n/app_localizations.dart';
 import '../free_study/free_study_screen.dart';
 import '../kana/games/memory_match_screen.dart';
@@ -24,6 +23,8 @@ import '../learn/lesson_screen.dart';
 import '../learn/path_providers.dart';
 import '../learn/study_language.dart';
 import '../learn/vocab_path.dart';
+import '../progress/me_screen.dart';
+import '../progress/progress_providers.dart';
 import '../search/quick_search.dart';
 import '../srs/review_screen.dart';
 import '../srs/srs_providers.dart';
@@ -296,7 +297,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
               const SizedBox(width: AppSpace.s),
               _ReviewChip(onTap: _review),
               const SizedBox(width: AppSpace.s),
-              XpChip(xp),
+              _StreakChip(xp: xp),
             ],
           ),
           actions: [
@@ -388,6 +389,115 @@ class _ReviewChip extends ConsumerWidget {
       ],
     ),
   );
+}
+
+/// Streak and XP in one pill: a stamp, filled once today is studied, with
+/// the streak days, then the XP. Opens the goal and streak card.
+class _StreakChip extends ConsumerWidget {
+  const _StreakChip({required this.xp});
+  final int xp;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = context.colors;
+    final l10n = AppLocalizations.of(context);
+    final streak = ref.watch(streakProvider);
+    final days = streak.current;
+    return Semantics(
+      button: true,
+      label: '${l10n.streakDays(days)}, ${l10n.xpAmount(xp)}',
+      excludeSemantics: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          useSafeArea: true,
+          showDragHandle: true,
+          isScrollControlled: true,
+          builder: (_) => _StreakSheet(xp: xp),
+        ),
+        // 48dp touch area around the pill.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: AppSizes.minTap),
+          child: Center(
+            widthFactor: 1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.m, vertical: AppSpace.xs + 2),
+              decoration: BoxDecoration(
+                color: c.surfaceHigh,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: streak.activeToday ? c.seal.withValues(alpha: 0.6) : c.line),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _MiniStamp(on: streak.activeToday, color: days > 0 ? c.seal : c.inkMuted),
+                  const SizedBox(width: AppSpace.xs),
+                  Text(
+                    '$days',
+                    style: AppText.label.copyWith(color: days > 0 ? c.seal : c.inkMuted, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(width: AppSpace.s),
+                  Icon(Icons.bolt_rounded, size: 18, color: c.gold),
+                  Text('$xp', style: AppText.label.copyWith(color: c.gold, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A small seal: filled with a tick once today is studied, a ring before.
+class _MiniStamp extends StatelessWidget {
+  const _MiniStamp({required this.on, required this.color});
+  final bool on;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 18,
+    height: 18,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: on ? color : null,
+      border: Border.all(color: color, width: 2),
+    ),
+    child: on ? Icon(Icons.check_rounded, size: 12, color: context.colors.bg) : null,
+  );
+}
+
+/// Today's goal, the streak stamps and freezes (as on Saya), and total XP.
+class _StreakSheet extends StatelessWidget {
+  const _StreakSheet({required this.xp});
+  final int xp;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l10n = AppLocalizations.of(context);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(AppSpace.screen, 0, AppSpace.screen, AppSpace.l),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const GoalCard(),
+          const SizedBox(height: AppSpace.m),
+          Row(
+            children: [
+              Icon(Icons.bolt_rounded, size: 20, color: c.gold),
+              const SizedBox(width: AppSpace.xs),
+              Expanded(
+                child: Text(l10n.xpTotal(xp), style: AppText.body.copyWith(color: c.ink)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// "Kana | Kanji | Kata" course switch in the top bar. Each course keeps its

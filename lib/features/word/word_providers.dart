@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
 import '../../core/database/user_db.dart';
 import '../../core/study_day.dart';
+import '../learn/study_language.dart';
 
 /// One dictionary entry for the detail page.
 final wordEntryProvider = FutureProvider.family<WordEntry?, int>(
@@ -29,10 +31,19 @@ void setBookmark(WidgetRef ref, int wordId, {required bool on, required String l
 
 /// Bookmarks joined with their dictionary rows. A null brief means the
 /// entry is gone from the dataset ("yatim", shown with its label snapshot).
+/// Only the words of the language being learned: Korean words (ids from
+/// [koWordIdBase]) come from korean.db, in the app language where they have
+/// an Indonesian meaning.
 final collectionProvider = FutureProvider<List<(Bookmark, WordBrief?)>>((ref) async {
-  final marks = await ref.watch(bookmarksProvider.future);
-  final dict = await ref.watch(dictionaryProvider.future);
-  final briefs = dict.briefs(marks.map((b) => b.wordId));
+  final korean = await ref.watch(studyLanguageProvider.future) == StudyLanguage.ko;
+  final marks = [
+    for (final b in await ref.watch(bookmarksProvider.future))
+      if ((b.wordId >= koWordIdBase) == korean) b,
+  ];
+  final ids = marks.map((b) => b.wordId);
+  final briefs = korean
+      ? (await ref.watch(koreanDictProvider.future)).briefs(ids, language: ref.watch(contentLanguageProvider))
+      : (await ref.watch(dictionaryProvider.future)).briefs(ids);
   return [for (final b in marks) (b, briefs[b.wordId])];
 });
 
@@ -50,4 +61,10 @@ final wordOfTheDayProvider = FutureProvider<WordBrief?>(
 final levelCountsProvider = FutureProvider<Map<int, int>>((ref) async {
   final dict = await ref.watch(dictionaryProvider.future);
   return {for (var level = 5; level >= 1; level--) level: dict.levelCount(level)};
+});
+
+/// A Korean course word for the Kamus tab while Korean is being learned.
+final koWordOfTheDayProvider = FutureProvider<WordBrief?>((ref) async {
+  final language = ref.watch(contentLanguageProvider);
+  return (await ref.watch(koreanDictProvider.future)).wordOfTheDay(todayStudyDate(), language: language);
 });

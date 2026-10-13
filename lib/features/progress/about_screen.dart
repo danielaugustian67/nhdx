@@ -38,6 +38,12 @@ class AboutScreen extends ConsumerWidget {
       'Word levels are community estimates; the official JLPT publishes no word lists.',
     ),
     (
+      'Wiktionary (Korean)',
+      'Wiktionary contributors, extracted by kaikki.org (wiktextract)',
+      'CC BY-SA 4.0 / GFDL',
+      'Korean dictionary meanings, romanization and hanja. en.wiktionary.org',
+    ),
+    (
       'Fonts',
       'Plus Jakarta Sans, Zen Kaku Gothic New, Shippori Mincho, Klee One',
       'SIL Open Font License 1.1',

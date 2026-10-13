@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/text/hangul.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -17,6 +18,7 @@ class WordRow extends StatelessWidget {
   final Widget? trailing;
 
   static const _ja = Locale('ja');
+  static const _ko = Locale('ko');
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +50,7 @@ class WordRow extends StatelessWidget {
                           Expanded(
                             child: Text(
                               hit.headword,
-                              locale: _ja,
+                              locale: hasHangul(hit.headword) ? _ko : _ja,
                               style: AppText.rowHeadword.copyWith(color: colors.ink),
                             ),
                           ),
