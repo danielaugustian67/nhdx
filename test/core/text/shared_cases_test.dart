@@ -14,7 +14,9 @@ void main() {
   };
   const notInApp = {
     'kana_to_romaji': 'pipeline only (romaji is precomputed in dictionary.db)',
-    'stem_id': 'Dart port of the Sastrawi stemmer is pending (Fase 1)',
+    // Dictionary meanings are English only (prd.md §F1.2, Oct 2026), so the
+    // app never stems Indonesian queries.
+    'stem_id': 'pipeline only (meanings are English only; no Dart stemmer)',
   };
 
   final dir = Directory('data_pipeline/shared_test_cases');

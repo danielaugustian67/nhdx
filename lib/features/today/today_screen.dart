@@ -28,6 +28,7 @@ import '../progress/progress_providers.dart';
 import '../search/quick_search.dart';
 import '../srs/review_screen.dart';
 import '../srs/srs_providers.dart';
+import 'pixel_island.dart';
 
 /// Unit banner colors; white text on each is ≥ 4.5:1 (ui-design §5.2).
 const unitColors = [
@@ -807,8 +808,9 @@ class _UnitPath extends StatelessWidget {
   };
 }
 
-/// Thick round lesson button: gold when done, unit color when current,
-/// grey with a lock when locked (icon + semantics, never color alone).
+/// Lesson button drawn as a pixel island (pixel_island.dart): gold when done,
+/// unit color when open, grey with a lock when locked (icon + semantics,
+/// never color alone).
 class _PathNodeButton extends StatefulWidget {
   const _PathNodeButton({
     super.key,
@@ -836,7 +838,6 @@ class _PathNodeButton extends StatefulWidget {
 class _PathNodeButtonState extends State<_PathNodeButton> with SingleTickerProviderStateMixin {
   late final _bounce = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
   bool _down = false;
-  static const _size = 74.0, _edge = 7.0;
 
   @override
   void didChangeDependencies() {
@@ -858,52 +859,15 @@ class _PathNodeButtonState extends State<_PathNodeButton> with SingleTickerProvi
     super.dispose();
   }
 
-  IconData get _icon => switch (widget.node.type) {
-    NodeType.intro => Icons.star_rounded,
-    NodeType.write => Icons.draw_rounded,
-    NodeType.review => Icons.replay_rounded,
-    NodeType.match => Icons.style_rounded,
-    NodeType.speed => Icons.bolt_rounded,
-    NodeType.chest => Icons.redeem_rounded,
-  };
-
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
     final l10n = AppLocalizations.of(context);
-    final (face, iconColor, icon) = switch (widget.state) {
-      NodeState.done => (c.goldFill, const Color(0xFF3D2A00), Icons.check_rounded),
-      NodeState.current || NodeState.open => (widget.color, Colors.white, _icon),
-      NodeState.locked => (c.surfaceHigh, c.inkMuted, widget.node.type == NodeType.chest ? _icon : Icons.lock_rounded),
-    };
-    final edge = Color.lerp(face, Colors.black, 0.4)!;
-    final sink = _down ? _edge - 2 : 0.0;
-
-    final circle = SizedBox(
-      width: _size,
-      height: _size + _edge,
-      child: Stack(
-        children: [
-          Positioned(
-            top: _edge,
-            child: Container(
-              width: _size,
-              height: _size,
-              decoration: BoxDecoration(color: edge, shape: BoxShape.circle),
-            ),
-          ),
-          AnimatedPositioned(
-            duration: AppDurations.press,
-            top: sink,
-            child: Container(
-              width: _size,
-              height: _size,
-              decoration: BoxDecoration(color: face, shape: BoxShape.circle),
-              child: Icon(icon, size: 36, color: iconColor),
-            ),
-          ),
-        ],
-      ),
+    final island = PixelIsland(
+      type: widget.node.type,
+      state: widget.state,
+      unitColor: widget.color,
+      seed: widget.node.id.codeUnits.fold(0, (h, u) => (h * 31 + u) & 0x7fffffff),
+      pressed: _down,
     );
 
     return Semantics(
@@ -933,17 +897,7 @@ class _PathNodeButtonState extends State<_PathNodeButton> with SingleTickerProvi
                     )
                   : null,
             ),
-            if (widget.state == NodeState.current)
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: widget.color.withValues(alpha: 0.55), width: 4),
-                ),
-                child: circle,
-              )
-            else
-              circle,
+            island,
           ],
         ),
       ),
