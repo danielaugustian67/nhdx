@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' show Locale;
 
 import 'package:sqlite3/sqlite3.dart';
 
@@ -123,13 +124,27 @@ class Localized {
 }
 
 /// An example sentence of a grammar point. [chunks] spell [japanese]
-/// without its final punctuation, for the sentence-building exercise.
+/// without its final punctuation, for the sentence-building exercise
+/// (separated by spaces in Korean).
 class GrammarExample {
-  const GrammarExample({required this.japanese, required this.kana, required this.translation, this.chunks = const []});
+  const GrammarExample({
+    required this.japanese,
+    required this.kana,
+    required this.translation,
+    this.chunks = const [],
+    this.romanization,
+  });
+
+  /// The sentence; Korean for a Korean point.
   final String japanese;
+
+  /// What is read aloud: the kana reading, or the Korean sentence itself.
   final String kana;
   final Localized translation;
   final List<String> chunks;
+
+  /// Revised Romanization of a Korean sentence.
+  final String? romanization;
 }
 
 /// A fill-the-gap question: [question] has one ＿＿, [options][answer] fills it.
@@ -155,11 +170,23 @@ class GrammarPoint {
     required this.explanation,
     required this.examples,
     required this.quiz,
+    this.korean = false,
   });
 
-  /// 'n5-wa-desu'; also the SRS item id of its `grammar` card.
+  /// 'n5-wa-desu' or 'ko1-eun-neun'; also the SRS item id of its card.
   final String id;
+
+  /// JLPT level (5 = N5); for Korean the course level (1 = beginner).
   final int jlpt;
+
+  /// A Korean point (content/korean/grammar.json).
+  final bool korean;
+
+  /// Its review card type.
+  String get cardType => korean ? 'ko_grammar' : 'grammar';
+
+  /// Locale of its pattern and sentences, for the right font.
+  Locale get locale => Locale(korean ? 'ko' : 'ja');
   final int orderNo;
   final String pattern;
   final String formation;
@@ -268,17 +295,29 @@ class ContentDb {
 
   /// Grammar points, N5 first, in authored order. Empty for a content.db
   /// built before the grammar table existed.
-  List<GrammarPoint> grammar() {
-    final hasTable = _db.select("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'grammar'").isNotEmpty;
-    if (!hasTable) return const [];
+  List<GrammarPoint> grammar() => _grammar(
+    'SELECT id, jlpt_level AS level, order_no, pattern, formation, meaning, explanation, examples, quiz '
+    'FROM grammar ORDER BY jlpt_level DESC, order_no',
+    table: 'grammar',
+  );
+
+  /// Korean grammar points, beginner first, in authored order. Empty for a
+  /// content.db built before them.
+  List<GrammarPoint> koreanGrammar() => _grammar(
+    'SELECT id, level, order_no, pattern, formation, meaning, explanation, examples, quiz '
+    'FROM ko_grammar ORDER BY level, order_no',
+    table: 'ko_grammar',
+    korean: true,
+  );
+
+  List<GrammarPoint> _grammar(String sql, {required String table, bool korean = false}) {
+    if (!_hasTable(table)) return const [];
     return [
-      for (final r in _db.select(
-        'SELECT id, jlpt_level, order_no, pattern, formation, meaning, explanation, examples, quiz '
-        'FROM grammar ORDER BY jlpt_level DESC, order_no',
-      ))
+      for (final r in _db.select(sql))
         GrammarPoint(
           id: r['id'] as String,
-          jlpt: r['jlpt_level'] as int,
+          korean: korean,
+          jlpt: r['level'] as int,
           orderNo: r['order_no'] as int,
           pattern: r['pattern'] as String,
           formation: r['formation'] as String,
@@ -287,8 +326,9 @@ class ContentDb {
           examples: [
             for (final e in jsonDecode(r['examples'] as String) as List)
               GrammarExample(
-                japanese: e['ja'] as String,
-                kana: e['kana'] as String,
+                japanese: (korean ? e['ko'] : e['ja']) as String,
+                kana: (korean ? e['ko'] : e['kana']) as String,
+                romanization: korean ? e['rom'] as String? : null,
                 translation: Localized.parse(e['tr']),
                 chunks: [for (final c in (e['chunks'] as List? ?? const [])) c as String],
               ),

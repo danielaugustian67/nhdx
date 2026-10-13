@@ -7,6 +7,8 @@ Sources:
 - KanjiVG: stroke order data for kana and kanji, CC BY-SA 3.0
 - KANJIDIC2 (EDRDG): kanji meanings, readings, grade, frequency, JLPT; CC BY-SA 4.0
 - Korean entries of English Wiktionary (kaikki.org / wiktextract): korean.db; CC BY-SA 4.0 and GFDL
+- English entries of English Wiktionary (kaikki.org), kept gzipped: their
+  translation tables pair Korean words with Indonesian ones for korean.db
 """
 
 import gzip
@@ -38,6 +40,12 @@ DOWNLOADS = {
         "url": "https://kaikki.org/dictionary/Korean/kaikki.org-dictionary-Korean.jsonl",
         "filename": "korean/kaikki-korean.jsonl",
         "description": "Korean entries of English Wiktionary (kaikki.org)",
+        "compressed": False,
+    },
+    "english": {
+        "url": "https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.jsonl.gz",
+        "filename": "english/kaikki-english.jsonl.gz",
+        "description": "English entries of English Wiktionary (kaikki.org, ~520 MB)",
         "compressed": False,
     },
     "kanjidic": {
@@ -197,6 +205,9 @@ def main() -> None:
 
     print("\n[5/5] Korean Wiktionary (Korean dictionary)")
     info = DOWNLOADS["korean"]
+    (SOURCES_DIR / info["filename"]).parent.mkdir(exist_ok=True)
+    download_file(info["url"], SOURCES_DIR / info["filename"], info["description"], info["compressed"])
+    info = DOWNLOADS["english"]
     (SOURCES_DIR / info["filename"]).parent.mkdir(exist_ok=True)
     download_file(info["url"], SOURCES_DIR / info["filename"], info["description"], info["compressed"])
 

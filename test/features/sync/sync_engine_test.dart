@@ -213,6 +213,33 @@ void main() {
     expect((await b.watchBookmarks().first).map((r) => r.wordId).toSet(), {1, 3});
   });
 
+  test('a table the cloud rejects does not hold back the others', () async {
+    final a = device(), b = device();
+    await b.setSetting('daily_goal', '40');
+    await engine(b).sync();
+
+    await a.addCard('hangul', 'ㄱ', label: 'ㄱ');
+    await a.setBookmark(7, on: true, label: 'w');
+    await a.addDailyStats('2026-10-11', xp: 10, newCount: 1);
+    await a.setSetting('learning_level', 'n5');
+    cloud.rejected.add('sync_push_srs_cards');
+    final sync = engine(a);
+    await expectLater(sync.sync(), throwsException);
+
+    // Tables before and after the cards went up, the other phone's goal
+    // came down…
+    expect(cloud.rows('user_bookmarks').single['word_id'], 7);
+    expect(cloud.rows('user_daily_stats').single['xp'], 10);
+    expect(cloud.rows('user_settings').map((r) => r['key']), containsAll(['learning_level', 'daily_goal']));
+    expect(await a.setting('daily_goal'), '40');
+    // …and the rejected card waits for the next try.
+    expect(await sync.pendingCount(), 1);
+    cloud.rejected.clear();
+    await sync.sync();
+    expect(await sync.pendingCount(), 0);
+    expect(cloud.rows('user_srs_cards').single['card_type'], 'hangul');
+  });
+
   test('offline leaves everything pending', () async {
     final db = device();
     await db.setSetting('learning_level', 'n5');

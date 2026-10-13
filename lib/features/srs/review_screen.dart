@@ -233,7 +233,7 @@ class _Face extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
-    const ja = Locale('ja');
+    final ja = Locale(hasHangul(item.front) ? 'ko' : 'ja');
     final size = item.front.length <= 2 ? 96.0 : (item.front.length <= 4 ? 64.0 : 44.0);
     if (item.reversed && !back) {
       // Meaning → Japanese: the meaning asks, the full word card answers.

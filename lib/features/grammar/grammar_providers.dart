@@ -9,11 +9,18 @@ final grammarProvider = FutureProvider<List<GrammarPoint>>((ref) async {
   return content.grammar();
 });
 
+/// Korean grammar points, beginner first.
+final koGrammarProvider = FutureProvider<List<GrammarPoint>>((ref) async {
+  final content = await ref.watch(contentProvider.future);
+  return content.koreanGrammar();
+});
+
 /// Path-progress key of a finished grammar point.
 String grammarDoneKey(String id) => 'grammar-$id';
 
-/// Ids of grammar points that have a review card.
-final grammarCardIdsProvider = StreamProvider<Set<String>>((ref) async* {
+/// Ids of grammar points that have a review card of [cardType]
+/// ([GrammarPoint.cardType]).
+final grammarCardIdsProvider = StreamProvider.family<Set<String>, String>((ref, cardType) async* {
   final db = await ref.watch(userDbProvider.future);
-  yield* db.watchCardItems('grammar');
+  yield* db.watchCardItems(cardType);
 });

@@ -87,7 +87,7 @@ final collectionItemsProvider = FutureProvider<List<Glyph>>((ref) async {
 final forgottenItemsProvider = FutureProvider<List<Glyph>>((ref) async {
   final cards = await ref.watch(liveCardsProvider.future);
   final korean = await ref.watch(studyLanguageProvider.future) == StudyLanguage.ko;
-  final types = korean ? koreanCardTypes.toSet() : const {'kana', 'kanji', 'word'};
+  final types = korean ? const {'hangul', 'ko_word'} : const {'kana', 'kanji', 'word'};
   final lapses = <String, ({String type, String id, int lapses})>{};
   for (final c in cards) {
     if (c.lapses == 0 || !types.contains(c.cardType)) continue;

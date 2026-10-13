@@ -36,7 +36,7 @@ String resultStamp(StudyLanguage? language, {required bool passed}) => language 
     : (passed ? '済' : '習');
 
 /// SRS card types of the Korean course; every other type is Japanese.
-const koreanCardTypes = ['hangul', 'ko_word'];
+const koreanCardTypes = ['hangul', 'ko_word', 'ko_grammar', 'ko_conjugation'];
 
 /// Whether [g] belongs to the Korean course (a Hangul letter or a Korean word).
 bool isKoreanItem(Glyph g) => (g is Kana && g.isHangul) || (g is VocabWord && g.word.isKorean);

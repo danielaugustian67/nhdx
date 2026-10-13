@@ -13,6 +13,9 @@ Build content.db (PRD §9.B) for v1.0:
                 Korean course: Hangul letters and syllables from
                 content/korean/hangul.json, basic (TOPIK I) words by topic from
                 content/korean/words.json
+- ko_grammar    Korean grammar points from content/korean/grammar.json, in the
+                grammar format with "ko" (sentence) and "rom" (romanization)
+                for "ja" and "kana", ids "ko1-…" and chunks joined by spaces
 - id_redirects, meta
 
 Curriculum file format (one file per course, e.g. content/curriculum/n5.json):
@@ -69,7 +72,7 @@ CURRICULUM_DIR = ROOT.parent / "content" / "curriculum"
 GRAMMAR_DIR = ROOT.parent / "content" / "grammar"
 KOREAN_DIR = ROOT.parent / "content" / "korean"
 
-CONTENT_VERSION = "1.5.0"
+CONTENT_VERSION = "1.6.0"
 
 # (row_group, kana) in gojūon order
 BASIC_ROWS = [
@@ -122,6 +125,16 @@ CREATE TABLE grammar (
   explanation TEXT NOT NULL,         -- JSON {"id": …, "en": …}
   examples TEXT NOT NULL,            -- JSON [{"ja", "kana", "tr": {id, en}, "chunks"?}]
   quiz TEXT NOT NULL                 -- JSON [{"q", "options", "answer", "tr": {id, en}}]
+);
+
+CREATE TABLE ko_grammar (
+  id TEXT PRIMARY KEY,               -- 'ko1-eun-neun'
+  level INTEGER NOT NULL,            -- 1 = beginner (TOPIK I)
+  order_no INTEGER NOT NULL,
+  pattern TEXT NOT NULL, formation TEXT NOT NULL,
+  meaning TEXT NOT NULL, explanation TEXT NOT NULL,
+  examples TEXT NOT NULL,            -- JSON [{"ko", "rom", "tr": {id, en}, "chunks"?}]
+  quiz TEXT NOT NULL
 );
 
 CREATE TABLE hangul (
@@ -323,17 +336,18 @@ GAP = "＿＿"
 END_PUNCTUATION = "。！？!?"
 
 
-def _check_point(p: dict, level: int) -> list[str]:
+def _check_point(p: dict, level: int, korean: bool = False) -> list[str]:
     """Problems with one grammar point, as messages."""
     errors = []
     pid = p.get("id", "?")
+    prefix, text, reading, joiner = ("ko", "ko", "rom", " ") if korean else ("n", "ja", "kana", "")
 
     def tr(v, where):
         if not (isinstance(v, dict) and all(isinstance(v.get(k), str) and v[k].strip() for k in ("id", "en"))):
             errors.append(f"{pid}: {where} needs non-empty id and en")
 
-    if not re.fullmatch(rf"n{level}-[a-z0-9-]+", pid):
-        errors.append(f"{pid}: id must look like n{level}-name")
+    if not re.fullmatch(rf"{prefix}{level}-[a-z0-9-]+", pid):
+        errors.append(f"{pid}: id must look like {prefix}{level}-name")
     for key in ("pattern", "formation"):
         if not (isinstance(p.get(key), str) and p[key].strip()):
             errors.append(f"{pid}: missing {key}")
@@ -343,16 +357,16 @@ def _check_point(p: dict, level: int) -> list[str]:
     if not examples:
         errors.append(f"{pid}: no examples")
     for i, e in enumerate(examples, 1):
-        if not (e.get("ja") and e.get("kana")):
-            errors.append(f"{pid}: example {i} needs ja and kana")
+        if not (e.get(text) and e.get(reading)):
+            errors.append(f"{pid}: example {i} needs {text} and {reading}")
             continue
         tr(e.get("tr"), f"example {i} tr")
         chunks = e.get("chunks")
         if chunks is not None:
             if len(chunks) < 2 or len(set(chunks)) != len(chunks):
                 errors.append(f"{pid}: example {i} needs 2+ distinct chunks")
-            if "".join(chunks) != e["ja"].rstrip(END_PUNCTUATION):
-                errors.append(f"{pid}: example {i} chunks {''.join(chunks)} ≠ {e['ja']}")
+            if joiner.join(chunks) != e[text].rstrip(END_PUNCTUATION + "."):
+                errors.append(f"{pid}: example {i} chunks {joiner.join(chunks)} ≠ {e[text]}")
     if not any(e.get("chunks") for e in examples):
         errors.append(f"{pid}: no example with chunks for sentence building")
     quiz = p.get("quiz") or []
@@ -399,6 +413,31 @@ def load_grammar(conn: sqlite3.Connection) -> tuple[dict[int, int], list[str]]:
             )
             counts[level] = counts.get(level, 0) + 1
     return counts, errors
+
+
+def load_korean_grammar(conn: sqlite3.Connection) -> tuple[int, list[str]]:
+    """Korean grammar points inserted, and problems found."""
+    path = KOREAN_DIR / "grammar.json"
+    if not path.exists():
+        return 0, []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    level, errors, seen, count = data["level"], [], set(), 0
+    for order_no, p in enumerate(data["points"], 1):
+        problems = _check_point(p, level, korean=True)
+        if p.get("id") in seen:
+            problems.append(f"{p.get('id')}: duplicate id")
+        seen.add(p.get("id"))
+        if problems:
+            errors += [f"{path.name}: {m}" for m in problems]
+            continue
+        dump = lambda v: json.dumps(v, ensure_ascii=False, separators=(",", ":"))  # noqa: E731
+        conn.execute(
+            "INSERT INTO ko_grammar VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (p["id"], level, order_no, p["pattern"], p["formation"], dump(p["meaning"]),
+             dump(p["explanation"]), dump(p["examples"]), dump(p["quiz"])),
+        )
+        count += 1
+    return count, errors
 
 
 # Revised Romanization of a syllable on its own (no sound changes across
@@ -560,7 +599,9 @@ def main() -> None:
         print(f"  ✗ {m}")
 
     hangul_rows, ko_words, korean_errors = load_korean(conn)
-    print(f"  ✓ korean: {hangul_rows} hangul, {ko_words} words")
+    ko_grammar, ko_grammar_errors = load_korean_grammar(conn)
+    korean_errors += ko_grammar_errors
+    print(f"  ✓ korean: {hangul_rows} hangul, {ko_words} words, {ko_grammar} grammar points")
     for m in korean_errors:
         print(f"  ✗ {m}")
 

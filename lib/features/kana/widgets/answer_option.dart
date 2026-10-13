@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/text/hangul.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -30,6 +31,7 @@ class AnswerOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final korean = isKana && hasHangul(label);
     final (border, fill, icon) = switch (state) {
       OptionState.correct => (c.success, c.success.withValues(alpha: 0.16), Icons.check_circle_rounded),
       OptionState.wrong => (c.seal, c.seal.withValues(alpha: 0.14), Icons.cancel_rounded),
@@ -72,9 +74,10 @@ class AnswerOption extends StatelessWidget {
                           fit: BoxFit.scaleDown,
                           child: Text(
                             label,
-                            locale: isKana ? const Locale('ja') : null,
+                            locale: isKana ? Locale(korean ? 'ko' : 'ja') : null,
+                            // The stroke font has no Hangul; the system Korean font draws it.
                             style: isKana
-                                ? TextStyle(fontFamily: AppFonts.jpStroke, fontSize: 34, color: c.ink)
+                                ? TextStyle(fontFamily: korean ? null : AppFonts.jpStroke, fontSize: 34, color: c.ink)
                                 : AppText.title1.copyWith(color: state == OptionState.dimmed ? c.inkMuted : c.ink),
                           ),
                         ),

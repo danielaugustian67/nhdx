@@ -8,6 +8,12 @@ Sources:
   Hangul headwords with romanization, hanja and English senses.
 - The Korean course words (content/korean/words.json): Indonesian and English
   meanings written for learners, and their topic.
+- English entries of English Wiktionary (sources/english/kaikki-english.jsonl.gz,
+  optional): a translation table row of an English word lists Korean and
+  Indonesian words for the same sense. A Korean word outside the course gets
+  those Indonesian words as gloss_id when the English word is also one of the
+  Korean word's own meanings (both directions agree). Cached in
+  sources/english/ko-id-pairs.json.
 
 One row per Hangul headword: Wiktionary entries of the same word (homonyms,
 parts of speech) are merged into numbered sense groups. A course word keeps
@@ -43,10 +49,13 @@ from build_content_db import ko_word_id, syllable_romaja  # noqa: E402
 ROOT = Path(__file__).parent.parent
 SOURCE = ROOT / "sources" / "korean" / "kaikki-korean.jsonl"
 COURSE = ROOT.parent / "content" / "korean" / "words.json"
+ENGLISH = ROOT / "sources" / "english" / "kaikki-english.jsonl.gz"
+PAIRS = ROOT / "sources" / "english" / "ko-id-pairs.json"
+MAX_ID_WORDS = 3
 OUTPUT_DIR = ROOT / "output"
 DB_PATH = OUTPUT_DIR / "korean.db"
 
-DATASET_VERSION = "1.0.0"
+DATASET_VERSION = "1.0.1"
 DICT_ID_BASE = 100_000_000
 DICT_ID_SPAN = 2_000_000_000
 
@@ -56,6 +65,10 @@ KEEP_POS = {
     "noun", "verb", "adj", "adv", "intj", "num", "pron", "det", "particle", "phrase", "counter", "proverb",
     "contraction", "name",
 }
+# Meanings a study app for all ages leaves out: vulgar or offensive senses
+# and slurs (the word stays when it has other meanings).
+SKIP_TAGS = {"vulgar", "offensive", "derogatory", "slur", "ethnic"}
+PROFANITY = re.compile(r"\b(fuck\w*|cunt\w*|sluts?|whores?)", re.IGNORECASE)
 HEADWORD = re.compile(r"^[가-힣]+( [가-힣]+)*$")
 MAX_GROUPS = 6
 MAX_GLOSSES = 8
@@ -70,7 +83,7 @@ CREATE TABLE words (
   hanja TEXT,                      -- hanja spelling of the first meaning
   pos TEXT NOT NULL,               -- parts of speech, comma separated
   gloss TEXT NOT NULL,             -- short English meaning for lists
-  gloss_id TEXT,                   -- Indonesian meaning (course words)
+  gloss_id TEXT,                   -- Indonesian meaning (course, else translation tables)
   senses TEXT NOT NULL,            -- JSON [{"pos", "hanja", "glosses": [..]}]
   topic TEXT,                      -- course topic key, course words only
   rank INTEGER NOT NULL            -- 0 = most useful; ties in search
@@ -130,9 +143,12 @@ def read_wiktionary() -> dict[str, dict]:
                 continue
             glosses = []
             for sense in e.get("senses", []):
-                if "form_of" in sense or "alt_of" in sense or "no-gloss" in sense.get("tags", []):
+                tags = set(sense.get("tags", []))
+                if "form_of" in sense or "alt_of" in sense or "no-gloss" in tags or tags & SKIP_TAGS:
                     continue
                 text = (sense.get("glosses") or [""])[-1].strip()
+                if PROFANITY.search(text):
+                    continue
                 if text and text not in glosses:
                     glosses.append(text)
             if not glosses:
@@ -145,6 +161,56 @@ def read_wiktionary() -> dict[str, dict]:
             entry["ipa"] = entry["ipa"] or any("ipa" in s for s in e.get("sounds", []))
             entry["groups"].append({"pos": pos, "hanja": hanja, "glosses": glosses[:MAX_GLOSSES]})
     return merged
+
+
+def read_pairs() -> dict[str, list]:
+    """Korean word → [[English word, [Indonesian words]], …] from the English
+    translation tables, in the order the tables list them."""
+    if not ENGLISH.exists():
+        print(f"  ⚠ {ENGLISH.name} not found: no Indonesian meanings outside the course")
+        return {}
+    if PAIRS.exists() and PAIRS.stat().st_mtime >= ENGLISH.stat().st_mtime:
+        return json.loads(PAIRS.read_text(encoding="utf-8"))
+    print("  Reading English Wiktionary translation tables (a few minutes)...")
+    pairs: dict[str, list] = {}
+    with gzip.open(ENGLISH, "rt", encoding="utf-8") as f:
+        for line in f:
+            if '"ko"' not in line or '"id"' not in line:
+                continue
+            e = json.loads(line)
+            english = e.get("word", "")
+            rows = e.get("translations", []) + [t for s in e.get("senses", []) for t in s.get("translations", [])]
+            by_sense: dict[str, tuple[list, list]] = {}
+            for t in rows:
+                code, word = t.get("code") or t.get("lang_code"), (t.get("word") or "").strip()
+                if code in ("ko", "id") and word and not set(t.get("tags", [])) & SKIP_TAGS:
+                    ko, ind = by_sense.setdefault(t.get("sense") or "", ([], []))
+                    (ko if code == "ko" else ind).append(word)
+            for ko, ind in by_sense.values():
+                if not ind:
+                    continue
+                for word in dict.fromkeys(ko):
+                    pairs.setdefault(word, []).append([english, list(dict.fromkeys(ind))])
+    PAIRS.write_text(json.dumps(pairs, ensure_ascii=False), encoding="utf-8")
+    return pairs
+
+
+def indonesian_meaning(glosses: list[str], candidates: list) -> str | None:
+    """Indonesian words whose English pivot is one of [glosses], the word's
+    main meanings (a homonym's meanings would give the wrong word), the pivot
+    of the earliest meaning first."""
+    order: dict[str, int] = {}
+    for no, gloss in enumerate(glosses):
+        for key in gloss_keys(gloss):
+            order.setdefault(key, no)
+    picked = []
+    for english, ind in sorted(
+        (c for c in candidates if norm_gloss(c[0]) in order), key=lambda c: order[norm_gloss(c[0])]
+    ):
+        for word in ind:
+            if word.lower() not in (w.lower() for w in picked) and len(picked) < MAX_ID_WORDS:
+                picked.append(word)
+    return "; ".join(picked) or None
 
 
 def read_course() -> dict[str, dict]:
@@ -162,7 +228,8 @@ def main() -> None:
         sys.exit(1)
     wiki = read_wiktionary()
     course = read_course()
-    print(f"  Wiktionary headwords: {len(wiki)}, course words: {len(course)}")
+    pairs = read_pairs()
+    print(f"  Wiktionary headwords: {len(wiki)}, course words: {len(course)}, with translations: {len(pairs)}")
 
     rows = []
     for hangul in sorted(set(wiki) | set(course)):
@@ -178,7 +245,7 @@ def main() -> None:
             "hanja": groups[0]["hanja"],
             "pos": list(dict.fromkeys(pos)),
             "gloss": c["en"] if c else "; ".join(groups[0]["glosses"][:2]),
-            "gloss_id": c["id"] if c else None,
+            "gloss_id": c["id"] if c else indonesian_meaning(groups[0]["glosses"][:2], pairs.get(hangul, [])),
             "groups": groups,
             "topic": c["topic"] if c else None,
             "ipa": bool(w and w["ipa"]),
@@ -234,12 +301,15 @@ def main() -> None:
 
     meta = {
         "dataset_version": DATASET_VERSION,
-        "source": "English Wiktionary via kaikki.org (wiktextract); Nihondex Korean course",
+        "source": "English Wiktionary via kaikki.org (wiktextract; Korean entries and English translation tables); "
+        "Nihondex Korean course",
         "license": "CC BY-SA 4.0 / GFDL (Wiktionary)",
         "entries": str(len(rows)),
         "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
     }
     conn.executemany("INSERT INTO meta VALUES (?, ?)", meta.items())
+    translated = sum(1 for r in rows if r["topic"] is None and r["gloss_id"])
+    print(f"  Indonesian meanings outside the course: {translated}")
     conn.commit()
     conn.execute("VACUUM")
     conn.close()

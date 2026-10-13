@@ -7,6 +7,9 @@ class FakeCloud implements SyncRemote {
   var _tick = DateTime.utc(2026, 10, 1);
   bool offline = false;
 
+  /// Push RPCs that fail like a row breaking a check constraint.
+  final rejected = <String>{};
+
   /// Runs during a push, after the rows were read and before they are marked
   /// synced (to change a row "while" it is being pushed).
   Future<void> Function()? duringPush;
@@ -33,6 +36,7 @@ class FakeCloud implements SyncRemote {
   @override
   Future<void> push(String rpc, List<Row> rows) async {
     if (offline) throw Exception('SocketException: offline');
+    if (rejected.contains(rpc)) throw Exception('violates check constraint ($rpc)');
     final (table, keys) = _rpcTable[rpc]!;
     final stored = tables.putIfAbsent(table, () => {});
     for (final row in rows) {

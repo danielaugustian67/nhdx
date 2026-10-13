@@ -1965,4 +1965,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get posName => 'Proper noun';
+
+  @override
+  String get koreanTranslatedMeaning =>
+      'Indonesian meaning from Wiktionary\'s translation tables; may be inexact';
+
+  @override
+  String koConjForm(String form) {
+    String _temp0 = intl.Intl.selectLogic(form, {
+      'polite': 'Polite -아요/어요',
+      'past': 'Past -았어요/었어요',
+      'formal': 'Formal -(스)ㅂ니다',
+      'formalPast': 'Formal past -았습니다/었습니다',
+      'negative': 'Negative 안 …',
+      'longNegative': 'Negative -지 않아요',
+      'want': 'Want to -고 싶어요',
+      'future': 'Will -(으)ㄹ 거예요',
+      'honorific': 'Please -(으)세요',
+      'and': 'And -고',
+      'so': 'So, and then -아서/어서',
+      'other': '$form',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get koConjPracticeBody =>
+      'Put verbs and adjectives in the -아요/어요, -았어요, -(스)ㅂ니다 and other forms.';
+
+  @override
+  String get koConjNoWords =>
+      'No words match. Choose other word types or forms.';
 }

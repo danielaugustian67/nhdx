@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/providers.dart';
 import '../../core/study_day.dart';
+import '../../core/text/hangul.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
@@ -13,6 +14,7 @@ import '../../core/widgets/speak_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../kana/games/kana_quiz.dart';
 import '../kana/kana_providers.dart';
+import '../learn/study_language.dart';
 
 /// Stores one answer of a grammar or conjugation exercise: the attempt, and
 /// XP (with combo) for today's goal. Returns the XP given.
@@ -83,7 +85,7 @@ class AnswerFeedback extends StatelessWidget {
                   children: [
                     Text(
                       correct ? l10n.correct : l10n.conjAnswerWas(answer),
-                      locale: const Locale('ja'),
+                      locale: Locale(hasHangul(answer) ? 'ko' : 'ja'),
                       style: AppText.body.copyWith(color: c.ink, fontWeight: FontWeight.w600),
                     ),
                     if (explanation case final e? when e.isNotEmpty)
@@ -123,6 +125,7 @@ class PracticeSummary extends StatelessWidget {
     required this.added,
     required this.onAddMistakes,
     required this.onAgain,
+    this.korean = false,
   });
 
   final int correct;
@@ -132,16 +135,22 @@ class PracticeSummary extends StatelessWidget {
   final VoidCallback onAddMistakes;
   final VoidCallback onAgain;
 
+  /// Korean practice: a Korean stamp and font.
+  final bool korean;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
     final passed = total > 0 && correct / total >= 0.8;
+    final locale = Locale(korean ? 'ko' : 'ja');
     return ListView(
       padding: const EdgeInsets.all(AppSpace.screen),
       children: [
         const SizedBox(height: AppSpace.l),
-        Center(child: HankoStamp(character: passed ? '済' : '習')),
+        Center(
+          child: HankoStamp(character: resultStamp(korean ? StudyLanguage.ko : null, passed: passed)),
+        ),
         const SizedBox(height: AppSpace.l),
         Text(
           l10n.conjScore(correct, total),
@@ -160,12 +169,12 @@ class PracticeSummary extends StatelessWidget {
                   ListTile(
                     title: Text(
                       m.title,
-                      locale: const Locale('ja'),
+                      locale: locale,
                       style: AppText.bodyJp.copyWith(color: c.ink),
                     ),
                     subtitle: Text(
                       m.detail,
-                      locale: const Locale('ja'),
+                      locale: locale,
                       style: AppText.bodySmall.copyWith(color: c.inkMuted),
                     ),
                   ),

@@ -47,10 +47,11 @@ final collectionProvider = FutureProvider<List<(Bookmark, WordBrief?)>>((ref) as
   return [for (final b in marks) (b, briefs[b.wordId])];
 });
 
-/// Search history, newest first (local only).
+/// Search history of the study language, newest first (local only).
 final searchHistoryProvider = StreamProvider<List<String>>((ref) async* {
   final db = await ref.watch(userDbProvider.future);
-  yield* db.watchHistory();
+  final language = await ref.watch(studyLanguageProvider.future);
+  yield* db.watchHistory(language.name);
 });
 
 final wordOfTheDayProvider = FutureProvider<WordBrief?>(

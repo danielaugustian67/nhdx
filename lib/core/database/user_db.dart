@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 
 import '../ids.dart';
+import 'user_db.steps.dart';
 
 part 'user_db.g.dart';
 
@@ -241,6 +242,10 @@ class SearchHistory extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get query => text()();
   TextColumn get searchedAt => text()();
+
+  /// Study language the query was made in ('ja', 'ko'); null for queries
+  /// from before schema 2, shown in both.
+  TextColumn get language => text().nullable()();
 }
 
 String nowUtc() => DateTime.now().toUtc().toIso8601String();
@@ -293,13 +298,21 @@ class UserDb extends _$UserDb {
 
   /// Bump with every schema change; add a step in [migration] and run
   /// `dart run drift_dev make-migrations` to dump the schema and generate
-  /// the migration tests (development_plan Fase 0).
+  /// the migration tests (development_plan Fase 0). The generated code names
+  /// sync_state's column `tableName`, which clashes with `Table.tableName`;
+  /// rename that getter to `tableName_` in user_db.steps.dart and
+  /// test/drift/user_db/generated/schema_v*.dart afterwards.
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
+    onUpgrade: stepByStep(
+      from1To2: (m, schema) async {
+        await m.addColumn(schema.searchHistory, schema.searchHistory.language);
+      },
+    ),
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
@@ -472,29 +485,38 @@ class UserDb extends _$UserDb {
     GameScoresCompanion.insert(id: randomId(), game: game, score: score, accuracy: Value(accuracy), playedAt: nowUtc()),
   );
 
-  // ---- search history (local only, last 10) ----
+  // ---- search history (local only, last 10 per study language) ----
 
   static const historySize = 10;
 
-  Stream<List<String>> watchHistory() {
+  /// Queries made in [language] or before languages were stored.
+  Expression<bool> _inHistoryOf($SearchHistoryTable t, String language) =>
+      t.language.equals(language) | t.language.isNull();
+
+  Stream<List<String>> watchHistory(String language) {
     final q = select(searchHistory)
+      ..where((t) => _inHistoryOf(t, language))
       ..orderBy([(t) => OrderingTerm.desc(t.searchedAt), (t) => OrderingTerm.desc(t.id)])
       ..limit(historySize);
     return q.watch().map((rows) => [for (final r in rows) r.query]);
   }
 
-  Future<void> addHistory(String query) => transaction(() async {
-    await (delete(searchHistory)..where((t) => t.query.equals(query))).go();
-    await into(searchHistory).insert(SearchHistoryCompanion.insert(query: query, searchedAt: nowUtc()));
+  Future<void> addHistory(String query, String language) => transaction(() async {
+    await (delete(searchHistory)..where((t) => t.query.equals(query) & _inHistoryOf(t, language))).go();
+    await into(searchHistory)
+        .insert(SearchHistoryCompanion.insert(query: query, searchedAt: nowUtc(), language: Value(language)));
     await customStatement(
-      'DELETE FROM search_history WHERE id NOT IN '
-      '(SELECT id FROM search_history ORDER BY searched_at DESC, id DESC LIMIT $historySize)',
+      'DELETE FROM search_history WHERE (language = ? OR language IS NULL) AND id NOT IN '
+      '(SELECT id FROM search_history WHERE language = ? OR language IS NULL '
+      'ORDER BY searched_at DESC, id DESC LIMIT $historySize)',
+      [language, language],
     );
   });
 
-  Future<void> removeHistory(String query) => (delete(searchHistory)..where((t) => t.query.equals(query))).go();
+  Future<void> removeHistory(String query, String language) =>
+      (delete(searchHistory)..where((t) => t.query.equals(query) & _inHistoryOf(t, language))).go();
 
-  Future<void> clearHistory() => delete(searchHistory).go();
+  Future<void> clearHistory(String language) => (delete(searchHistory)..where((t) => _inHistoryOf(t, language))).go();
 
   // ---- bookmarks ----
 

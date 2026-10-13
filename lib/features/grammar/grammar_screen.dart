@@ -16,17 +16,20 @@ import 'grammar_practice_screen.dart';
 import 'grammar_providers.dart';
 
 /// Grammar points by level (PRD F13), each marked once its practice is
-/// passed.
+/// passed: Japanese by JLPT level, or the Korean course's.
 class GrammarScreen extends ConsumerWidget {
-  const GrammarScreen({super.key});
+  const GrammarScreen({super.key, this.korean = false});
+  final bool korean;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
-    final points = ref.watch(grammarProvider).value;
+    final points = ref.watch(korean ? koGrammarProvider : grammarProvider).value;
     final done = ref.watch(pathProgressProvider);
-    final levels = {for (final p in points ?? const <GrammarPoint>[]) p.jlpt}.toList()..sort((a, b) => b - a);
+    // N5 first, Korean beginner first.
+    final levels = {for (final p in points ?? const <GrammarPoint>[]) p.jlpt}.toList()
+      ..sort((a, b) => korean ? a - b : b - a);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.grammar),
@@ -54,14 +57,16 @@ class GrammarScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpace.l),
                   Row(
                     children: [
-                      LevelBadge(level),
+                      korean ? LevelBadge.topik(level) : LevelBadge(level),
                       const SizedBox(width: AppSpace.s),
-                      Text(
-                        l10n.grammarDoneCount(
-                          points.where((p) => p.jlpt == level && done.contains(grammarDoneKey(p.id))).length,
-                          points.where((p) => p.jlpt == level).length,
+                      Flexible(
+                        child: Text(
+                          l10n.grammarDoneCount(
+                            points.where((p) => p.jlpt == level && done.contains(grammarDoneKey(p.id))).length,
+                            points.where((p) => p.jlpt == level).length,
+                          ),
+                          style: AppText.label.copyWith(color: c.inkMuted),
                         ),
-                        style: AppText.label.copyWith(color: c.inkMuted),
                       ),
                     ],
                   ),
@@ -105,7 +110,7 @@ class _PointTile extends StatelessWidget {
     return ListTile(
       title: Text(
         point.pattern,
-        locale: const Locale('ja'),
+        locale: point.locale,
         style: AppText.bodyJp.copyWith(color: c.ink, fontWeight: FontWeight.w600),
       ),
       subtitle: Text(point.meaning.of(l10n.localeName), style: AppText.bodySmall.copyWith(color: c.inkMuted)),
@@ -127,10 +132,10 @@ class GrammarPointScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
-    const ja = Locale('ja');
+    final ja = point.locale;
     final lang = l10n.localeName;
     final done = ref.watch(pathProgressProvider).contains(grammarDoneKey(point.id));
-    final inReview = ref.watch(grammarCardIdsProvider).value?.contains(point.id) ?? false;
+    final inReview = ref.watch(grammarCardIdsProvider(point.cardType)).value?.contains(point.id) ?? false;
 
     Widget section(String title) => Padding(
       padding: const EdgeInsets.only(top: AppSpace.l, bottom: AppSpace.s),
@@ -165,7 +170,7 @@ class GrammarPointScreen extends ConsumerWidget {
                           style: AppText.displayCard.copyWith(fontSize: 32, color: c.ink),
                         ),
                       ),
-                      LevelBadge(point.jlpt),
+                      point.korean ? LevelBadge.topik(point.jlpt) : LevelBadge(point.jlpt),
                     ],
                   ),
                   const SizedBox(height: AppSpace.xs),
@@ -208,6 +213,8 @@ class GrammarPointScreen extends ConsumerWidget {
                                       locale: ja,
                                       style: AppText.bodySmallJp.copyWith(color: c.inkMuted),
                                     ),
+                                  if (e.romanization case final rom?)
+                                    Text(rom, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
                                   const SizedBox(height: AppSpace.xs),
                                   Text(e.translation.of(lang), style: AppText.bodySmall.copyWith(color: c.inkMuted)),
                                 ],
@@ -234,7 +241,7 @@ class GrammarPointScreen extends ConsumerWidget {
                     child: OutlinedButton.icon(
                       onPressed: inReview
                           ? null
-                          : () => addPracticeCards(ref, 'grammar', [(id: point.id, label: point.pattern)]),
+                          : () => addPracticeCards(ref, point.cardType, [(id: point.id, label: point.pattern)]),
                       icon: Icon(inReview ? Icons.check_rounded : Icons.add_rounded),
                       label: Text(inReview ? l10n.grammarInReview : l10n.grammarAddReview),
                     ),

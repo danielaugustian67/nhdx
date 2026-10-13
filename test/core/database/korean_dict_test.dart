@@ -67,6 +67,16 @@ void main() {
     expect(hangul('apel', language: 'id').take(3), contains('사과'));
   }, skip: skip);
 
+  test('a word that means the query first ranks above one that means it further down', () {
+    // 하다 "to do" lists "to eat" sixth, 닫다 "to close" lists "to run".
+    final eat = search.search('eat').map((h) => h.kana).toList();
+    expect(eat.take(3), containsAll(['먹다', '식사하다']));
+    expect(eat.indexOf('하다'), greaterThan(eat.indexOf('식사하다')));
+    final run = search.search('run').map((h) => h.kana).toList();
+    expect(run.indexOf('닫다'), greaterThan(run.indexOf('달리다')));
+    expect(search.search('house').take(3).map((h) => h.kana), isNot(contains('보다')));
+  }, skip: skip);
+
   test('brief rows and the word of the day come from the course', () {
     final word = dict.wordOfTheDay('2026-10-13', language: 'id')!;
     expect(word, isNotNull);
@@ -77,6 +87,27 @@ void main() {
     expect(brief[word.id]!.jlpt, isNull);
     final topic = dict.entry(word.id)!.topic!;
     expect(dict.topicWords(topic).map((w) => w.id), contains(word.id));
+  }, skip: skip);
+
+  test('words outside the course get an Indonesian meaning from translations', () {
+    final spinach = dict.entry(search.search('시금치').first.wordId)!;
+    expect(spinach.inCourse, isFalse);
+    expect(spinach.meaning('id'), 'bayam');
+    // Only the main meanings pivot: 맥's "pulse" has no translation listing
+    // it, and its homonym "tapir" must not stand in.
+    final maek = dict.entry(search.search('맥').first.wordId)!;
+    expect(maek.glossId, isNull);
+    // Indonesian search finds it.
+    expect(search.search('bayam', language: 'id').map((h) => h.kana), contains('시금치'));
+  }, skip: skip);
+
+  test('vulgar and offensive meanings are left out', () {
+    final meokda = dict.entry(search.search('먹다').first.wordId)!;
+    expect(meokda.senses.first.glosses.first, contains('to eat'));
+    final crude = dict.db.select(
+      "SELECT count(*) AS n FROM words WHERE senses LIKE '%fuck%' OR senses LIKE '%cunt%' OR senses LIKE '%whore%'",
+    );
+    expect(crude.first['n'], 0);
   }, skip: skip);
 
   test('unknown ids give null', () {

@@ -42,7 +42,13 @@ class _GrammarPracticeScreenState extends ConsumerState<GrammarPracticeScreen> {
   GrammarExercise get _current => _exercises[_index];
 
   void _answer(bool correct) {
-    recordPracticeAnswer(ref, type: 'grammar', itemId: _current.point.id, correct: correct, combo: _combo);
+    recordPracticeAnswer(
+      ref,
+      type: _current.point.cardType,
+      itemId: _current.point.id,
+      correct: correct,
+      combo: _combo,
+    );
     HapticFeedback.selectionClick();
     setState(() {
       _correct = correct;
@@ -83,7 +89,7 @@ class _GrammarPracticeScreenState extends ConsumerState<GrammarPracticeScreen> {
   void _addMistakes() {
     addPracticeCards(
       ref,
-      'grammar',
+      widget.points.first.cardType,
       {for (final e in _wrong) e.point.id: (id: e.point.id, label: e.point.pattern)}.values,
     );
     setState(() => _added = true);
@@ -123,6 +129,7 @@ class _GrammarPracticeScreenState extends ConsumerState<GrammarPracticeScreen> {
                 added: _added,
                 onAddMistakes: _addMistakes,
                 onAgain: _again,
+                korean: widget.points.first.korean,
               )
             : ListView(
                 padding: const EdgeInsets.all(AppSpace.screen),
@@ -192,7 +199,7 @@ class _GrammarPracticeScreenState extends ConsumerState<GrammarPracticeScreen> {
             ],
           ),
           textAlign: TextAlign.center,
-          locale: const Locale('ja'),
+          locale: e.point.locale,
           style: AppText.bodyJp.copyWith(fontSize: 24, color: c.ink),
         ),
         e.quiz.translation.of(l10n.localeName),
@@ -231,7 +238,7 @@ class _GrammarPracticeScreenState extends ConsumerState<GrammarPracticeScreen> {
     final complete = _placed.length == e.tiles.length;
 
     Widget tile(int i, {required bool placed}) => ActionChip(
-      label: Text(e.tiles[i], locale: const Locale('ja'), style: AppText.bodyJp.copyWith(fontSize: 18)),
+      label: Text(e.tiles[i], locale: e.point.locale, style: AppText.bodyJp.copyWith(fontSize: 18)),
       onPressed: answered ? null : () => setState(() => placed ? _placed.remove(i) : _placed.add(i)),
     );
 

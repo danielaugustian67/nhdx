@@ -113,7 +113,8 @@ class KoEntry {
   /// Short English meaning.
   final String gloss;
 
-  /// Indonesian meaning, for course words.
+  /// Indonesian meaning: the course's, else from Wiktionary's translation
+  /// tables (about a quarter of the other words).
   final String? glossId;
 
   /// Course topic key; null outside the course.

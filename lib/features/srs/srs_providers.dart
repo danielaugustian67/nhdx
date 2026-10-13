@@ -11,6 +11,8 @@ import '../../core/text/hangul.dart';
 import '../../l10n/app_localizations.dart';
 import '../conjugation/conjugation.dart';
 import '../conjugation/conjugation_practice.dart';
+import '../conjugation/ko_conjugation.dart';
+import '../conjugation/ko_conjugation_practice.dart';
 import '../grammar/grammar_providers.dart';
 import '../kana/kana_providers.dart';
 import '../learn/path_providers.dart';
@@ -294,7 +296,9 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
   final dict = language == StudyLanguage.ko ? null : await ref.read(dictionaryProvider.future);
   final kana = {for (final k in await ref.read(allKanaProvider.future)) k.literal: k};
   final kanji = {for (final k in await ref.read(allKanjiProvider.future)) k.literal: k};
-  final grammar = {for (final g in await ref.read(grammarProvider.future)) g.id: g};
+  final grammar = {
+    for (final g in [...await ref.read(grammarProvider.future), ...await ref.read(koGrammarProvider.future)]) g.id: g,
+  };
   final hangul = {for (final k in (await ref.read(hangulProvider.future)).letters) k.literal: k};
   final koWords = {for (final w in (await ref.read(koWordsProvider.future)).words) '${w.id}': w};
   final limits = await SrsLimits.load(db);
@@ -359,7 +363,8 @@ Future<List<ReviewItem>> loadReviewQueue(WidgetRef ref) async {
           null => null,
         },
         'conjugation' => dict == null ? null : _conjugationItem(c, dict),
-        'grammar' => switch (grammar[c.itemId]) {
+        'ko_conjugation' => _koConjugationItem(c, koWords),
+        'grammar' || 'ko_grammar' => switch (grammar[c.itemId]) {
           final g? => grammarReviewItem(c, g),
           null => null,
         },
@@ -389,6 +394,25 @@ ReviewItem? _conjugationItem(SrsCard c, DictionaryDb dict) {
   );
 }
 
+/// "1234567:polite": a course verb or adjective, asked for that form.
+ReviewItem? _koConjugationItem(SrsCard c, Map<String, KoWord> koWords) {
+  final [id, formName] = c.itemId.split(':').length == 2 ? c.itemId.split(':') : const ['', ''];
+  final form = KoForm.parse(formName);
+  final w = koWords[id];
+  final conj = w == null ? null : koConjWords([w]).firstOrNull?.conj;
+  if (form == null || w == null || conj == null || !conj.forms.contains(form)) return null;
+  final answer = conj.conjugate(form);
+  return ReviewItem(
+    card: c,
+    front: w.hangul,
+    romaji: w.romaja,
+    back: answer,
+    backJapanese: true,
+    speech: answer,
+    prompt: (l10n) => koFormLabel(l10n, form),
+  );
+}
+
 /// A grammar point: its pattern asks, the meaning and an example answer.
 ReviewItem grammarReviewItem(SrsCard c, GrammarPoint g) {
   final example = g.examples.isEmpty ? null : g.examples.first;
@@ -397,7 +421,7 @@ ReviewItem grammarReviewItem(SrsCard c, GrammarPoint g) {
     front: g.pattern,
     back: g.meaning.en,
     backFor: (l10n) => g.meaning.of(l10n.localeName),
-    jlpt: g.jlpt,
+    jlpt: g.korean ? null : g.jlpt,
     speech: example?.kana ?? g.pattern,
     note: example?.japanese,
     noteFor: example == null ? null : (l10n) => example.translation.of(l10n.localeName),

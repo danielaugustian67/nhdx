@@ -3211,6 +3211,30 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Nama diri'**
   String get posName;
+
+  /// Under the Indonesian meaning of a Korean word outside the course
+  ///
+  /// In id, this message translates to:
+  /// **'Arti bahasa Indonesia dari tabel terjemahan Wiktionary, bisa kurang tepat'**
+  String get koreanTranslatedMeaning;
+
+  /// A Korean conjugation form with its ending, by KoForm name
+  ///
+  /// In id, this message translates to:
+  /// **'{form, select, polite{Sopan -아요/어요} past{Lampau -았어요/었어요} formal{Resmi -(스)ㅂ니다} formalPast{Lampau resmi -았습니다/었습니다} negative{Negatif 안 …} longNegative{Negatif -지 않아요} want{Ingin -고 싶어요} future{Akan -(으)ㄹ 거예요} honorific{Permintaan -(으)세요} and{Dan -고} so{Karena, lalu -아서/어서} other{{form}}}'**
+  String koConjForm(String form);
+
+  /// No description provided for @koConjPracticeBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Ubah kata kerja dan kata sifat ke bentuk -아요/어요, -았어요, -(스)ㅂ니다, dan lainnya.'**
+  String get koConjPracticeBody;
+
+  /// No description provided for @koConjNoWords.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada kata yang cocok. Pilih jenis kata atau bentuk lain.'**
+  String get koConjNoWords;
 }
 
 class _AppLocalizationsDelegate

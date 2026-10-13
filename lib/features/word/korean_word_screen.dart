@@ -10,6 +10,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
 import '../../core/widgets/speak_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../conjugation/ko_conjugation_table.dart';
 import '../learn/path_providers.dart';
 import '../srs/srs_providers.dart';
 import 'bookmark_button.dart';
@@ -20,8 +21,9 @@ final koEntryProvider = FutureProvider.family<KoEntry?, int>(
 );
 
 /// Korean word page, the twin of the Japanese word detail: Hangul, its
-/// romanization and hanja, the course meaning (Indonesian for course words)
-/// and Wiktionary's meanings grouped by homonym and part of speech.
+/// romanization and hanja, the course meaning (Indonesian for course words;
+/// outside the course, from Wiktionary's translation tables) and Wiktionary's
+/// meanings grouped by homonym and part of speech.
 class KoreanWordScreen extends ConsumerWidget {
   const KoreanWordScreen({super.key, required this.wordId});
 
@@ -113,8 +115,12 @@ class _Body extends ConsumerWidget {
     final c = context.colors;
     final muted = AppText.bodySmall.copyWith(color: c.inkMuted);
     final topic = word.topic == null ? null : ref.watch(koWordsProvider).value?.topics[word.topic];
-    // The course meaning comes first; Wiktionary's numbered meanings follow.
-    final courseMeaning = word.inCourse ? word.meaning(l10n.localeName) : null;
+    // The main meaning comes first, Wiktionary's numbered meanings follow.
+    // Outside the course, the Indonesian meaning comes from Wiktionary's
+    // translation tables and says so.
+    final translated = !word.inCourse && l10n.localeName == 'id' ? word.glossId : null;
+    final mainMeaning = word.inCourse ? word.meaning(l10n.localeName) : translated;
+    final conj = koConjugatorOf(word.hangul, [for (final s in word.senses) s.pos]);
     var number = 0;
 
     return ListView(
@@ -148,9 +154,13 @@ class _Body extends ConsumerWidget {
             SpeakButton(word.hangul, size: 24),
           ],
         ),
-        if (courseMeaning != null) ...[
+        if (mainMeaning != null) ...[
           const SizedBox(height: AppSpace.m),
-          Text(courseMeaning, style: AppText.title2.copyWith(color: c.ink)),
+          Text(mainMeaning, style: AppText.title2.copyWith(color: c.ink)),
+          if (translated != null) ...[
+            const SizedBox(height: AppSpace.xs),
+            Text(l10n.koreanTranslatedMeaning, style: AppText.label.copyWith(color: c.inkMuted)),
+          ],
         ],
         const SizedBox(height: AppSpace.l),
         Divider(color: c.line),
@@ -182,6 +192,12 @@ class _Body extends ConsumerWidget {
                 ],
               ),
             ),
+        ],
+        if (conj != null) ...[
+          const SizedBox(height: AppSpace.l),
+          Text(l10n.conjugation, style: muted),
+          const SizedBox(height: AppSpace.s),
+          KoConjugationTable(conj: conj),
         ],
         const SizedBox(height: AppSpace.xl),
         Text(l10n.wiktionarySource, style: muted),

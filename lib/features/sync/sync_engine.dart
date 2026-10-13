@@ -188,83 +188,97 @@ class SyncEngine {
   }
 
   /// Pushes, then pulls. [full] pulls everything (sign-in recovery).
+  ///
+  /// Each table goes on its own: a table the cloud rejects (a value its
+  /// schema does not allow yet, say) stays pending while the others still
+  /// sync. The first error is rethrown afterwards so the sync counts as
+  /// failed and is retried.
   Future<void> sync({bool full = false}) async {
-    await push();
-    await pull(full: full);
+    final errors = <(Object, StackTrace)>[];
+    void collect(Object e, StackTrace st) => errors.add((e, st));
+    await push(onError: collect);
+    await pull(full: full, onError: collect);
+    if (errors.isNotEmpty) Error.throwWithStackTrace(errors.first.$1, errors.first.$2);
   }
 
-  Future<void> push() async {
+  /// Runs [body] for every table; without [onError] the first error stops.
+  Future<void> _eachTable(Future<void> Function(_Table t) body, void Function(Object, StackTrace)? onError) async {
     for (final t in _tables) {
-      while (true) {
-        final rows = await db.customSelect('SELECT * FROM ${t.local} WHERE ${_pendingWhere(t)} LIMIT $batchSize').get();
-        if (rows.isEmpty) break;
-        await remote.push(t.rpc, [for (final r in rows) _toRemote(t, r.data)]);
-        await db.transaction(() async {
-          for (final r in rows) {
-            // Only rows unchanged since they were read count as synced; a
-            // change made during the push goes in the next one.
-            final where = [for (final k in t.keys) '$k = ?', if (!t.appendOnly) 'updated_at = ?'].join(' AND ');
-            await db.customUpdate(
-              'UPDATE ${t.local} SET sync_status = 0 WHERE $where',
-              variables: [
-                for (final k in t.keys) Variable(r.data[k]),
-                if (!t.appendOnly) Variable(r.data['updated_at']),
-              ],
-              updates: {_tableInfo(t)},
-            );
-          }
-        });
-        if (rows.length < batchSize) break;
+      try {
+        await body(t);
+      } catch (e, st) {
+        if (onError == null) rethrow;
+        onError(e, st);
       }
     }
   }
 
-  Future<void> pull({bool full = false}) async {
-    for (final t in _tables) {
-      final last = full ? null : await _lastPull(t.remote);
-      final stale = last != null && _clock().toUtc().difference(DateTime.parse(last)) > purgeAfter;
-      final since = last == null || stale ? null : DateTime.parse(last).subtract(overlap).toUtc().toIso8601String();
-      // After a long absence deletions may have been purged in the cloud; rows
-      // not seen in a full pull are gone there (only synced ones are dropped).
-      final seen = stale && t.softDelete ? <String>{} : null;
-      String? newest;
-      for (var offset = 0; ; offset += pageSize) {
-        final page = await remote.pull(t.remote, since: since, order: t.keys, offset: offset, limit: pageSize);
-        if (page.isEmpty) break;
-        await db.transaction(() async {
-          for (final row in page) {
-            await _apply(t, row);
-            seen?.add('${row['id']}');
-          }
-        });
-        for (final row in page) {
-          final at = row['updated_at'] as String?;
-          if (at != null && (newest == null || DateTime.parse(at).isAfter(DateTime.parse(newest)))) newest = at;
-        }
-        if (page.length < pageSize) break;
-      }
-      if (seen != null) {
-        final gone = await db.customSelect('SELECT id FROM ${t.local} WHERE sync_status = 0').get();
-        for (final r in gone) {
-          final id = r.read<String>('id');
-          if (seen.contains(id)) continue;
+  Future<void> push({void Function(Object error, StackTrace stack)? onError}) => _eachTable((t) async {
+    while (true) {
+      final rows = await db.customSelect('SELECT * FROM ${t.local} WHERE ${_pendingWhere(t)} LIMIT $batchSize').get();
+      if (rows.isEmpty) break;
+      await remote.push(t.rpc, [for (final r in rows) _toRemote(t, r.data)]);
+      await db.transaction(() async {
+        for (final r in rows) {
+          // Only rows unchanged since they were read count as synced; a
+          // change made during the push goes in the next one.
+          final where = [for (final k in t.keys) '$k = ?', if (!t.appendOnly) 'updated_at = ?'].join(' AND ');
           await db.customUpdate(
-            'DELETE FROM ${t.local} WHERE id = ? AND sync_status = 0',
-            variables: [Variable(id)],
+            'UPDATE ${t.local} SET sync_status = 0 WHERE $where',
+            variables: [for (final k in t.keys) Variable(r.data[k]), if (!t.appendOnly) Variable(r.data['updated_at'])],
             updates: {_tableInfo(t)},
-            updateKind: UpdateKind.delete,
           );
         }
-      }
-      if (newest != null) {
-        await db.customStatement(
-          'INSERT INTO sync_state (table_name, last_pull_at) VALUES (?, ?) '
-          'ON CONFLICT (table_name) DO UPDATE SET last_pull_at = excluded.last_pull_at',
-          [t.remote, DateTime.parse(newest).toUtc().toIso8601String()],
-        );
-      }
+      });
+      if (rows.length < batchSize) break;
     }
-  }
+  }, onError);
+
+  Future<void> pull({bool full = false, void Function(Object error, StackTrace stack)? onError}) =>
+      _eachTable((t) async {
+        final last = full ? null : await _lastPull(t.remote);
+        final stale = last != null && _clock().toUtc().difference(DateTime.parse(last)) > purgeAfter;
+        final since = last == null || stale ? null : DateTime.parse(last).subtract(overlap).toUtc().toIso8601String();
+        // After a long absence deletions may have been purged in the cloud; rows
+        // not seen in a full pull are gone there (only synced ones are dropped).
+        final seen = stale && t.softDelete ? <String>{} : null;
+        String? newest;
+        for (var offset = 0; ; offset += pageSize) {
+          final page = await remote.pull(t.remote, since: since, order: t.keys, offset: offset, limit: pageSize);
+          if (page.isEmpty) break;
+          await db.transaction(() async {
+            for (final row in page) {
+              await _apply(t, row);
+              seen?.add('${row['id']}');
+            }
+          });
+          for (final row in page) {
+            final at = row['updated_at'] as String?;
+            if (at != null && (newest == null || DateTime.parse(at).isAfter(DateTime.parse(newest)))) newest = at;
+          }
+          if (page.length < pageSize) break;
+        }
+        if (seen != null) {
+          final gone = await db.customSelect('SELECT id FROM ${t.local} WHERE sync_status = 0').get();
+          for (final r in gone) {
+            final id = r.read<String>('id');
+            if (seen.contains(id)) continue;
+            await db.customUpdate(
+              'DELETE FROM ${t.local} WHERE id = ? AND sync_status = 0',
+              variables: [Variable(id)],
+              updates: {_tableInfo(t)},
+              updateKind: UpdateKind.delete,
+            );
+          }
+        }
+        if (newest != null) {
+          await db.customStatement(
+            'INSERT INTO sync_state (table_name, last_pull_at) VALUES (?, ?) '
+            'ON CONFLICT (table_name) DO UPDATE SET last_pull_at = excluded.last_pull_at',
+            [t.remote, DateTime.parse(newest).toUtc().toIso8601String()],
+          );
+        }
+      }, onError);
 
   Future<String?> _lastPull(String table) async {
     final row = await db

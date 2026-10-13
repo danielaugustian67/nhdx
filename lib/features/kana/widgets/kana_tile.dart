@@ -5,7 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/app_tokens.dart';
 
-/// Kana table tile: Klee One character + romaji; weak kana get a small seal
+/// Kana (or Hangul) table tile: Klee One character + romaji; weak kana get a small seal
 /// dot (with a semantic label, so color is not the only signal).
 class KanaTile extends StatelessWidget {
   const KanaTile({super.key, required this.kana, this.weak = false, this.onTap});
@@ -29,22 +29,31 @@ class KanaTile extends StatelessWidget {
           onTap: onTap,
           child: Stack(
             children: [
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      kana.literal,
-                      locale: const Locale('ja'),
-                      style: TextStyle(
-                        fontFamily: AppFonts.jpStroke,
-                        fontSize: kana.isYoon ? 24 : 28,
-                        height: 1.2,
-                        color: c.ink,
-                      ),
+              // Large text shrinks to the tile instead of overflowing it.
+              Padding(
+                padding: const EdgeInsets.all(2),
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          kana.literal,
+                          // The stroke font has no Hangul; the system Korean
+                          // font draws it.
+                          locale: Locale(kana.isHangul ? 'ko' : 'ja'),
+                          style: TextStyle(
+                            fontFamily: kana.isHangul ? null : AppFonts.jpStroke,
+                            fontSize: kana.isYoon ? 24 : 28,
+                            height: 1.2,
+                            color: c.ink,
+                          ),
+                        ),
+                        Text(kana.romaji, maxLines: 1, style: AppText.label.copyWith(color: c.inkMuted)),
+                      ],
                     ),
-                    Text(kana.romaji, style: AppText.label.copyWith(color: c.inkMuted)),
-                  ],
+                  ),
                 ),
               ),
               if (weak)

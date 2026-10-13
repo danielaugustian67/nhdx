@@ -39,8 +39,9 @@ void main() {
     final db = UserDb.memory();
     await tester.runAsync(() async {
       await db.setSetting(StudyLanguage.settingKey, StudyLanguage.ko.name);
-      await db.addHistory('食べる');
-      await db.addHistory('사과');
+      await db.addHistory('食べる', 'ja');
+      await db.addHistory('eat', 'ja');
+      await db.addHistory('사과', 'ko');
       await setup?.call(db);
     });
     await tester.pumpWidget(
@@ -86,6 +87,8 @@ void main() {
     expect(find.text('Hiragana'), findsNothing);
     expect(find.text('사과'), findsOneWidget);
     expect(find.text('食べる'), findsNothing);
+    // A Latin search made while learning Japanese stays there.
+    expect(find.text('eat'), findsNothing);
     expect(find.text('Telusuri per topik'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'apel');

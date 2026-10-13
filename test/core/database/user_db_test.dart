@@ -55,14 +55,31 @@ void main() {
 
   test('search history keeps the last 10, newest first, without duplicates', () async {
     for (var i = 0; i < 12; i++) {
-      await db.addHistory('q$i');
+      await db.addHistory('q$i', 'ja');
     }
-    await db.addHistory('q5');
-    final history = await db.watchHistory().first;
+    await db.addHistory('q5', 'ja');
+    final history = await db.watchHistory('ja').first;
     expect(history.length, 10);
     expect(history.first, 'q5');
     expect(history.where((q) => q == 'q5').length, 1);
     expect(history, isNot(contains('q0')));
+  });
+
+  test('each study language keeps its own search history', () async {
+    await db.addHistory('eat', 'ja');
+    await db.addHistory('water', 'ko');
+    for (var i = 0; i < 12; i++) {
+      await db.addHistory('k$i', 'ko');
+    }
+    expect(await db.watchHistory('ja').first, ['eat']);
+    expect(await db.watchHistory('ko').first, isNot(contains('eat')));
+    // A full Korean history does not push out Japanese searches.
+    expect(await db.watchHistory('ko').first, hasLength(10));
+    await db.clearHistory('ko');
+    expect(await db.watchHistory('ko').first, isEmpty);
+    expect(await db.watchHistory('ja').first, ['eat']);
+    await db.removeHistory('eat', 'ja');
+    expect(await db.watchHistory('ja').first, isEmpty);
   });
 
   test('a bookmark toggled off and on is the same row', () async {

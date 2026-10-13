@@ -1,0 +1,401 @@
+{
+  "level": 1,
+  "points": [
+    {
+      "id": "ko1-eun-neun",
+      "pattern": "N은/는",
+      "meaning": {"id": "penanda topik", "en": "topic marker"},
+      "formation": "N (받침 O) + 은 · N (받침 X) + 는",
+      "explanation": {
+        "id": "은/는 menandai topik kalimat, yaitu hal yang sedang dibicarakan. Pakai 은 setelah kata yang berakhiran konsonan (받침 O), 는 setelah kata yang berakhiran vokal (받침 X).",
+        "en": "은/는 marks the topic, what the sentence is about. Use 은 after a word ending in a consonant (받침 O) and 는 after a vowel (받침 X)."
+      },
+      "examples": [
+        {"ko": "저는 학생이에요.", "rom": "jeoneun haksaengieyo.", "tr": {"id": "Saya pelajar.", "en": "I am a student."}, "chunks": ["저는", "학생이에요"]},
+        {"ko": "이름은 민수예요.", "rom": "ireumeun minsuyeyo.", "tr": {"id": "Nama saya Minsu.", "en": "My name is Minsu."}, "chunks": ["이름은", "민수예요"]}
+      ],
+      "quiz": [
+        {"q": "저＿＿ 인도네시아 사람이에요.", "options": ["는", "은", "를"], "answer": 0, "tr": {"id": "Saya orang Indonesia.", "en": "I am Indonesian."}},
+        {"q": "선생님＿＿ 한국 사람이에요.", "options": ["은", "는", "을"], "answer": 0, "tr": {"id": "Guru itu orang Korea.", "en": "The teacher is Korean."}}
+      ]
+    },
+    {
+      "id": "ko1-ieyo-yeyo",
+      "pattern": "N이에요/예요",
+      "meaning": {"id": "adalah", "en": "to be (is, am, are)"},
+      "formation": "N (받침 O) + 이에요 · N (받침 X) + 예요",
+      "explanation": {
+        "id": "Bentuk sopan sehari-hari dari 이다 \"adalah\". Pakai 이에요 setelah konsonan dan 예요 setelah vokal. Sebagai pertanyaan, cukup naikkan nada di akhir.",
+        "en": "The everyday polite form of 이다 \"to be\". Use 이에요 after a consonant and 예요 after a vowel. As a question, just raise your voice at the end."
+      },
+      "examples": [
+        {"ko": "이것은 사과예요.", "rom": "igeoseun sagwayeyo.", "tr": {"id": "Ini apel.", "en": "This is an apple."}, "chunks": ["이것은", "사과예요"]},
+        {"ko": "우리 아버지는 회사원이에요.", "rom": "uri abeojineun hoesawonieyo.", "tr": {"id": "Ayah saya pegawai kantor.", "en": "My father is an office worker."}, "chunks": ["우리", "아버지는", "회사원이에요"]}
+      ],
+      "quiz": [
+        {"q": "이것은 책＿＿.", "options": ["이에요", "예요", "있어요"], "answer": 0, "tr": {"id": "Ini buku.", "en": "This is a book."}},
+        {"q": "저는 가수＿＿.", "options": ["예요", "이에요", "가요"], "answer": 0, "tr": {"id": "Saya penyanyi.", "en": "I am a singer."}}
+      ]
+    },
+    {
+      "id": "ko1-i-ga-anieyo",
+      "pattern": "N이/가 아니에요",
+      "meaning": {"id": "bukan", "en": "is not"},
+      "formation": "N (받침 O) + 이 아니에요 · N (받침 X) + 가 아니에요",
+      "explanation": {
+        "id": "Bentuk negatif dari 이에요/예요. Kata bendanya diberi 이 (setelah konsonan) atau 가 (setelah vokal), lalu 아니에요.",
+        "en": "The negative of 이에요/예요. The noun takes 이 (after a consonant) or 가 (after a vowel), then 아니에요."
+      },
+      "examples": [
+        {"ko": "저는 선생님이 아니에요.", "rom": "jeoneun seonsaengnimi anieyo.", "tr": {"id": "Saya bukan guru.", "en": "I am not a teacher."}, "chunks": ["저는", "선생님이", "아니에요"]},
+        {"ko": "이것은 커피가 아니에요.", "rom": "igeoseun keopiga anieyo.", "tr": {"id": "Ini bukan kopi.", "en": "This is not coffee."}, "chunks": ["이것은", "커피가", "아니에요"]}
+      ],
+      "quiz": [
+        {"q": "저는 학생＿＿ 아니에요.", "options": ["이", "가", "을"], "answer": 0, "tr": {"id": "Saya bukan pelajar.", "en": "I am not a student."}},
+        {"q": "그 사람은 의사＿＿ 아니에요.", "options": ["가", "이", "는"], "answer": 0, "tr": {"id": "Orang itu bukan dokter.", "en": "That person is not a doctor."}}
+      ]
+    },
+    {
+      "id": "ko1-i-ga",
+      "pattern": "N이/가",
+      "meaning": {"id": "penanda subjek", "en": "subject marker"},
+      "formation": "N (받침 O) + 이 · N (받침 X) + 가",
+      "explanation": {
+        "id": "이/가 menandai subjek, yaitu siapa atau apa yang melakukan atau mengalami sesuatu. Sering dipakai dengan kata sifat dan dengan 있어요/없어요, dan untuk informasi baru.",
+        "en": "이/가 marks the subject, who or what does or is something. It is common with adjectives and with 있어요/없어요, and for new information."
+      },
+      "examples": [
+        {"ko": "날씨가 좋아요.", "rom": "nalssiga joayo.", "tr": {"id": "Cuacanya bagus.", "en": "The weather is nice."}, "chunks": ["날씨가", "좋아요"]},
+        {"ko": "동생이 학교에 가요.", "rom": "dongsaengi hakgyoe gayo.", "tr": {"id": "Adik pergi ke sekolah.", "en": "My younger sibling goes to school."}, "chunks": ["동생이", "학교에", "가요"]}
+      ],
+      "quiz": [
+        {"q": "가방＿＿ 커요.", "options": ["이", "가", "을"], "answer": 0, "tr": {"id": "Tasnya besar.", "en": "The bag is big."}},
+        {"q": "머리＿＿ 아파요.", "options": ["가", "이", "를"], "answer": 0, "tr": {"id": "Kepala saya sakit.", "en": "My head hurts."}}
+      ]
+    },
+    {
+      "id": "ko1-isseoyo-eopseoyo",
+      "pattern": "N이/가 있어요/없어요",
+      "meaning": {"id": "ada, punya / tidak ada, tidak punya", "en": "there is, have / there isn't, don't have"},
+      "formation": "N이/가 + 있어요 · N이/가 + 없어요",
+      "explanation": {
+        "id": "있어요 berarti \"ada\" atau \"punya\", 없어요 kebalikannya. Hal yang ada atau dimiliki diberi 이/가.",
+        "en": "있어요 means \"there is\" or \"to have\"; 없어요 is the opposite. What exists or is had takes 이/가."
+      },
+      "examples": [
+        {"ko": "저는 동생이 있어요.", "rom": "jeoneun dongsaengi isseoyo.", "tr": {"id": "Saya punya adik.", "en": "I have a younger sibling."}, "chunks": ["저는", "동생이", "있어요"]},
+        {"ko": "오늘은 시간이 없어요.", "rom": "oneureun sigani eopseoyo.", "tr": {"id": "Hari ini saya tidak punya waktu.", "en": "I don't have time today."}, "chunks": ["오늘은", "시간이", "없어요"]}
+      ],
+      "quiz": [
+        {"q": "교실에 학생이 ＿＿.", "options": ["있어요", "이에요", "해요"], "answer": 0, "tr": {"id": "Ada murid di kelas.", "en": "There are students in the classroom."}},
+        {"q": "돈이 ＿＿. 그래서 못 사요.", "options": ["없어요", "있어요", "아니에요"], "answer": 0, "tr": {"id": "Saya tidak punya uang, jadi tidak bisa membeli.", "en": "I have no money, so I can't buy it."}}
+      ]
+    },
+    {
+      "id": "ko1-eul-reul",
+      "pattern": "N을/를",
+      "meaning": {"id": "penanda objek", "en": "object marker"},
+      "formation": "N (받침 O) + 을 · N (받침 X) + 를",
+      "explanation": {
+        "id": "을/를 menandai objek, yaitu hal yang dikenai pekerjaan: yang dimakan, dibaca, dilihat. Kata kerjanya selalu di akhir kalimat.",
+        "en": "을/를 marks the object, what the action is done to: what is eaten, read, seen. The verb always comes last."
+      },
+      "examples": [
+        {"ko": "저는 김치를 먹어요.", "rom": "jeoneun gimchireul meogeoyo.", "tr": {"id": "Saya makan kimchi.", "en": "I eat kimchi."}, "chunks": ["저는", "김치를", "먹어요"]},
+        {"ko": "친구가 책을 읽어요.", "rom": "chinguga chaegeul ilgeoyo.", "tr": {"id": "Teman saya membaca buku.", "en": "My friend reads a book."}, "chunks": ["친구가", "책을", "읽어요"]}
+      ],
+      "quiz": [
+        {"q": "저는 커피＿＿ 마셔요.", "options": ["를", "을", "가"], "answer": 0, "tr": {"id": "Saya minum kopi.", "en": "I drink coffee."}},
+        {"q": "동생이 밥＿＿ 먹어요.", "options": ["을", "를", "이"], "answer": 0, "tr": {"id": "Adik makan nasi.", "en": "My younger sibling eats rice."}}
+      ]
+    },
+    {
+      "id": "ko1-ayo-eoyo",
+      "pattern": "V/A-아요/어요",
+      "meaning": {"id": "bentuk sopan sehari-hari (sekarang)", "en": "everyday polite form (present)"},
+      "formation": "ㅏ, ㅗ + 아요 · ㅓ, ㅜ, ㅡ, ㅣ … + 어요 · 하다 → 해요",
+      "explanation": {
+        "id": "Akhiran sopan yang paling sering dipakai. Buang 다, lalu lihat vokal terakhir: ㅏ atau ㅗ mendapat 아요, vokal lain 어요, dan 하다 menjadi 해요. Vokal yang bertemu sering melebur: 가 + 아요 → 가요, 보 + 아요 → 봐요, 마시 + 어요 → 마셔요.",
+        "en": "The most common polite ending. Drop 다 and look at the last vowel: ㅏ or ㅗ takes 아요, any other vowel 어요, and 하다 becomes 해요. Meeting vowels often merge: 가 + 아요 → 가요, 보 + 아요 → 봐요, 마시 + 어요 → 마셔요."
+      },
+      "examples": [
+        {"ko": "저는 매일 운동해요.", "rom": "jeoneun maeil undonghaeyo.", "tr": {"id": "Saya berolahraga setiap hari.", "en": "I exercise every day."}, "chunks": ["저는", "매일", "운동해요"]},
+        {"ko": "친구를 만나요.", "rom": "chingureul mannayo.", "tr": {"id": "Saya bertemu teman.", "en": "I meet a friend."}, "chunks": ["친구를", "만나요"]}
+      ],
+      "quiz": [
+        {"q": "물을 ＿＿.", "options": ["마셔요", "마사요", "마시요"], "answer": 0, "tr": {"id": "Saya minum air.", "en": "I drink water."}},
+        {"q": "한국어를 공부＿＿.", "options": ["해요", "하요", "헤요"], "answer": 0, "tr": {"id": "Saya belajar bahasa Korea.", "en": "I study Korean."}}
+      ]
+    },
+    {
+      "id": "ko1-e",
+      "pattern": "N에",
+      "meaning": {"id": "ke, di, pada (waktu)", "en": "to, at, in, on (time)"},
+      "formation": "학교에 가요 · 집에 있어요 · 세 시에",
+      "explanation": {
+        "id": "에 menunjukkan tujuan (ke), tempat sesuatu berada (di, dengan 있어요/없어요) dan waktu (pada). Untuk tempat melakukan kegiatan, pakai 에서.",
+        "en": "에 marks a destination (to), where something is (with 있어요/없어요) and a time (at, on). For where an action happens, use 에서."
+      },
+      "examples": [
+        {"ko": "저는 내일 부산에 가요.", "rom": "jeoneun naeil busane gayo.", "tr": {"id": "Besok saya pergi ke Busan.", "en": "I am going to Busan tomorrow."}, "chunks": ["저는", "내일", "부산에", "가요"]},
+        {"ko": "세 시에 만나요.", "rom": "se sie mannayo.", "tr": {"id": "Kita bertemu jam tiga.", "en": "Let's meet at three."}, "chunks": ["세", "시에", "만나요"]}
+      ],
+      "quiz": [
+        {"q": "내일 서울＿＿ 가요.", "options": ["에", "을", "는"], "answer": 0, "tr": {"id": "Besok saya pergi ke Seoul.", "en": "I am going to Seoul tomorrow."}},
+        {"q": "고양이가 방＿＿ 있어요.", "options": ["에", "을", "가"], "answer": 0, "tr": {"id": "Kucing ada di kamar.", "en": "The cat is in the room."}}
+      ]
+    },
+    {
+      "id": "ko1-eseo",
+      "pattern": "N에서",
+      "meaning": {"id": "di (tempat kegiatan), dari", "en": "at, in (where something is done), from"},
+      "formation": "N + 에서 + V · 도서관에서 공부해요",
+      "explanation": {
+        "id": "에서 menandai tempat sebuah kegiatan dilakukan: belajar di perpustakaan, makan di restoran. 에서 juga berarti \"dari\" untuk asal.",
+        "en": "에서 marks where an action happens: studying at the library, eating at a restaurant. It also means \"from\" a place."
+      },
+      "examples": [
+        {"ko": "도서관에서 공부해요.", "rom": "doseogwaneseo gongbuhaeyo.", "tr": {"id": "Saya belajar di perpustakaan.", "en": "I study at the library."}, "chunks": ["도서관에서", "공부해요"]},
+        {"ko": "저는 인도네시아에서 왔어요.", "rom": "jeoneun indonesiaeseo wasseoyo.", "tr": {"id": "Saya datang dari Indonesia.", "en": "I am from Indonesia."}, "chunks": ["저는", "인도네시아에서", "왔어요"]}
+      ],
+      "quiz": [
+        {"q": "식당＿＿ 밥을 먹어요.", "options": ["에서", "에", "을"], "answer": 0, "tr": {"id": "Saya makan di restoran.", "en": "I eat at a restaurant."}},
+        {"q": "회사＿＿ 일해요.", "options": ["에서", "에", "가"], "answer": 0, "tr": {"id": "Saya bekerja di kantor.", "en": "I work at the office."}}
+      ]
+    },
+    {
+      "id": "ko1-do",
+      "pattern": "N도",
+      "meaning": {"id": "juga", "en": "also, too"},
+      "formation": "저는 → 저도 · 커피를 → 커피도",
+      "explanation": {
+        "id": "도 berarti \"juga\". 도 menggantikan penanda 은/는, 이/가 atau 을/를, jadi bukan 저는도 tetapi 저도.",
+        "en": "도 means \"also\". It replaces 은/는, 이/가 or 을/를, so it is 저도, not 저는도."
+      },
+      "examples": [
+        {"ko": "저도 학생이에요.", "rom": "jeodo haksaengieyo.", "tr": {"id": "Saya juga pelajar.", "en": "I am a student too."}, "chunks": ["저도", "학생이에요"]},
+        {"ko": "사과도 사고 바나나도 샀어요.", "rom": "sagwado sago bananado sasseoyo.", "tr": {"id": "Saya membeli apel dan juga pisang.", "en": "I bought apples and bananas too."}, "chunks": ["사과도", "사고", "바나나도", "샀어요"]}
+      ],
+      "quiz": [
+        {"q": "저＿＿ 커피를 좋아해요.", "options": ["도", "를", "가"], "answer": 0, "tr": {"id": "Saya juga suka kopi.", "en": "I like coffee too."}},
+        {"q": "동생＿＿ 키가 커요.", "options": ["도", "을", "에"], "answer": 0, "tr": {"id": "Adik juga tinggi.", "en": "My younger sibling is tall too."}}
+      ]
+    },
+    {
+      "id": "ko1-hago-wa-gwa",
+      "pattern": "N하고, N와/과",
+      "meaning": {"id": "dan, bersama", "en": "and, with"},
+      "formation": "N + 하고 · N (받침 X) + 와 · N (받침 O) + 과",
+      "explanation": {
+        "id": "하고 dan 와/과 menghubungkan dua kata benda (\"dan\") atau berarti \"bersama\". 하고 lebih santai dalam percakapan; 와 dipakai setelah vokal, 과 setelah konsonan.",
+        "en": "하고 and 와/과 join two nouns (\"and\") or mean \"with\". 하고 is more casual and common in speech; 와 follows a vowel, 과 a consonant."
+      },
+      "examples": [
+        {"ko": "빵하고 우유를 샀어요.", "rom": "ppanghago uyureul sasseoyo.", "tr": {"id": "Saya membeli roti dan susu.", "en": "I bought bread and milk."}, "chunks": ["빵하고", "우유를", "샀어요"]},
+        {"ko": "친구와 같이 공부해요.", "rom": "chinguwa gachi gongbuhaeyo.", "tr": {"id": "Saya belajar bersama teman.", "en": "I study with a friend."}, "chunks": ["친구와", "같이", "공부해요"]}
+      ],
+      "quiz": [
+        {"q": "책＿＿ 공책이 있어요.", "options": ["과", "와", "를"], "answer": 0, "tr": {"id": "Ada buku dan buku tulis.", "en": "There is a book and a notebook."}},
+        {"q": "어머니＿＿ 시장에 갔어요.", "options": ["와", "과", "를"], "answer": 0, "tr": {"id": "Saya pergi ke pasar bersama ibu.", "en": "I went to the market with my mother."}}
+      ]
+    },
+    {
+      "id": "ko1-asseoyo-eosseoyo",
+      "pattern": "V/A-았어요/었어요",
+      "meaning": {"id": "bentuk lampau", "en": "past tense"},
+      "formation": "ㅏ, ㅗ + 았어요 · ㅓ, ㅜ, ㅡ, ㅣ … + 었어요 · 하다 → 했어요",
+      "explanation": {
+        "id": "Untuk sesuatu yang sudah terjadi. Sama seperti -아요/어요: ㅏ atau ㅗ mendapat 았어요, vokal lain 었어요, 하다 menjadi 했어요. Vokal juga melebur: 가 → 갔어요, 보 → 봤어요.",
+        "en": "For something that already happened. As with -아요/어요: ㅏ or ㅗ takes 았어요, other vowels 었어요, and 하다 becomes 했어요. Vowels merge too: 가 → 갔어요, 보 → 봤어요."
+      },
+      "examples": [
+        {"ko": "어제 영화를 봤어요.", "rom": "eoje yeonghwareul bwasseoyo.", "tr": {"id": "Kemarin saya menonton film.", "en": "I watched a movie yesterday."}, "chunks": ["어제", "영화를", "봤어요"]},
+        {"ko": "주말에 친구를 만났어요.", "rom": "jumare chingureul mannasseoyo.", "tr": {"id": "Akhir pekan saya bertemu teman.", "en": "I met a friend at the weekend."}, "chunks": ["주말에", "친구를", "만났어요"]}
+      ],
+      "quiz": [
+        {"q": "어제 많이 ＿＿.", "options": ["먹었어요", "먹았어요", "먹어요"], "answer": 0, "tr": {"id": "Kemarin saya makan banyak.", "en": "I ate a lot yesterday."}},
+        {"q": "작년에 한국에 ＿＿.", "options": ["갔어요", "가었어요", "가요"], "answer": 0, "tr": {"id": "Tahun lalu saya pergi ke Korea.", "en": "I went to Korea last year."}}
+      ]
+    },
+    {
+      "id": "ko1-an-ji-anayo",
+      "pattern": "안 V/A, V/A-지 않아요",
+      "meaning": {"id": "tidak", "en": "not (negation)"},
+      "formation": "안 + V/A-아요/어요 · V/A + 지 않아요 · N하다 → N 안 해요",
+      "explanation": {
+        "id": "Ada dua cara mengatakan \"tidak\": 안 di depan kata kerja atau kata sifat (lebih umum dalam percakapan), atau -지 않아요 di belakangnya. Pada kata kerja benda + 하다, 안 masuk sebelum 하다: 공부 안 해요.",
+        "en": "Two ways to say \"not\": 안 before the verb or adjective (more common in speech), or -지 않아요 after it. In noun + 하다 verbs, 안 goes before 하다: 공부 안 해요."
+      },
+      "examples": [
+        {"ko": "저는 고기를 안 먹어요.", "rom": "jeoneun gogireul an meogeoyo.", "tr": {"id": "Saya tidak makan daging.", "en": "I don't eat meat."}, "chunks": ["저는", "고기를", "안", "먹어요"]},
+        {"ko": "오늘은 춥지 않아요.", "rom": "oneureun chupji anayo.", "tr": {"id": "Hari ini tidak dingin.", "en": "It isn't cold today."}, "chunks": ["오늘은", "춥지", "않아요"]}
+      ],
+      "quiz": [
+        {"q": "주말에는 ＿＿.", "options": ["일 안 해요", "일 안 하요", "일 않 해요"], "answer": 0, "tr": {"id": "Akhir pekan saya tidak bekerja.", "en": "I don't work at weekends."}},
+        {"q": "이 김치는 맵＿＿ 않아요.", "options": ["지", "고", "어"], "answer": 0, "tr": {"id": "Kimchi ini tidak pedas.", "en": "This kimchi isn't spicy."}}
+      ]
+    },
+    {
+      "id": "ko1-go-sipeoyo",
+      "pattern": "V-고 싶어요",
+      "meaning": {"id": "ingin", "en": "want to"},
+      "formation": "가다 → 가고 싶어요 · 먹다 → 먹고 싶어요",
+      "explanation": {
+        "id": "Untuk mengatakan keinginan sendiri atau menanyakan keinginan lawan bicara. Buang 다 dan tambahkan 고 싶어요; tidak ada perubahan bunyi.",
+        "en": "Says what you want to do, or asks what the listener wants to do. Drop 다 and add 고 싶어요; nothing else changes."
+      },
+      "examples": [
+        {"ko": "한국에 가고 싶어요.", "rom": "hanguge gago sipeoyo.", "tr": {"id": "Saya ingin pergi ke Korea.", "en": "I want to go to Korea."}, "chunks": ["한국에", "가고", "싶어요"]},
+        {"ko": "무엇을 먹고 싶어요?", "rom": "mueoseul meokgo sipeoyo?", "tr": {"id": "Kamu ingin makan apa?", "en": "What do you want to eat?"}, "chunks": ["무엇을", "먹고", "싶어요"]}
+      ],
+      "quiz": [
+        {"q": "커피를 마시＿＿ 싶어요.", "options": ["고", "지", "서"], "answer": 0, "tr": {"id": "Saya ingin minum kopi.", "en": "I want to drink coffee."}},
+        {"q": "주말에 쉬고 ＿＿.", "options": ["싶어요", "싶아요", "싶다요"], "answer": 0, "tr": {"id": "Akhir pekan saya ingin beristirahat.", "en": "I want to rest at the weekend."}}
+      ]
+    },
+    {
+      "id": "ko1-eul-geoyeyo",
+      "pattern": "V/A-(으)ㄹ 거예요",
+      "meaning": {"id": "akan, mungkin", "en": "will, probably"},
+      "formation": "받침 X + ㄹ 거예요 · 받침 O + 을 거예요 · 살다 → 살 거예요",
+      "explanation": {
+        "id": "Untuk rencana atau perkiraan masa depan. Setelah vokal, ㄹ menempel pada suku kata terakhir (가 → 갈 거예요); setelah konsonan tambahkan 을 (먹 → 먹을 거예요); kata yang sudah berakhiran ㄹ tetap (살 → 살 거예요).",
+        "en": "For plans or guesses about the future. After a vowel, ㄹ joins the last syllable (가 → 갈 거예요); after a consonant add 을 (먹 → 먹을 거예요); a stem already ending in ㄹ stays (살 → 살 거예요)."
+      },
+      "examples": [
+        {"ko": "내일 친구를 만날 거예요.", "rom": "naeil chingureul mannal geoyeyo.", "tr": {"id": "Besok saya akan bertemu teman.", "en": "I will meet a friend tomorrow."}, "chunks": ["내일", "친구를", "만날", "거예요"]},
+        {"ko": "주말에 집에서 쉴 거예요.", "rom": "jumare jibeseo swil geoyeyo.", "tr": {"id": "Akhir pekan saya akan beristirahat di rumah.", "en": "I will rest at home at the weekend."}, "chunks": ["주말에", "집에서", "쉴", "거예요"]}
+      ],
+      "quiz": [
+        {"q": "내일 책을 읽＿＿ 거예요.", "options": ["을", "를", "는"], "answer": 0, "tr": {"id": "Besok saya akan membaca buku.", "en": "I will read a book tomorrow."}},
+        {"q": "다음 달에 한국에 ＿＿ 거예요.", "options": ["갈", "가을", "가는"], "answer": 0, "tr": {"id": "Bulan depan saya akan pergi ke Korea.", "en": "I will go to Korea next month."}}
+      ]
+    },
+    {
+      "id": "ko1-euseyo",
+      "pattern": "V-(으)세요",
+      "meaning": {"id": "silakan, tolong (permintaan sopan)", "en": "please (polite request)"},
+      "formation": "받침 X + 세요 · 받침 O + 으세요 · 열다 → 여세요",
+      "explanation": {
+        "id": "Permintaan atau perintah yang sopan. Setelah vokal tambahkan 세요, setelah konsonan 으세요; ㄹ di akhir batang kata hilang (만들다 → 만드세요). Beberapa kata punya bentuk khusus: 먹다 → 드세요, 자다 → 주무세요.",
+        "en": "A polite request or instruction. Add 세요 after a vowel and 으세요 after a consonant; a final ㄹ drops (만들다 → 만드세요). Some verbs have their own form: 먹다 → 드세요, 자다 → 주무세요."
+      },
+      "examples": [
+        {"ko": "여기에 앉으세요.", "rom": "yeogie anjeuseyo.", "tr": {"id": "Silakan duduk di sini.", "en": "Please sit here."}, "chunks": ["여기에", "앉으세요"]},
+        {"ko": "안녕히 가세요.", "rom": "annyeonghi gaseyo.", "tr": {"id": "Selamat jalan.", "en": "Goodbye (to someone leaving)."}, "chunks": ["안녕히", "가세요"]}
+      ],
+      "quiz": [
+        {"q": "이 책을 읽＿＿.", "options": ["으세요", "세요", "어세요"], "answer": 0, "tr": {"id": "Silakan baca buku ini.", "en": "Please read this book."}},
+        {"q": "잠깐만 기다리＿＿.", "options": ["세요", "으세요", "아세요"], "answer": 0, "tr": {"id": "Tolong tunggu sebentar.", "en": "Please wait a moment."}}
+      ]
+    },
+    {
+      "id": "ko1-a-eo-juseyo",
+      "pattern": "V-아/어 주세요",
+      "meaning": {"id": "tolong (lakukan untuk saya)", "en": "please do (for me)"},
+      "formation": "V-아/어 + 주세요 · 하다 → 해 주세요",
+      "explanation": {
+        "id": "Meminta orang lain melakukan sesuatu untuk kita. Bentuk -아/어 sama dengan -아요/어요 tanpa 요: 열다 → 열어 주세요, 하다 → 해 주세요.",
+        "en": "Asks someone to do something for you. The -아/어 form is -아요/어요 without 요: 열다 → 열어 주세요, 하다 → 해 주세요."
+      },
+      "examples": [
+        {"ko": "천천히 말해 주세요.", "rom": "cheoncheonhi malhae juseyo.", "tr": {"id": "Tolong bicara pelan-pelan.", "en": "Please speak slowly."}, "chunks": ["천천히", "말해", "주세요"]},
+        {"ko": "문을 열어 주세요.", "rom": "muneul yeoreo juseyo.", "tr": {"id": "Tolong buka pintunya.", "en": "Please open the door."}, "chunks": ["문을", "열어", "주세요"]}
+      ],
+      "quiz": [
+        {"q": "사진을 찍＿＿ 주세요.", "options": ["어", "아", "고"], "answer": 0, "tr": {"id": "Tolong ambilkan foto.", "en": "Please take a photo."}},
+        {"q": "좀 도와 ＿＿.", "options": ["주세요", "주어요", "주고"], "answer": 0, "tr": {"id": "Tolong bantu saya.", "en": "Please help me."}}
+      ]
+    },
+    {
+      "id": "ko1-go",
+      "pattern": "V/A-고",
+      "meaning": {"id": "dan, lalu", "en": "and, and then"},
+      "formation": "먹다 → 먹고 · 싸다 → 싸고",
+      "explanation": {
+        "id": "Menggabungkan dua kalimat: dua sifat atau kegiatan (\"dan\"), atau kegiatan yang berurutan (\"lalu\"). Bentuk waktu ditaruh di kata kerja terakhir.",
+        "en": "Joins two clauses: two qualities or actions (\"and\"), or actions in order (\"and then\"). The tense goes on the last verb."
+      },
+      "examples": [
+        {"ko": "이 식당은 싸고 맛있어요.", "rom": "i sikdangeun ssago masisseoyo.", "tr": {"id": "Restoran ini murah dan enak.", "en": "This restaurant is cheap and good."}, "chunks": ["이", "식당은", "싸고", "맛있어요"]},
+        {"ko": "밥을 먹고 학교에 가요.", "rom": "babeul meokgo hakgyoe gayo.", "tr": {"id": "Saya makan lalu pergi ke sekolah.", "en": "I eat and then go to school."}, "chunks": ["밥을", "먹고", "학교에", "가요"]}
+      ],
+      "quiz": [
+        {"q": "제 방은 크＿＿ 깨끗해요.", "options": ["고", "서", "지"], "answer": 0, "tr": {"id": "Kamar saya besar dan bersih.", "en": "My room is big and clean."}},
+        {"q": "숙제를 하＿＿ 잤어요.", "options": ["고", "지", "세요"], "answer": 0, "tr": {"id": "Saya mengerjakan PR lalu tidur.", "en": "I did my homework and then slept."}}
+      ]
+    },
+    {
+      "id": "ko1-jiman",
+      "pattern": "V/A-지만",
+      "meaning": {"id": "tetapi", "en": "but"},
+      "formation": "어렵다 → 어렵지만 · 오다 → 오지만",
+      "explanation": {
+        "id": "Menghubungkan dua hal yang berlawanan, seperti \"tetapi\" atau \"meskipun\". Buang 다 dan tambahkan 지만.",
+        "en": "Joins two contrasting clauses, like \"but\" or \"although\". Drop 다 and add 지만."
+      },
+      "examples": [
+        {"ko": "한국어는 어렵지만 재미있어요.", "rom": "hangugeoneun eoryeopjiman jaemiisseoyo.", "tr": {"id": "Bahasa Korea sulit tetapi menarik.", "en": "Korean is hard but fun."}, "chunks": ["한국어는", "어렵지만", "재미있어요"]},
+        {"ko": "비가 오지만 학교에 가요.", "rom": "biga ojiman hakgyoe gayo.", "tr": {"id": "Meskipun hujan, saya pergi ke sekolah.", "en": "It's raining, but I go to school."}, "chunks": ["비가", "오지만", "학교에", "가요"]}
+      ],
+      "quiz": [
+        {"q": "이 옷은 비싸＿＿ 예뻐요.", "options": ["지만", "지", "세요"], "answer": 0, "tr": {"id": "Baju ini mahal tetapi cantik.", "en": "These clothes are expensive but pretty."}},
+        {"q": "배가 고프＿＿ 시간이 없어요.", "options": ["지만", "세요", "을"], "answer": 0, "tr": {"id": "Saya lapar tetapi tidak punya waktu.", "en": "I'm hungry but have no time."}}
+      ]
+    },
+    {
+      "id": "ko1-aseo-eoseo",
+      "pattern": "V/A-아서/어서",
+      "meaning": {"id": "karena, lalu (berurutan)", "en": "because, and then"},
+      "formation": "V/A-아/어 + 서 · 하다 → 해서",
+      "explanation": {
+        "id": "Memberi alasan (\"karena ..., jadi\") atau menghubungkan dua kegiatan yang berkaitan (bertemu lalu menonton bersama). Bentuk -아/어 sama dengan -아요/어요 tanpa 요; bentuk lampau tidak dipakai sebelum -아서/어서.",
+        "en": "Gives a reason (\"because ..., so\") or links two connected actions (meet and then watch together). The -아/어 form is -아요/어요 without 요; no past tense goes before -아서/어서."
+      },
+      "examples": [
+        {"ko": "배가 고파서 밥을 먹었어요.", "rom": "baega gopaseo babeul meogeosseoyo.", "tr": {"id": "Karena lapar, saya makan.", "en": "I was hungry, so I ate."}, "chunks": ["배가", "고파서", "밥을", "먹었어요"]},
+        {"ko": "친구를 만나서 영화를 봤어요.", "rom": "chingureul mannaseo yeonghwareul bwasseoyo.", "tr": {"id": "Saya bertemu teman lalu menonton film bersama.", "en": "I met a friend and we watched a movie."}, "chunks": ["친구를", "만나서", "영화를", "봤어요"]}
+      ],
+      "quiz": [
+        {"q": "오늘은 바빠＿＿ 못 가요.", "options": ["서", "고", "요"], "answer": 0, "tr": {"id": "Hari ini saya sibuk, jadi tidak bisa pergi.", "en": "I'm busy today, so I can't go."}},
+        {"q": "늦＿＿ 미안해요.", "options": ["어서", "아서", "고"], "answer": 0, "tr": {"id": "Maaf karena terlambat.", "en": "Sorry I'm late."}}
+      ]
+    },
+    {
+      "id": "ko1-eul-su-isseoyo",
+      "pattern": "V-(으)ㄹ 수 있어요/없어요",
+      "meaning": {"id": "bisa / tidak bisa", "en": "can / cannot"},
+      "formation": "받침 X + ㄹ 수 있어요 · 받침 O + 을 수 있어요",
+      "explanation": {
+        "id": "Mengatakan kemampuan atau kemungkinan. Bentuk -(으)ㄹ dibuat sama seperti pada -(으)ㄹ 거예요, lalu 수 있어요 (bisa) atau 수 없어요 (tidak bisa).",
+        "en": "Says what someone can or cannot do. The -(으)ㄹ form is made as in -(으)ㄹ 거예요, then 수 있어요 (can) or 수 없어요 (cannot)."
+      },
+      "examples": [
+        {"ko": "저는 한국어를 할 수 있어요.", "rom": "jeoneun hangugeoreul hal su isseoyo.", "tr": {"id": "Saya bisa berbahasa Korea.", "en": "I can speak Korean."}, "chunks": ["저는", "한국어를", "할", "수", "있어요"]},
+        {"ko": "오늘은 만날 수 없어요.", "rom": "oneureun mannal su eopseoyo.", "tr": {"id": "Hari ini kita tidak bisa bertemu.", "en": "We can't meet today."}, "chunks": ["오늘은", "만날", "수", "없어요"]}
+      ],
+      "quiz": [
+        {"q": "김치를 먹＿＿ 수 있어요?", "options": ["을", "는", "고"], "answer": 0, "tr": {"id": "Kamu bisa makan kimchi?", "en": "Can you eat kimchi?"}},
+        {"q": "수영을 ＿＿ 수 있어요.", "options": ["할", "하을", "해"], "answer": 0, "tr": {"id": "Saya bisa berenang.", "en": "I can swim."}}
+      ]
+    },
+    {
+      "id": "ko1-seumnida",
+      "pattern": "V/A-(스)ㅂ니다",
+      "meaning": {"id": "bentuk sopan resmi", "en": "formal polite form"},
+      "formation": "받침 X + ㅂ니다 · 받침 O + 습니다 · N + 입니다",
+      "explanation": {
+        "id": "Bentuk paling resmi, dipakai dalam berita, pidato, rapat dan salam tertentu. Setelah vokal, ㅂ menempel pada suku kata terakhir (가 → 갑니다); setelah konsonan tambahkan 습니다 (먹 → 먹습니다). Kata benda + 입니다 berarti \"adalah\".",
+        "en": "The most formal style, used in news, speeches, meetings and set greetings. After a vowel, ㅂ joins the last syllable (가 → 갑니다); after a consonant add 습니다 (먹 → 먹습니다). Noun + 입니다 means \"is\"."
+      },
+      "examples": [
+        {"ko": "만나서 반갑습니다.", "rom": "mannaseo bangapseumnida.", "tr": {"id": "Senang bertemu dengan Anda.", "en": "Nice to meet you."}, "chunks": ["만나서", "반갑습니다"]},
+        {"ko": "저는 회사에 다닙니다.", "rom": "jeoneun hoesae danimnida.", "tr": {"id": "Saya bekerja di sebuah perusahaan.", "en": "I work for a company."}, "chunks": ["저는", "회사에", "다닙니다"]}
+      ],
+      "quiz": [
+        {"q": "저는 학생＿＿.", "options": ["입니다", "습니다", "합니다"], "answer": 0, "tr": {"id": "Saya pelajar.", "en": "I am a student."}},
+        {"q": "지금 책을 읽＿＿.", "options": ["습니다", "읍니다", "니다"], "answer": 0, "tr": {"id": "Sekarang saya membaca buku.", "en": "I am reading a book now."}}
+      ]
+    }
+  ]
+}

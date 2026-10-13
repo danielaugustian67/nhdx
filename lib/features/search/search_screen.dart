@@ -13,6 +13,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../conjugation/conjugation_drill_screen.dart';
+import '../conjugation/ko_conjugation_drill_screen.dart';
 import '../grammar/grammar_screen.dart';
 import '../learn/path_providers.dart';
 import '../learn/study_language.dart';
@@ -98,11 +99,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     setState(() {});
   }
 
-  /// Stores the query in the history (last 10) once it led somewhere.
+  /// Stores the query in the study language's history (last 10) once it led
+  /// somewhere.
   void _remember() {
     final query = _controller.text.trim();
     if (query.isEmpty) return;
-    writeUserDb(ref.read(userDbProvider.future), (db) => db.addHistory(query));
+    final language = (ref.read(studyLanguageProvider).value ?? StudyLanguage.ja).name;
+    writeUserDb(ref.read(userDbProvider.future), (db) => db.addHistory(query, language));
   }
 
   String? _preview(SearchMode mode, {required bool korean}) {
@@ -278,6 +281,7 @@ abstract final class _EmptyState {
     ),
     if (korean) ...const [
       SliverToBoxAdapter(child: _WordOfTheDay(korean: true)),
+      SliverToBoxAdapter(child: _StudyTools(korean: true)),
       SliverToBoxAdapter(child: _BrowseTopics()),
     ] else ...const [
       SliverToBoxAdapter(child: _WordOfTheDay(korean: false)),
@@ -311,8 +315,9 @@ class _History extends ConsumerWidget {
   const _History({required this.onSearch, required this.korean});
   final ValueChanged<String> onSearch;
 
-  /// Hides the other language's searches: Japanese text while Korean is
-  /// being learned, Hangul otherwise.
+  /// Searches are kept per study language; of those from before that, the
+  /// other script is hidden (Japanese text while Korean is being learned,
+  /// Hangul otherwise).
   final bool korean;
 
   @override
@@ -330,13 +335,14 @@ class _History extends ConsumerWidget {
       );
     }
     final db = ref.read(userDbProvider.future);
+    final language = korean ? StudyLanguage.ko.name : StudyLanguage.ja.name;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SectionTitle(
           l10n.recentSearches,
           action: TextButton(
-            onPressed: () => writeUserDb(db, (db) => db.clearHistory()),
+            onPressed: () => writeUserDb(db, (db) => db.clearHistory(language)),
             child: Text(l10n.clearHistory),
           ),
         ),
@@ -348,7 +354,7 @@ class _History extends ConsumerWidget {
             trailing: IconButton(
               tooltip: l10n.removeFromHistory,
               icon: Icon(Icons.close_rounded, color: c.inkMuted, size: 20),
-              onPressed: () => writeUserDb(db, (db) => db.removeHistory(q)),
+              onPressed: () => writeUserDb(db, (db) => db.removeHistory(q, language)),
             ),
           ),
       ],
@@ -374,9 +380,11 @@ class _WordOfTheDay extends ConsumerWidget {
   }
 }
 
-/// Ways into grammar (F13) and the conjugation drill (F14).
+/// Ways into grammar (F13) and the conjugation drill (F14), Japanese or
+/// Korean.
 class _StudyTools extends StatelessWidget {
-  const _StudyTools();
+  const _StudyTools({this.korean = false});
+  final bool korean;
 
   @override
   Widget build(BuildContext context) {
@@ -388,7 +396,7 @@ class _StudyTools extends StatelessWidget {
         backgroundColor: c.primary.withValues(alpha: 0.12),
         child: Text(
           glyph,
-          locale: const Locale('ja'),
+          locale: Locale(korean ? 'ko' : 'ja'),
           style: AppText.bodyJp.copyWith(color: c.primaryText),
         ),
       ),
@@ -405,8 +413,14 @@ class _StudyTools extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SectionTitle(l10n.grammarAndConjugation),
-        tool('文', l10n.grammar, l10n.grammarBody, () => const GrammarScreen()),
-        tool('活', l10n.conjPractice, l10n.conjPracticeBody, () => const ConjugationDrillScreen(), dialog: true),
+        if (korean) ...[
+          // 문법 (grammar) and 활용 (conjugation).
+          tool('문', l10n.grammar, l10n.grammarBody, () => const GrammarScreen(korean: true)),
+          tool('활', l10n.conjPractice, l10n.koConjPracticeBody, () => const KoConjugationDrillScreen(), dialog: true),
+        ] else ...[
+          tool('文', l10n.grammar, l10n.grammarBody, () => const GrammarScreen()),
+          tool('活', l10n.conjPractice, l10n.conjPracticeBody, () => const ConjugationDrillScreen(), dialog: true),
+        ],
       ],
     );
   }
