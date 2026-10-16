@@ -117,6 +117,7 @@
   "@introStep": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" }, "step": { "type": "String" } } },
   "needsReview": "Review this",
   "exReadChar": "Type this character's reading in romaji",
+  "exReadKanji": "Type one of this kanji's readings in romaji",
   "exReadCharKorean": "Type how this letter is read in Latin letters",
   "exWrite": "Write this character",
   "exBuild": "Spell it in {script}",

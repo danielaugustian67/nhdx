@@ -758,6 +758,12 @@ abstract class AppLocalizations {
   /// **'Ketik cara baca huruf ini dalam romaji'**
   String get exReadChar;
 
+  /// No description provided for @exReadKanji.
+  ///
+  /// In id, this message translates to:
+  /// **'Ketik salah satu cara baca kanji ini dalam romaji'**
+  String get exReadKanji;
+
   /// No description provided for @exReadCharKorean.
   ///
   /// In id, this message translates to:

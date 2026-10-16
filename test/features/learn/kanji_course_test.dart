@@ -163,4 +163,64 @@ void main() {
       expect(read.check(read.word.romaji), isTrue);
     });
   }, skip: skip);
+
+  group('readings', () {
+    Kanji kanji(String literal) => course.firstWhere((k) => k.literal == literal);
+
+    test('practice is writing, then typing a reading', () {
+      final node = units.first.nodes.first;
+      final b = builder(node);
+      for (final k in node.items.cast<Kanji>()) {
+        final p = b.practice(k);
+        expect(p.first, isA<WriteExercise>(), reason: k.literal);
+        expect((p.last as GlyphReadExercise).hint, k.meaning, reason: k.literal);
+      }
+    }, skip: skip);
+
+    test('any reading is accepted, in romaji or kana, with or without okurigana', () {
+      final ichi = KanjiLessonBuilder(focus: [kanji('一')], pool: const [], hiragana: hiragana).readGlyph(kanji('一'))!;
+      expect(ichi.answer, 'ichi / itsu / hito / hitotsu');
+      for (final ok in ['ichi', 'ITSU', 'hito', 'hitotsu', 'hitotu', 'いち', 'イチ', 'ひとつ']) {
+        expect(ichi.check(ok), isTrue, reason: ok);
+      }
+      for (final wrong in ['ni', 'hi', 'ひ', '']) {
+        expect(ichi.check(wrong), isFalse, reason: wrong);
+      }
+      final ue = KanjiLessonBuilder(focus: [kanji('上')], pool: const [], hiragana: hiragana).readGlyph(kanji('上'))!;
+      expect(ue.check('agaru'), isTrue); // not one of the main readings, still right
+      expect(ue.check('noboru'), isTrue);
+      final ju = KanjiLessonBuilder(focus: [kanji('十')], pool: const [], hiragana: hiragana).readGlyph(kanji('十'))!;
+      expect(ju.answer, 'juu / jit / too / to');
+      expect(ju.check('jitsu'), isFalse);
+      expect(ju.check('jit'), isTrue);
+    }, skip: skip);
+
+    test('every course kanji can be practised by reading', () {
+      final b = KanjiLessonBuilder(focus: course, pool: const [], hiragana: hiragana);
+      for (final k in course) {
+        final r = b.readGlyph(k);
+        expect(r, isNotNull, reason: k.literal);
+        expect(r!.answers, isNotEmpty, reason: k.literal);
+        expect(r.answers.every((a) => RegExp(r"^[a-z']+$").hasMatch(a)), isTrue, reason: '${k.literal} ${r.answers}');
+      }
+    }, skip: skip);
+
+    test('quiz asks a few readings and words only with the node kanji', () {
+      for (final u in units.take(10)) {
+        for (final n in u.nodes.where((n) => n.type == NodeType.intro)) {
+          final ex = builder(n).build(LessonMode.quiz);
+          final reads = ex.whereType<GlyphReadExercise>().toList();
+          expect(reads.length, inInclusiveRange(1, KanjiLessonBuilder.maxQuizReads), reason: n.id);
+          expect(reads.every((r) => n.items.contains(r.glyph)), isTrue, reason: n.id);
+          expect(ex.whereType<WriteExercise>().length, lessThanOrEqualTo(LessonBuilder.maxQuizWrites));
+          for (final e in ex.whereType<BuildExercise>()) {
+            expect(e.items.any(n.items.contains), isTrue, reason: '${n.id}: ${e.target}');
+          }
+          for (final e in ex.whereType<ReadExercise>()) {
+            expect(e.items.any(n.items.contains), isTrue, reason: '${n.id}: ${e.shown}');
+          }
+        }
+      }
+    }, skip: skip);
+  });
 }

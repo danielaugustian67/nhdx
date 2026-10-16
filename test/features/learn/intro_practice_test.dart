@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -213,5 +215,48 @@ void main() {
     await tester.tap(find.text('Kembali ke latihan'));
     await tester.pumpAndSettle();
     expect(weak, {a});
+  });
+
+  testWidgets('a kanji card shows its readings in romaji', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const ichi = Kanji(
+      id: 0x4E00,
+      literal: '一',
+      jlpt: 5,
+      strokeCount: 1,
+      meanings: ['one'],
+      onyomi: ['イチ', 'イツ'],
+      kunyomi: ['ひと', 'ひと.つ'],
+      theme: 'numbers',
+      orderNo: 1,
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [contentProvider.overrideWith((ref) => Completer<Never>().future)],
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          locale: const Locale('id'),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: LessonIntroScreen(
+            items: const [ichi],
+            lesson: KanjiLessonBuilder(focus: const [ichi], pool: const [ichi], hiragana: const []),
+          ),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('イチ、イツ'), findsOneWidget);
+    expect(find.text('ichi, itsu'), findsOneWidget);
+    expect(find.text('ひと、ひと(つ)'), findsOneWidget);
+    expect(find.text('hito, hito(tsu)'), findsOneWidget);
+    expect(find.text('1/1 · Kenali'), findsOneWidget);
   });
 }

@@ -6,6 +6,7 @@ import '../../core/audio/speech.dart';
 import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
 import '../../core/database/providers.dart';
+import '../../core/text/kana_romaji.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
@@ -396,7 +397,10 @@ class _WordInfo extends StatelessWidget {
   }
 }
 
-/// Meaning, on'yomi and kun'yomi under a kanji card.
+/// ひと.つ → ひと(つ): okurigana in brackets.
+String _okurigana(String reading) => reading.contains('.') ? '${reading.replaceFirst('.', '(')})' : reading;
+
+/// Meaning, on'yomi and kun'yomi (with romaji) under a kanji card.
 class _KanjiInfo extends StatelessWidget {
   const _KanjiInfo({required this.kanji});
   final Kanji kanji;
@@ -405,28 +409,39 @@ class _KanjiInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final l10n = AppLocalizations.of(context);
-    Widget reading(String label, List<String> values) => Padding(
-      padding: const EdgeInsets.only(top: AppSpace.xs),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          SizedBox(
-            width: 64,
-            child: Text(label, style: AppText.label.copyWith(color: c.inkMuted)),
-          ),
-          Flexible(
-            child: Text(
-              // ひと.つ → ひと(つ): okurigana in brackets.
-              values.take(4).map((v) => v.contains('.') ? '${v.replaceFirst('.', '(')})' : v).join('、'),
-              locale: const Locale('ja'),
-              style: AppText.body.copyWith(color: c.ink),
+    Widget reading(String label, List<String> values) {
+      final shown = values.take(4).toList();
+      return Padding(
+        padding: const EdgeInsets.only(top: AppSpace.xs),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 64,
+              child: Text(label, style: AppText.label.copyWith(color: c.inkMuted)),
             ),
-          ),
-        ],
-      ),
-    );
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    shown.map(_okurigana).join('、'),
+                    locale: const Locale('ja'),
+                    style: AppText.body.copyWith(color: c.ink),
+                  ),
+                  Text(
+                    shown.map((v) => readingToRomaji(_okurigana(v))).join(', '),
+                    style: AppText.bodySmall.copyWith(color: c.primaryText),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       children: [
         Text(

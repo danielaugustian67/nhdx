@@ -3,6 +3,7 @@ import 'dart:math';
 import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
 import '../../core/text/hangul.dart';
+import '../../core/text/kana_romaji.dart';
 import '../../core/text/normalize.dart';
 import '../../core/text/romaji_to_kana.dart';
 import '../kana/games/kana_quiz.dart';
@@ -187,26 +188,35 @@ class ReadExercise extends Exercise {
 
 /// One character → type its reading (romaji, or romaja for Hangul).
 class GlyphReadExercise extends Exercise {
-  const GlyphReadExercise(this.glyph, {required this.answers, this.korean = false});
+  const GlyphReadExercise(this.glyph, {required this.answers, this.readings, this.hint, this.korean = false});
   final Glyph glyph;
 
-  /// Accepted readings; the first is shown as the answer.
+  /// Readings shown as the answer, in romaji.
   final List<String> answers;
+
+  /// Every accepted reading in hiragana (a kanji's on'yomi and kun'yomi);
+  /// null for a kana, which is read as itself.
+  final Set<String>? readings;
+
+  /// Shown under the character, e.g. a kanji's meaning.
+  final String? hint;
   final bool korean;
 
-  String get answer => answers.first;
+  String get answer => answers.join(' / ');
 
   @override
   List<Glyph> get items => [glyph];
 
   /// Case and spaces are ignored. Kana also take any romanisation of the
-  /// same kana (si/shi, tu/tsu); Hangul takes any listed variant ("eo").
+  /// same kana (si/shi, tu/tsu), and kana typed directly; Hangul takes any
+  /// listed variant ("eo").
   bool check(String typed) {
     final t = normalizeRomaja(typed);
     if (t.isEmpty) return false;
     if (answers.any((a) => normalizeRomaja(a) == t)) return true;
     if (korean) return false;
-    return RomajiToKana.toHiragana(t) == katakanaToHiragana(glyph.literal);
+    final accepted = readings ?? {katakanaToHiragana(glyph.literal)};
+    return accepted.contains(RomajiToKana.toHiragana(t)) || accepted.contains(katakanaToHiragana(t));
   }
 }
 
@@ -270,6 +280,9 @@ abstract class LessonBuilder {
   /// Ungraded practice after [g]'s intro card: write it, then read it.
   List<Exercise> practice(Glyph g) => [if (writable.contains(g)) write(g), ?readGlyph(g)];
 
+  /// Typed reading questions in a quiz, where choices do not ask readings.
+  List<Exercise> quizReads() => const [];
+
   List<Exercise> choices(int n, Set<int> weakIds);
   WriteExercise write(Glyph g);
   BuildExercise buildWord(SpelledWord w);
@@ -303,6 +316,7 @@ abstract class LessonBuilder {
         final rest = [
           ..._writes(min(LessonBuilder.maxQuizWrites, writable.length)),
           ..._typed(min(2, ownWords.length), from: ownWords),
+          ...quizReads(),
         ];
         final qs = choices((focus.length * 2).clamp(4, 8), weakIds);
         final head = qs.take(2).toList();
@@ -452,6 +466,41 @@ class KanjiLessonBuilder extends LessonBuilder {
 
   @override
   List<Glyph> get focusItems => focus;
+
+  /// Readings asked in a quiz; the rest of it asks meanings.
+  static const maxQuizReads = 3;
+
+  @override
+  GlyphReadExercise? readGlyph(Glyph g) {
+    final k = g as Kanji;
+    if (mainReadings(k).isEmpty) return null;
+    return GlyphReadExercise(
+      k,
+      answers: [for (final r in mainReadings(k)) readingToRomaji(r.replaceAll(RegExp(r'[.\-]'), ''))],
+      readings: acceptedReadings(k),
+      hint: k.meaning,
+    );
+  }
+
+  @override
+  List<Exercise> quizReads() => [
+    ...(focus.toList()..shuffle(random)).map(readGlyph).nonNulls.take(maxQuizReads),
+  ];
+
+  /// Up to two on'yomi and two kun'yomi, as on the intro card.
+  static List<String> mainReadings(Kanji k) => [
+    ...{...k.onyomi.take(2), ...k.kunyomi.take(2)},
+  ].where((r) => r.replaceAll(RegExp(r'[.\-]'), '').isNotEmpty).toList();
+
+  /// Every reading in hiragana, a kun'yomi with and without its okurigana
+  /// (ひと.つ → ひとつ, ひと).
+  static Set<String> acceptedReadings(Kanji k) => {
+    for (final r in [...k.onyomi, ...k.kunyomi])
+      if (katakanaToHiragana(r.replaceAll('-', '')) case final h when h.isNotEmpty) ...[
+        h.replaceAll('.', ''),
+        h.split('.').first,
+      ],
+  };
 
   @override
   List<Exercise> choices(int n, Set<int> weakIds) {

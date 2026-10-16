@@ -803,7 +803,14 @@ class _GlyphReadViewState extends State<_GlyphReadView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(ex.korean ? l10n.exReadCharKorean : l10n.exReadChar, style: AppText.title2.copyWith(color: c.ink)),
+        Text(
+          ex.korean
+              ? l10n.exReadCharKorean
+              : ex.glyph is Kanji
+              ? l10n.exReadKanji
+              : l10n.exReadChar,
+          style: AppText.title2.copyWith(color: c.ink),
+        ),
         const Spacer(),
         FittedBox(
           fit: BoxFit.scaleDown,
@@ -814,6 +821,12 @@ class _GlyphReadViewState extends State<_GlyphReadView> {
             style: TextStyle(fontFamily: AppFonts.jpStroke, fontSize: 110, height: 1.1, color: c.ink),
           ),
         ),
+        if (ex.hint case final hint?)
+          Text(
+            hint,
+            textAlign: TextAlign.center,
+            style: AppText.body.copyWith(color: c.inkMuted),
+          ),
         const Spacer(),
         TextField(
           controller: _controller,

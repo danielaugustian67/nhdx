@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nihondx/core/text/kana_romaji.dart';
 import 'package:nihondx/core/text/normalize.dart';
 
 /// Runs data_pipeline/shared_test_cases/*.json against the Dart side so the
@@ -11,9 +12,9 @@ void main() {
     'normalize_jp': normalizeJp,
     'normalize_latin': normalizeLatin,
     'romaji_search': romajiSearch,
+    'kana_to_romaji': kanaToRomaji,
   };
   const notInApp = {
-    'kana_to_romaji': 'pipeline only (romaji is precomputed in dictionary.db)',
     // Dictionary meanings are English only (prd.md §F1.2, Oct 2026), so the
     // app never stems Indonesian queries.
     'stem_id': 'pipeline only (meanings are English only; no Dart stemmer)',

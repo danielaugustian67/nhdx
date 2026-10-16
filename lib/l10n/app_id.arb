@@ -140,6 +140,7 @@
   "@introStep": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" }, "step": { "type": "String" } } },
   "needsReview": "Perlu diulang",
   "exReadChar": "Ketik cara baca huruf ini dalam romaji",
+  "exReadKanji": "Ketik salah satu cara baca kanji ini dalam romaji",
   "exReadCharKorean": "Ketik cara baca huruf ini dalam huruf Latin",
   "exWrite": "Tulis huruf ini",
   "exBuild": "Susun dalam {script}",

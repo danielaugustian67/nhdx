@@ -390,6 +390,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get exReadChar => 'Ketik cara baca huruf ini dalam romaji';
 
   @override
+  String get exReadKanji => 'Ketik salah satu cara baca kanji ini dalam romaji';
+
+  @override
   String get exReadCharKorean => 'Ketik cara baca huruf ini dalam huruf Latin';
 
   @override

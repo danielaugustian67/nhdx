@@ -408,6 +408,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exReadChar => 'Type this character\'s reading in romaji';
 
   @override
+  String get exReadKanji => 'Type one of this kanji\'s readings in romaji';
+
+  @override
   String get exReadCharKorean =>
       'Type how this letter is read in Latin letters';
 
