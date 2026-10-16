@@ -659,6 +659,18 @@ class VocabLessonBuilder extends LessonBuilder {
     );
   }
 
+  /// Ungraded practice after a word's card: type its reading (a word with
+  /// kanji, or a Korean word in romaja), then pick its meaning.
+  @override
+  List<Exercise> practice(Glyph g) {
+    final w = g as VocabWord;
+    return [
+      if (w.word.kanji != null || w.word.isKorean)
+        ReadExercise(word: w.word, shown: w.literal, hint: w.word.isKorean ? null : w.word.gloss, items: [w]),
+      _question(w, ChoiceKind.wordMeaning),
+    ];
+  }
+
   /// Alternates reading a kanji word and recalling a word from its meaning;
   /// kana-only words are always recalled (reading them is the kana course).
   List<Exercise> _typedWords(int n, Set<int> weakIds) {

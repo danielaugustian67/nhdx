@@ -66,7 +66,7 @@ Future<void> clearIntroProgress(WidgetRef ref, String nodeId) async {
   }
 }
 
-enum _StepKind { card, write, read }
+enum _StepKind { card, write, read, meaning }
 
 /// One page of the intro: [item]'s card or one of its practice exercises.
 class _Step {
@@ -81,7 +81,11 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
     for (final (i, item) in widget.items.indexed) ...[
       _Step(i, _StepKind.card),
       for (final ex in widget.lesson.practice(item))
-        _Step(i, ex is WriteExercise ? _StepKind.write : _StepKind.read, ex),
+        _Step(i, switch (ex) {
+          WriteExercise() => _StepKind.write,
+          ChoiceExercise() => _StepKind.meaning,
+          _ => _StepKind.read,
+        }, ex),
     ],
   ];
   int _step = 0;
@@ -153,9 +157,9 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
   void _practiced(bool correct, {required String title, String? detail, DictWord? word}) {
     correct ? HapticFeedback.lightImpact() : HapticFeedback.mediumImpact();
     setState(() => _outcome = LessonOutcome(correct: correct, title: title, detail: detail, word: word));
-    // Hear the reading just typed.
+    // Hear the word or reading just answered.
     final s = _steps[_step];
-    if (s.kind == _StepKind.read) autoSpeak(ref, speechText(widget.items[s.item]));
+    if (s.kind == _StepKind.read || s.kind == _StepKind.meaning) autoSpeak(ref, speechText(widget.items[s.item]));
   }
 
   @override
@@ -182,6 +186,7 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
       _StepKind.card => l10n.stepLearn,
       _StepKind.write => l10n.stepWrite,
       _StepKind.read => l10n.stepRead,
+      _StepKind.meaning => l10n.stepMeaning,
     };
     // Loaded up front so the first card is read aloud straight away.
     ref.watch(speechAutoplayProvider);

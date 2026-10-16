@@ -397,6 +397,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stepRead => 'Read';
 
   @override
+  String get stepMeaning => 'Meaning';
+
+  @override
   String introStep(int current, int total, String step) {
     return '$current/$total · $step';
   }

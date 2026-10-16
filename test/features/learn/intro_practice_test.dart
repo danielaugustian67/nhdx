@@ -5,12 +5,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nihondx/core/database/content_db.dart';
+import 'package:nihondx/core/database/dictionary_db.dart';
 import 'package:nihondx/core/database/providers.dart';
 import 'package:nihondx/core/database/user_db.dart';
 import 'package:nihondx/core/theme/app_theme.dart';
 import 'package:nihondx/features/learn/lesson.dart';
 import 'package:nihondx/features/learn/lesson_intro_screen.dart';
 import 'package:nihondx/features/learn/lesson_screen.dart';
+import 'package:nihondx/features/learn/vocab_path.dart';
 import 'package:nihondx/l10n/app_localizations.dart';
 
 Kana _hangul(int id, String literal, String romaji) =>
@@ -49,6 +51,20 @@ void main() {
       expect(read.answers, ['r', 'l']);
       expect(read.korean, isTrue);
     });
+  });
+
+  test('a Korean word is practised by reading in romaja, then its meaning', () {
+    const annyeong = DictWord(id: 90000001, kana: '안녕', romaji: 'annyeong', jlpt: 0, gloss: 'halo');
+    const ne = DictWord(id: 90000002, kana: '네', romaji: 'ne', jlpt: 0, gloss: 'ya');
+    final w = VocabWord(annyeong);
+    final p = VocabLessonBuilder(focus: [w], pool: [w, VocabWord(ne)]).practice(w);
+    expect(p, hasLength(2));
+    final read = p.first as ReadExercise;
+    expect(read.hint, isNull); // the meaning is asked next
+    expect(read.check('annyeong'), isTrue);
+    final meaning = p.last as ChoiceExercise;
+    expect(meaning.kind, ChoiceKind.wordMeaning);
+    expect(meaning.answer, 'halo');
   });
 
   group('LessonIntroScreen', () {

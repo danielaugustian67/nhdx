@@ -379,6 +379,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get stepRead => 'Baca';
 
   @override
+  String get stepMeaning => 'Arti';
+
+  @override
   String introStep(int current, int total, String step) {
     return '$current/$total · $step';
   }

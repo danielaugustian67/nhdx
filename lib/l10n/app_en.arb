@@ -113,6 +113,7 @@
   "stepLearn": "Learn",
   "stepWrite": "Write",
   "stepRead": "Read",
+  "stepMeaning": "Meaning",
   "introStep": "{current}/{total} · {step}",
   "@introStep": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" }, "step": { "type": "String" } } },
   "needsReview": "Review this",

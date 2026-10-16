@@ -136,6 +136,7 @@
   "stepLearn": "Kenali",
   "stepWrite": "Tulis",
   "stepRead": "Baca",
+  "stepMeaning": "Arti",
   "introStep": "{current}/{total} · {step}",
   "@introStep": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" }, "step": { "type": "String" } } },
   "needsReview": "Perlu diulang",

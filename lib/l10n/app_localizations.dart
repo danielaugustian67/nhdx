@@ -740,6 +740,12 @@ abstract class AppLocalizations {
   /// **'Baca'**
   String get stepRead;
 
+  /// No description provided for @stepMeaning.
+  ///
+  /// In id, this message translates to:
+  /// **'Arti'**
+  String get stepMeaning;
+
   /// No description provided for @introStep.
   ///
   /// In id, this message translates to:
