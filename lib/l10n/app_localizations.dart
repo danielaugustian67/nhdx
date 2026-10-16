@@ -695,26 +695,74 @@ abstract class AppLocalizations {
   /// No description provided for @startQuiz.
   ///
   /// In id, this message translates to:
-  /// **'Mulai latihan'**
+  /// **'Mulai quiz'**
   String get startQuiz;
 
-  /// No description provided for @practiceOneMode.
+  /// No description provided for @goToQuiz.
   ///
   /// In id, this message translates to:
-  /// **'Atau latih satu jenis:'**
-  String get practiceOneMode;
+  /// **'Langsung ke quiz'**
+  String get goToQuiz;
 
-  /// No description provided for @modeChoice.
+  /// No description provided for @backToPractice.
   ///
   /// In id, this message translates to:
-  /// **'Pilihan'**
-  String get modeChoice;
+  /// **'Kembali ke latihan'**
+  String get backToPractice;
 
-  /// No description provided for @modeType.
+  /// No description provided for @back.
   ///
   /// In id, this message translates to:
-  /// **'Ketik'**
-  String get modeType;
+  /// **'Kembali'**
+  String get back;
+
+  /// No description provided for @practiceAgain.
+  ///
+  /// In id, this message translates to:
+  /// **'Ulangi'**
+  String get practiceAgain;
+
+  /// No description provided for @stepLearn.
+  ///
+  /// In id, this message translates to:
+  /// **'Kenali'**
+  String get stepLearn;
+
+  /// No description provided for @stepWrite.
+  ///
+  /// In id, this message translates to:
+  /// **'Tulis'**
+  String get stepWrite;
+
+  /// No description provided for @stepRead.
+  ///
+  /// In id, this message translates to:
+  /// **'Baca'**
+  String get stepRead;
+
+  /// No description provided for @introStep.
+  ///
+  /// In id, this message translates to:
+  /// **'{current}/{total} · {step}'**
+  String introStep(int current, int total, String step);
+
+  /// No description provided for @needsReview.
+  ///
+  /// In id, this message translates to:
+  /// **'Perlu diulang'**
+  String get needsReview;
+
+  /// No description provided for @exReadChar.
+  ///
+  /// In id, this message translates to:
+  /// **'Ketik cara baca huruf ini dalam romaji'**
+  String get exReadChar;
+
+  /// No description provided for @exReadCharKorean.
+  ///
+  /// In id, this message translates to:
+  /// **'Ketik cara baca huruf ini dalam huruf Latin'**
+  String get exReadCharKorean;
 
   /// No description provided for @exWrite.
   ///

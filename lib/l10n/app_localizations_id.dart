@@ -355,16 +355,42 @@ class AppLocalizationsId extends AppLocalizations {
   String get newCharacters => 'Huruf baru';
 
   @override
-  String get startQuiz => 'Mulai latihan';
+  String get startQuiz => 'Mulai quiz';
 
   @override
-  String get practiceOneMode => 'Atau latih satu jenis:';
+  String get goToQuiz => 'Langsung ke quiz';
 
   @override
-  String get modeChoice => 'Pilihan';
+  String get backToPractice => 'Kembali ke latihan';
 
   @override
-  String get modeType => 'Ketik';
+  String get back => 'Kembali';
+
+  @override
+  String get practiceAgain => 'Ulangi';
+
+  @override
+  String get stepLearn => 'Kenali';
+
+  @override
+  String get stepWrite => 'Tulis';
+
+  @override
+  String get stepRead => 'Baca';
+
+  @override
+  String introStep(int current, int total, String step) {
+    return '$current/$total · $step';
+  }
+
+  @override
+  String get needsReview => 'Perlu diulang';
+
+  @override
+  String get exReadChar => 'Ketik cara baca huruf ini dalam romaji';
+
+  @override
+  String get exReadCharKorean => 'Ketik cara baca huruf ini dalam huruf Latin';
 
   @override
   String get exWrite => 'Tulis huruf ini';

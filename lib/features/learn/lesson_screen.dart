@@ -30,18 +30,23 @@ import 'study_language.dart';
 /// answer gets a feedback bar with "Lanjut"; the result screen pops `true`
 /// when [passMark] is reached.
 class LessonScreen extends ConsumerStatefulWidget {
-  const LessonScreen({super.key, required this.exercises, this.passMark});
+  const LessonScreen({super.key, required this.exercises, this.passMark, this.onBackToPractice});
 
   /// Called again for "Coba lagi" so a retry gets fresh questions.
   final List<Exercise> Function() exercises;
   final double? passMark;
 
+  /// Offered when the pass mark is missed: back to the intro's practice,
+  /// with the items answered wrong.
+  final ValueChanged<Set<Glyph>>? onBackToPractice;
+
   @override
   ConsumerState<LessonScreen> createState() => _LessonScreenState();
 }
 
-class _Outcome {
-  const _Outcome({required this.correct, required this.title, this.detail, this.word});
+/// How an answered exercise went, for the feedback bar.
+class LessonOutcome {
+  const LessonOutcome({required this.correct, required this.title, this.detail, this.word});
   final bool correct;
   final String title;
   final String? detail;
@@ -51,7 +56,7 @@ class _Outcome {
 class _LessonScreenState extends ConsumerState<LessonScreen> {
   late List<Exercise> _items;
   int _index = 0;
-  _Outcome? _outcome;
+  LessonOutcome? _outcome;
   int _xp = 0;
   int _correct = 0;
   final _weak = <Glyph>{};
@@ -87,7 +92,7 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
       } else {
         _weak.addAll(ex.items);
       }
-      _outcome = _Outcome(correct: correct, title: title, detail: detail, word: word);
+      _outcome = LessonOutcome(correct: correct, title: title, detail: detail, word: word);
     });
   }
 
@@ -114,18 +119,15 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
           weak: _weak.toList(),
           passMark: widget.passMark,
           onPlayAgain: () => setState(_start),
+          onBackToPractice: widget.onBackToPractice == null
+              ? null
+              : () => widget.onBackToPractice!(_weak.toSet()),
         ),
       );
     }
 
     final answered = _outcome != null;
-    final view = switch (_items[_index]) {
-      ChoiceExercise ex => _ChoiceView(exercise: ex, answered: answered, onAnswer: _answer),
-      WriteExercise ex => _WriteView(exercise: ex, answered: answered, onAnswer: _answer),
-      BuildExercise ex => _BuildView(exercise: ex, answered: answered, onAnswer: _answer),
-      ReadExercise ex => _ReadView(exercise: ex, answered: answered, onAnswer: _answer),
-      MatchExercise ex => _MatchView(exercise: ex, answered: answered, onAnswer: _answer),
-    };
+    final view = ExerciseView(exercise: _items[_index], answered: answered, onAnswer: _answer);
 
     return Scaffold(
       appBar: AppBar(
@@ -163,13 +165,31 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
   }
 }
 
-typedef _OnAnswer = void Function(bool correct, {required String title, String? detail, DictWord? word});
+typedef OnAnswer = void Function(bool correct, {required String title, String? detail, DictWord? word});
+
+/// The question UI of one exercise; also used for the intro's practice.
+class ExerciseView extends StatelessWidget {
+  const ExerciseView({super.key, required this.exercise, required this.answered, required this.onAnswer});
+  final Exercise exercise;
+  final bool answered;
+  final OnAnswer onAnswer;
+
+  @override
+  Widget build(BuildContext context) => switch (exercise) {
+    ChoiceExercise ex => _ChoiceView(exercise: ex, answered: answered, onAnswer: onAnswer),
+    WriteExercise ex => _WriteView(exercise: ex, answered: answered, onAnswer: onAnswer),
+    BuildExercise ex => _BuildView(exercise: ex, answered: answered, onAnswer: onAnswer),
+    ReadExercise ex => _ReadView(exercise: ex, answered: answered, onAnswer: onAnswer),
+    GlyphReadExercise ex => _GlyphReadView(exercise: ex, answered: answered, onAnswer: onAnswer),
+    MatchExercise ex => _MatchView(exercise: ex, answered: answered, onAnswer: onAnswer),
+  };
+}
 
 /// Duolingo-style bottom panel: verdict, the correct answer, the dictionary
 /// word behind the question, and "Lanjut".
 class _FeedbackBar extends StatelessWidget {
   const _FeedbackBar({required this.outcome, required this.onNext});
-  final _Outcome outcome;
+  final LessonOutcome outcome;
   final VoidCallback onNext;
 
   @override
@@ -233,7 +253,7 @@ class _ChoiceView extends StatefulWidget {
   const _ChoiceView({required this.exercise, required this.answered, required this.onAnswer});
   final ChoiceExercise exercise;
   final bool answered;
-  final _OnAnswer onAnswer;
+  final OnAnswer onAnswer;
 
   @override
   State<_ChoiceView> createState() => _ChoiceViewState();
@@ -358,7 +378,7 @@ class _WriteView extends ConsumerStatefulWidget {
   const _WriteView({required this.exercise, required this.answered, required this.onAnswer});
   final WriteExercise exercise;
   final bool answered;
-  final _OnAnswer onAnswer;
+  final OnAnswer onAnswer;
 
   @override
   ConsumerState<_WriteView> createState() => _WriteViewState();
@@ -369,9 +389,20 @@ class _WriteViewState extends ConsumerState<_WriteView> {
   WritingScore? _score;
   double _canvas = 300;
 
-  void _check(List<Path> reference) {
+  /// Character being written: yōon are written one kana at a time (き, ゃ).
+  int _part = 0;
+
+  void _check(List<Path> reference, int parts) {
     final l10n = AppLocalizations.of(context);
     final score = scoreWriting(drawn: _strokes, canvasSize: _canvas, reference: reference);
+    if (score.passed && _part < parts - 1) {
+      HapticFeedback.selectionClick();
+      setState(() {
+        _part++;
+        _strokes.clear();
+      });
+      return;
+    }
     setState(() => _score = score);
     widget.onAnswer(
       score.passed,
@@ -385,8 +416,10 @@ class _WriteViewState extends ConsumerState<_WriteView> {
     final c = context.colors;
     final l10n = AppLocalizations.of(context);
     final target = widget.exercise.target;
+    final parts = target.literal.characters.toList();
+    final part = parts[min(_part, parts.length - 1)];
     final db = ref.watch(contentProvider).value;
-    final reference = db == null ? const <Path>[] : db.strokes(target.literal).map(parseSvgPath).toList();
+    final reference = db == null ? const <Path>[] : db.strokes(part).map(parseSvgPath).toList();
     final score = _score;
     final locked = widget.answered;
 
@@ -397,8 +430,17 @@ class _WriteViewState extends ConsumerState<_WriteView> {
         const SizedBox(height: AppSpace.s),
         Row(
           children: [
-            Text(
-              target.literal,
+            Text.rich(
+              TextSpan(
+                children: [
+                  for (final (i, ch) in parts.indexed)
+                    TextSpan(
+                      text: ch,
+                      // The kana being written stands out in a yōon.
+                      style: TextStyle(color: parts.length > 1 && i != _part ? c.inkMuted : c.ink),
+                    ),
+                ],
+              ),
               locale: const Locale('ja'),
               style: TextStyle(fontFamily: AppFonts.jpStroke, fontSize: 36, color: c.ink),
             ),
@@ -475,7 +517,7 @@ class _WriteViewState extends ConsumerState<_WriteView> {
                 flex: 2,
                 child: ChunkyButton(
                   label: l10n.check,
-                  onPressed: _strokes.isEmpty || reference.isEmpty ? null : () => _check(reference),
+                  onPressed: _strokes.isEmpty || reference.isEmpty ? null : () => _check(reference, parts.length),
                 ),
               ),
             ],
@@ -490,7 +532,7 @@ class _BuildView extends StatefulWidget {
   const _BuildView({required this.exercise, required this.answered, required this.onAnswer});
   final BuildExercise exercise;
   final bool answered;
-  final _OnAnswer onAnswer;
+  final OnAnswer onAnswer;
 
   @override
   State<_BuildView> createState() => _BuildViewState();
@@ -633,7 +675,7 @@ class _ReadView extends StatefulWidget {
   const _ReadView({required this.exercise, required this.answered, required this.onAnswer});
   final ReadExercise exercise;
   final bool answered;
-  final _OnAnswer onAnswer;
+  final OnAnswer onAnswer;
 
   @override
   State<_ReadView> createState() => _ReadViewState();
@@ -724,6 +766,78 @@ class _ReadViewState extends State<_ReadView> {
   }
 }
 
+/// One character shown big → type its reading.
+class _GlyphReadView extends StatefulWidget {
+  const _GlyphReadView({required this.exercise, required this.answered, required this.onAnswer});
+  final GlyphReadExercise exercise;
+  final bool answered;
+  final OnAnswer onAnswer;
+
+  @override
+  State<_GlyphReadView> createState() => _GlyphReadViewState();
+}
+
+class _GlyphReadViewState extends State<_GlyphReadView> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _check() {
+    if (_controller.text.trim().isEmpty || widget.answered) return;
+    final l10n = AppLocalizations.of(context);
+    final ex = widget.exercise;
+    final correct = ex.check(_controller.text);
+    FocusScope.of(context).unfocus();
+    widget.onAnswer(correct, title: correct ? l10n.correct : l10n.answerWas(ex.answer));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l10n = AppLocalizations.of(context);
+    final ex = widget.exercise;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(ex.korean ? l10n.exReadCharKorean : l10n.exReadChar, style: AppText.title2.copyWith(color: c.ink)),
+        const Spacer(),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            ex.glyph.literal,
+            textAlign: TextAlign.center,
+            locale: ex.korean ? const Locale('ko') : const Locale('ja'),
+            style: TextStyle(fontFamily: AppFonts.jpStroke, fontSize: 110, height: 1.1, color: c.ink),
+          ),
+        ),
+        const Spacer(),
+        TextField(
+          controller: _controller,
+          enabled: !widget.answered,
+          autofocus: true,
+          keyboardType: TextInputType.visiblePassword,
+          autocorrect: false,
+          enableSuggestions: false,
+          textAlign: TextAlign.center,
+          textInputAction: TextInputAction.done,
+          style: AppText.title1.copyWith(color: c.ink),
+          decoration: InputDecoration(hintText: ex.korean ? l10n.romajaHint : l10n.romajiHint),
+          onChanged: (_) => setState(() {}),
+          onSubmitted: (_) => _check(),
+        ),
+        if (!widget.answered) ...[
+          const SizedBox(height: AppSpace.l),
+          ChunkyButton(label: l10n.check, onPressed: _controller.text.trim().isEmpty ? null : _check),
+        ],
+      ],
+    );
+  }
+}
+
 /// Tap a word, then its meaning (either order). A right pair turns green and
 /// stays; a wrong one flashes seal and counts as a mistake. The exercise is
 /// answered when every pair is matched.
@@ -731,7 +845,7 @@ class _MatchView extends StatefulWidget {
   const _MatchView({required this.exercise, required this.answered, required this.onAnswer});
   final MatchExercise exercise;
   final bool answered;
-  final _OnAnswer onAnswer;
+  final OnAnswer onAnswer;
 
   @override
   State<_MatchView> createState() => _MatchViewState();

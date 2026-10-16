@@ -83,7 +83,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     if (picked != null && picked != current) selectStudyLanguage(ref, picked);
   }
 
-  Future<void> _start(PathNode node, LessonMode mode) async {
+  Future<void> _start(PathNode node) async {
     setState(() => _selected = null);
     final progress = ref.read(kanaProgressProvider.notifier);
     if (node.type == NodeType.chest) {
@@ -95,25 +95,18 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       return;
     }
     final kanji = node.items.firstOrNull is Kanji;
-    final vocab = node.items.firstOrNull is VocabWord;
     final isDone = ref.read(pathProgressProvider).contains(node.id);
     if (node.type == NodeType.intro || node.type == NodeType.review) {
       ref.read(pathProgressProvider.notifier).start(node.id);
     }
     final Widget page = switch (node.type) {
-      NodeType.intro when isDone => LessonScreen(
-        passMark: node.passMark,
-        exercises: () => _lesson(node).build(
-          mode,
-          count: vocab ? 12 : (node.items.length * 2).clamp(6, 10),
-          weakIds: ref.read(kanaProgressProvider).weakIds,
-        ),
-      ),
+      // Finished nodes start from the cards too, with a shortcut to the quiz.
       NodeType.intro => LessonIntroScreen(
         items: node.items,
         lesson: _lesson(node),
-        mode: mode,
         passMark: node.passMark,
+        progressKey: node.id,
+        replay: isDone,
       ),
       // Kanji have no standalone games yet; their unit nodes are lessons.
       NodeType.write when kanji => LessonScreen(
@@ -139,7 +132,10 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       ref.read(pathProgressProvider.notifier).complete(node.id);
       // Kana, kanji, Hangul and words met in a passed lesson join the daily
       // review (PRD F6, F7).
-      if (node.type == NodeType.intro) addLearnedCards(ref, node.items);
+      if (node.type == NodeType.intro) {
+        addLearnedCards(ref, node.items);
+        clearIntroProgress(ref, node.id);
+      }
     }
   }
 
@@ -326,11 +322,6 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
               selected: _selected,
               currentKey: _currentKey,
               onTapNode: (node) => setState(() => _selected = _selected == node.id ? null : node.id),
-              modesOf: (node) => {
-                if (node.type == NodeType.intro)
-                  for (final m in LessonMode.values)
-                    if (m != LessonMode.mixed && _lesson(node).available(m)) m,
-              },
               onStart: _start,
             ),
           ),
@@ -716,7 +707,6 @@ class _UnitPath extends StatelessWidget {
     required this.selected,
     required this.currentKey,
     required this.onTapNode,
-    required this.modesOf,
     required this.onStart,
   });
 
@@ -727,9 +717,7 @@ class _UnitPath extends StatelessWidget {
   final GlobalKey currentKey;
   final ValueChanged<PathNode> onTapNode;
 
-  /// Single-type practice modes offered next to the main (mixed) start.
-  final Set<LessonMode> Function(PathNode) modesOf;
-  final void Function(PathNode, LessonMode) onStart;
+  final ValueChanged<PathNode> onStart;
 
   /// Horizontal zigzag as a fraction of the max offset.
   static const _wave = [0.0, 0.45, 0.75, 0.45, 0.0, -0.45, -0.75, -0.45];
@@ -783,8 +771,7 @@ class _UnitPath extends StatelessWidget {
                   total: unit.nodes.length,
                   pointerDx: _wave[i % _wave.length] * maxOffset,
                   title: _nodeTitle(l10n, node),
-                  modes: modesOf(node),
-                  onStart: (mode) => onStart(node, mode),
+                  onStart: () => onStart(node),
                 ),
             ],
           ],
@@ -938,7 +925,6 @@ class _NodeBubble extends StatelessWidget {
     required this.total,
     required this.pointerDx,
     required this.title,
-    required this.modes,
     required this.onStart,
   });
 
@@ -949,8 +935,7 @@ class _NodeBubble extends StatelessWidget {
   final int total;
   final double pointerDx;
   final String title;
-  final Set<LessonMode> modes;
-  final ValueChanged<LessonMode> onStart;
+  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
@@ -1004,84 +989,14 @@ class _NodeBubble extends StatelessWidget {
                             : l10n.startHere,
                         color: Colors.white,
                         textColor: color,
-                        onPressed: () => onStart(LessonMode.mixed),
+                        onPressed: onStart,
                       ),
-                      if (node.type == NodeType.intro) ...[
-                        const SizedBox(height: AppSpace.m),
-                        Text(l10n.practiceOneMode, style: AppText.bodySmall.copyWith(color: fg)),
-                        const SizedBox(height: AppSpace.s),
-                        Row(
-                          children: [
-                            for (final (i, (mode, label, icon)) in [
-                              (LessonMode.choice, l10n.modeChoice, Icons.grid_view_rounded),
-                              if (node.items.firstOrNull is VocabWord)
-                                (LessonMode.match, l10n.gameMatch, Icons.compare_arrows_rounded)
-                              else
-                                (LessonMode.write, l10n.gameWrite, Icons.draw_rounded),
-                              (LessonMode.type, l10n.modeType, Icons.keyboard_rounded),
-                            ].indexed) ...[
-                              if (i > 0) const SizedBox(width: AppSpace.s),
-                              Expanded(
-                                child: _ModeChip(
-                                  label: label,
-                                  icon: icon,
-                                  onTap: modes.contains(mode) ? () => onStart(mode) : null,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
                     ],
                   ],
                 ),
               ),
               const SizedBox(height: AppSpace.m),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Outlined white button inside a node bubble for single-type practice.
-/// Disabled (faded) when the lesson has no such exercises, e.g. "Tulis" for
-/// yōon or "Ketik" before the dictionary is installed.
-class _ModeChip extends StatelessWidget {
-  const _ModeChip({required this.label, required this.icon, required this.onTap});
-  final String label;
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: onTap == null ? 0.4 : 1,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.control),
-          onTap: onTap,
-          child: Container(
-            height: 64,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.control),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.7), width: 2),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white, size: 22),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.label.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
           ),
         ),
       ),

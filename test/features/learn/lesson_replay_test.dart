@@ -15,8 +15,8 @@ import 'package:nihondx/features/learn/lesson_screen.dart';
 import 'package:nihondx/features/today/today_screen.dart';
 import 'package:nihondx/l10n/app_localizations.dart';
 
-/// Replaying a finished "Kenali …" lesson goes straight to the exercises,
-/// without the intro cards.
+/// A "Kenali …" lesson starts with the intro cards and practice; replaying a
+/// finished one also offers a shortcut to the quiz.
 void main() {
   const contentPath = 'data_pipeline/output/content.db';
   final skip = File(contentPath).existsSync() ? false : 'content.db not built';
@@ -86,15 +86,20 @@ void main() {
     await startFirstLesson(tester, 'Mulai');
 
     expect(find.byType(LessonIntroScreen), findsOneWidget);
-    expect(find.text('Lewati'), findsOneWidget);
+    expect(find.textContaining('· Kenali'), findsOneWidget);
+    expect(find.text('Langsung ke quiz'), findsNothing);
     await unmount(tester);
   }, skip: skip != false);
 
-  testWidgets('replaying a finished lesson skips the intro cards', (tester) async {
+  testWidgets('replaying a finished lesson can go straight to the quiz', (tester) async {
     await pumpToday(tester, done: const {'hiragana-u1-intro-0'});
     await startFirstLesson(tester, 'Ulangi');
 
-    expect(find.byType(LessonIntroScreen), findsNothing);
+    expect(find.byType(LessonIntroScreen), findsOneWidget);
+    await tester.tap(find.text('Langsung ke quiz'));
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
     expect(find.byType(LessonScreen), findsOneWidget);
     await unmount(tester);
   }, skip: skip != false);

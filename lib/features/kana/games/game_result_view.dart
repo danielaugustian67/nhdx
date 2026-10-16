@@ -22,6 +22,7 @@ class GameResultView extends StatelessWidget {
     this.passMark,
     this.korean = false,
     required this.onPlayAgain,
+    this.onBackToPractice,
   });
 
   final int xp;
@@ -40,6 +41,9 @@ class GameResultView extends StatelessWidget {
   /// A Hangul game or Korean lesson: the stamp is in Korean.
   final bool korean;
   final VoidCallback onPlayAgain;
+
+  /// A lesson after an intro: back to its practice when not passed.
+  final VoidCallback? onBackToPractice;
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +117,12 @@ class GameResultView extends StatelessWidget {
             ] else ...[
               ChunkyButton(label: l10n.tryAgain, onPressed: onPlayAgain),
               const SizedBox(height: AppSpace.m),
-              OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.quit)),
+              if (onBackToPractice case final back?) ...[
+                OutlinedButton(onPressed: back, child: Text(l10n.backToPractice)),
+                const SizedBox(height: AppSpace.s),
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.quit)),
+              ] else
+                OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.quit)),
             ],
           ],
         ),

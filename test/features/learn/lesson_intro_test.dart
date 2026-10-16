@@ -14,7 +14,7 @@ void main() {
   const word1 = DictWord(id: 10, kana: 'あか', kanji: '赤', romaji: 'aka', jlpt: 5, gloss: 'merah');
   const word2 = DictWord(id: 11, kana: 'あお', kanji: '青', romaji: 'ao', jlpt: 5, gloss: 'biru');
 
-  testWidgets('tapping skip in LessonIntroScreen jumps directly to exercises', (tester) async {
+  testWidgets('a finished word lesson can go straight to the quiz', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -37,18 +37,16 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: LessonIntroScreen(items: items, lesson: lessonBuilder),
+          home: LessonIntroScreen(items: items, lesson: lessonBuilder, replay: true),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    // Verify intro screen is shown with "Lewati" button
-    expect(find.text('Lewati'), findsOneWidget);
+    expect(find.text('Langsung ke quiz'), findsOneWidget);
     expect(find.byType(LessonScreen), findsNothing);
 
-    // Tap "Lewati" (Skip)
-    await tester.tap(find.text('Lewati'));
+    await tester.tap(find.text('Langsung ke quiz'));
     await tester.pumpAndSettle();
 
     // Now LessonScreen should be displayed directly

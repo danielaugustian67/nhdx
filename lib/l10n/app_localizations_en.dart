@@ -373,16 +373,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newCharacters => 'New characters';
 
   @override
-  String get startQuiz => 'Start practice';
+  String get startQuiz => 'Start quiz';
 
   @override
-  String get practiceOneMode => 'Or practise one type:';
+  String get goToQuiz => 'Go to quiz';
 
   @override
-  String get modeChoice => 'Choice';
+  String get backToPractice => 'Back to practice';
 
   @override
-  String get modeType => 'Type';
+  String get back => 'Back';
+
+  @override
+  String get practiceAgain => 'Try again';
+
+  @override
+  String get stepLearn => 'Learn';
+
+  @override
+  String get stepWrite => 'Write';
+
+  @override
+  String get stepRead => 'Read';
+
+  @override
+  String introStep(int current, int total, String step) {
+    return '$current/$total · $step';
+  }
+
+  @override
+  String get needsReview => 'Review this';
+
+  @override
+  String get exReadChar => 'Type this character\'s reading in romaji';
+
+  @override
+  String get exReadCharKorean =>
+      'Type how this letter is read in Latin letters';
 
   @override
   String get exWrite => 'Write this character';

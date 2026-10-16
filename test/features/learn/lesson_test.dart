@@ -93,11 +93,11 @@ void main() {
       expect(ex.every((e) => e is ChoiceExercise || e is WriteExercise), isTrue);
     });
 
-    test('yōon lessons offer no writing', () {
+    test('yōon are written one kana after the other', () {
       final yoon = units.firstWhere((u) => u.nodes.first.kana.first.isYoon).nodes.first;
       final b = builder(yoon);
-      expect(b.available(LessonMode.write), isFalse);
-      expect(b.build(LessonMode.mixed).whereType<WriteExercise>(), isEmpty);
+      expect(b.available(LessonMode.write), isTrue);
+      expect(b.writable, containsAll(yoon.kana));
     });
 
     test('every intro node builds a full mixed lesson', () {
@@ -107,6 +107,69 @@ void main() {
           expect(builder(n).build(LessonMode.mixed, count: count), hasLength(count), reason: n.id);
         }
       }
+    });
+  });
+
+  group('intro practice and quiz', () {
+    test('every character is practised by writing, then reading', () {
+      final node = units[0].nodes[1];
+      final b = builder(node);
+      for (final k in node.kana) {
+        final p = b.practice(k);
+        expect(p, hasLength(2), reason: k.literal);
+        expect((p[0] as WriteExercise).target, k);
+        expect((p[0] as WriteExercise).hint, k.romaji);
+        expect((p[1] as GlyphReadExercise).glyph, k);
+        expect((p[1] as GlyphReadExercise).answer, k.romaji);
+      }
+    });
+
+    test('quiz words always use a character of the node', () {
+      for (final u in units) {
+        for (final n in u.nodes.where((n) => n.type == NodeType.intro)) {
+          for (var seed = 0; seed < 5; seed++) {
+            final ex = builder(n, seed: seed).build(LessonMode.quiz);
+            final words = [
+              for (final e in ex.whereType<BuildExercise>()) (e.word, e.items),
+              for (final e in ex.whereType<ReadExercise>()) (e.word, e.items),
+            ];
+            for (final (word, items) in words) {
+              expect(items.any(n.kana.contains), isTrue, reason: '${n.id}: ${word.kana}');
+            }
+          }
+        }
+      }
+    });
+
+    test('quiz has at most three writing questions and reads both ways', () {
+      for (final u in units) {
+        for (final n in u.nodes.where((n) => n.type == NodeType.intro)) {
+          final ex = builder(n).build(LessonMode.quiz);
+          expect(ex.whereType<WriteExercise>().length, lessThanOrEqualTo(LessonBuilder.maxQuizWrites), reason: n.id);
+          expect(ex.whereType<WriteExercise>(), isNotEmpty, reason: n.id);
+          final kinds = ex.whereType<ChoiceExercise>().map((c) => c.kind).toSet();
+          expect(kinds, containsAll([ChoiceKind.kanaReading, ChoiceKind.pickKana]), reason: n.id);
+          expect(ex.take(2).every((e) => e is ChoiceExercise), isTrue);
+        }
+      }
+    });
+
+    test('quiz questions only ask about the node, distractors may be older', () {
+      final node = units[0].nodes[1];
+      final ex = builder(node).build(LessonMode.quiz);
+      for (final e in ex.whereType<ChoiceExercise>()) {
+        expect(node.kana, contains(e.item));
+      }
+      for (final e in ex.whereType<WriteExercise>()) {
+        expect(node.kana, contains(e.target));
+      }
+    });
+
+    test('without the dictionary the quiz has no word questions', () {
+      final ex = builder(units[0].nodes[1], dictionary: const []).build(LessonMode.quiz);
+      expect(ex, isNotEmpty);
+      expect(ex.whereType<BuildExercise>(), isEmpty);
+      expect(ex.whereType<ReadExercise>(), isEmpty);
     });
   });
 

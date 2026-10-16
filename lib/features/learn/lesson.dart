@@ -25,6 +25,11 @@ enum LessonMode {
 
   /// Vocabulary only: match words to their meanings.
   match,
+
+  /// The graded quiz after an intro's practice: writing (at most
+  /// [LessonBuilder.maxQuizWrites]), reading both ways, and words that use
+  /// the node's own characters.
+  quiz,
 }
 
 sealed class Exercise {
@@ -180,6 +185,31 @@ class ReadExercise extends Exercise {
   }
 }
 
+/// One character → type its reading (romaji, or romaja for Hangul).
+class GlyphReadExercise extends Exercise {
+  const GlyphReadExercise(this.glyph, {required this.answers, this.korean = false});
+  final Glyph glyph;
+
+  /// Accepted readings; the first is shown as the answer.
+  final List<String> answers;
+  final bool korean;
+
+  String get answer => answers.first;
+
+  @override
+  List<Glyph> get items => [glyph];
+
+  /// Case and spaces are ignored. Kana also take any romanisation of the
+  /// same kana (si/shi, tu/tsu); Hangul takes any listed variant ("eo").
+  bool check(String typed) {
+    final t = normalizeRomaja(typed);
+    if (t.isEmpty) return false;
+    if (answers.any((a) => normalizeRomaja(a) == t)) return true;
+    if (korean) return false;
+    return RomajiToKana.toHiragana(t) == katakanaToHiragana(glyph.literal);
+  }
+}
+
 /// Vocabulary: tap a word, then its meaning, until every pair is matched.
 class MatchExercise extends Exercise {
   const MatchExercise({required this.words, required this.meaningOrder});
@@ -225,8 +255,20 @@ abstract class LessonBuilder {
   /// Dictionary words for "Ketik", words with the new characters first.
   List<SpelledWord> get words;
 
-  /// Characters that can be written (stroke data, no yōon).
+  /// Characters that can be written (stroke data).
   List<Glyph> get writable;
+
+  /// Items the node introduces.
+  List<Glyph> get focusItems;
+
+  /// Writing questions in a quiz; writing is slow.
+  static const maxQuizWrites = 3;
+
+  /// Reading practice for [g] in an intro, or null when there is none.
+  GlyphReadExercise? readGlyph(Glyph g) => null;
+
+  /// Ungraded practice after [g]'s intro card: write it, then read it.
+  List<Exercise> practice(Glyph g) => [if (writable.contains(g)) write(g), ?readGlyph(g)];
 
   List<Exercise> choices(int n, Set<int> weakIds);
   WriteExercise write(Glyph g);
@@ -238,6 +280,7 @@ abstract class LessonBuilder {
     LessonMode.write => writable.isNotEmpty,
     LessonMode.type => words.isNotEmpty,
     LessonMode.match => false,
+    LessonMode.quiz => true,
   };
 
   /// [count] exercises (fewer for [LessonMode.write], which is slower).
@@ -252,6 +295,19 @@ abstract class LessonBuilder {
         return _typed(count);
       case LessonMode.match:
         return const [];
+      case LessonMode.quiz:
+        final focus = focusItems.toSet();
+        // Only words with a character of this node, so the quiz never asks
+        // about what the intro did not show.
+        final ownWords = words.where((w) => w.glyphs.any(focus.contains)).toList();
+        final rest = [
+          ..._writes(min(LessonBuilder.maxQuizWrites, writable.length)),
+          ..._typed(min(2, ownWords.length), from: ownWords),
+        ];
+        final qs = choices((focus.length * 2).clamp(4, 8), weakIds);
+        final head = qs.take(2).toList();
+        final tail = [...qs.skip(2), ...rest]..shuffle(random);
+        return [...head, ...tail];
       case LessonMode.mixed:
         final share = (count * 0.2).round();
         final rest = [..._writes(writable.isEmpty ? 0 : share), ..._typed(words.isEmpty ? 0 : share * 2)];
@@ -271,9 +327,10 @@ abstract class LessonBuilder {
 
   /// [n] word exercises from the easiest dozen words, alternating spelling
   /// and reading, without repeats while possible.
-  List<Exercise> _typed(int n) {
-    if (words.isEmpty || n == 0) return const [];
-    final candidates = words.take(max(12, n)).toList()..shuffle(random);
+  List<Exercise> _typed(int n, {List<SpelledWord>? from}) {
+    final source = from ?? words;
+    if (source.isEmpty || n == 0) return const [];
+    final candidates = source.take(max(12, n)).toList()..shuffle(random);
     return [
       for (var i = 0; i < n; i++)
         i.isEven ? buildWord(candidates[i % candidates.length]) : readWord(candidates[i % candidates.length]),
@@ -298,7 +355,7 @@ abstract class LessonBuilder {
 
 /// Kana course: kana ↔ romaji questions, writing, and words spelled with
 /// kana tiles / read in romaji. The Hangul course works the same with
-/// Korean words, without writing (no stroke data for Hangul).
+/// Korean words, without writing (no stroke data for Hangul yet).
 class KanaLessonBuilder extends LessonBuilder {
   KanaLessonBuilder({required this.focus, required this.pool, List<DictWord> dictionary = const [], super.random}) {
     final byLiteral = {for (final k in pool) k.literal: k};
@@ -316,8 +373,23 @@ class KanaLessonBuilder extends LessonBuilder {
   @override
   late final List<SpelledWord> words;
 
+  /// Yōon are written one kana after the other (き, then ゃ).
   @override
-  List<Glyph> get writable => focus.where((k) => !k.isYoon && !k.isHangul).toList();
+  List<Glyph> get writable => focus.where((k) => !k.isHangul).toList();
+
+  @override
+  List<Glyph> get focusItems => focus;
+
+  @override
+  GlyphReadExercise readGlyph(Glyph g) {
+    final k = g as Kana;
+    return GlyphReadExercise(
+      k,
+      // Some Hangul romanizations list variants ("g/k").
+      answers: k.romaji.split(RegExp(r'\s*[/,]\s*')).where((a) => a.isNotEmpty).toList(),
+      korean: k.isHangul,
+    );
+  }
 
   @override
   List<Exercise> choices(int n, Set<int> weakIds) => [
@@ -377,6 +449,9 @@ class KanjiLessonBuilder extends LessonBuilder {
   /// Every course kanji has KanjiVG strokes (build_content_db.py fails otherwise).
   @override
   List<Glyph> get writable => focus;
+
+  @override
+  List<Glyph> get focusItems => focus;
 
   @override
   List<Exercise> choices(int n, Set<int> weakIds) {
@@ -460,6 +535,9 @@ class VocabLessonBuilder extends LessonBuilder {
   List<Glyph> get writable => const [];
 
   @override
+  List<Glyph> get focusItems => focus;
+
+  @override
   bool available(LessonMode mode) => mode != LessonMode.write && focus.isNotEmpty;
 
   @override
@@ -473,7 +551,7 @@ class VocabLessonBuilder extends LessonBuilder {
         return [for (var i = 0; i < (count / 3).ceil().clamp(2, 4); i++) _match()];
       case LessonMode.write:
         return const [];
-      case LessonMode.mixed:
+      case LessonMode.mixed || LessonMode.quiz:
         final rest = [_match(), if (count >= 10) _match(), ..._typedWords((count * 0.25).round(), weakIds)];
         final qs = choices(count - rest.length, weakIds);
         final head = qs.take(2).toList();
