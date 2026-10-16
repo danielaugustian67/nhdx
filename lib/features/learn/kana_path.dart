@@ -22,7 +22,13 @@ enum NodeType {
 }
 
 class PathNode {
-  const PathNode({required this.id, required this.type, required this.items, required this.reviewPool});
+  const PathNode({
+    required this.id,
+    required this.type,
+    required this.items,
+    required this.reviewPool,
+    this.catchUp = false,
+  });
 
   /// Stable id, e.g. "hiragana-u1-intro-0" (persisted as lesson progress in Fase 2).
   final String id;
@@ -34,6 +40,10 @@ class PathNode {
   /// Characters available for distractors and review games: everything of
   /// this course (script) introduced up to and including this node.
   final List<Glyph> reviewPool;
+
+  /// Added to a course after people started it: left undone it stays open
+  /// but does not lock nodes they already finished after it.
+  final bool catchUp;
 
   /// [items] as kana, for the kana-only games.
   List<Kana> get kana => items.whereType<Kana>().toList();

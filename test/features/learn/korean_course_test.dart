@@ -10,6 +10,7 @@ import 'package:nihondx/features/free_study/free_study_providers.dart';
 import 'package:nihondx/features/learn/hangul_path.dart';
 import 'package:nihondx/features/learn/kana_path.dart';
 import 'package:nihondx/features/learn/lesson.dart';
+import 'package:nihondx/features/learn/path_providers.dart';
 import 'package:nihondx/features/learn/speech_text.dart';
 import 'package:nihondx/features/learn/study_language.dart';
 import 'package:nihondx/features/learn/vocab_path.dart';
@@ -143,6 +144,37 @@ void main() {
           expect(lesson.whereType<WriteExercise>(), isEmpty);
         }
       }
+    });
+
+    test('with stroke data each unit gets a writing node that does not lock old progress', () {
+      final groups = content.koreanGroups('hangul');
+      expect(
+        buildHangulPath(letters, groups).expand((u) => u.nodes).where((n) => n.type == NodeType.write),
+        isEmpty,
+      );
+      final units = buildHangulPath(letters, groups, hasStrokes: (k) => content.strokes(k.literal).isNotEmpty);
+      for (final u in units) {
+        final write = u.nodes.singleWhere((n) => n.type == NodeType.write, orElse: () => fail('${u.id}: no write'));
+        expect(write.id, '${u.id}-write');
+        expect(write.catchUp, isTrue);
+        expect(write.items.toSet(), u.nodes.where((n) => n.type == NodeType.intro).expand((n) => n.items).toSet());
+        // Writing comes after the unit's lessons.
+        expect(u.nodes.indexOf(write), u.nodes.lastIndexWhere((n) => n.type == NodeType.intro) + 1);
+      }
+
+      // Someone who finished unit 1 before writing existed: unit 2 stays
+      // current, the new writing node is open.
+      final unit1 = units[0].nodes.where((n) => n.type != NodeType.write).map((n) => n.id).toSet();
+      final states = nodeStates(units, unit1);
+      expect(states['${units[0].id}-write'], NodeState.open);
+      expect(states[units[1].nodes.first.id], NodeState.current);
+      expect(states[units[1].nodes[1].id], NodeState.locked);
+
+      // A new learner meets it in order.
+      final intros = units[0].nodes.where((n) => n.type == NodeType.intro).map((n) => n.id).toSet();
+      final fresh = nodeStates(units, intros);
+      expect(fresh['${units[0].id}-write'], NodeState.current);
+      expect(fresh['${units[0].id}-match'], NodeState.locked);
     });
 
     test('the Korean word path covers every word, with meanings in the app language', () {

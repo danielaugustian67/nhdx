@@ -7,8 +7,8 @@
   },
   "content.db": {
     "asset": "assets/db/content.db.gz",
-    "sha256": "a3b8e78ec6b0c3ff406065bac15bfff53c9f9ac8d7e6238de5b569bd651446b6",
-    "size": 1354979,
+    "sha256": "9654ce1683e99d8a0e35798c0a34897e5dedbe3d5c5e03fb0590e58d40314cff",
+    "size": 1365289,
     "version": "1.0.0"
   },
   "korean.db": {

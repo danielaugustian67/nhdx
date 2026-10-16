@@ -97,13 +97,27 @@ final activePathProvider = Provider<AsyncValue<List<PathUnit>>>(
 );
 
 /// Hangul letters and syllables with the titles of their units, loaded once.
-final hangulProvider = FutureProvider<({List<Kana> letters, Map<String, Localized> units})>((ref) async {
+/// [written]: ids of the letters with stroke data (none in a content.db from
+/// before content 1.7.0).
+final hangulProvider = FutureProvider<({List<Kana> letters, Map<String, Localized> units, Set<int> written})>((
+  ref,
+) async {
   final db = await ref.watch(contentProvider.future);
-  return (letters: db.hangul(), units: db.koreanGroups('hangul'));
+  final letters = db.hangul();
+  return (
+    letters: letters,
+    units: db.koreanGroups('hangul'),
+    written: {
+      for (final k in letters)
+        if (db.strokes(k.literal).isNotEmpty) k.id,
+    },
+  );
 });
 
 final hangulPathProvider = Provider<AsyncValue<List<PathUnit>>>(
-  (ref) => ref.watch(hangulProvider).whenData((h) => buildHangulPath(h.letters, h.units)),
+  (ref) => ref
+      .watch(hangulProvider)
+      .whenData((h) => buildHangulPath(h.letters, h.units, hasStrokes: (k) => h.written.contains(k.id))),
 );
 
 /// Korean words with the titles of their topics, loaded once.
@@ -219,17 +233,21 @@ NodeState nodeState(List<PathUnit> units, Set<String> done, String nodeId, {bool
     nodeStates(units, done, free: free)[nodeId] ?? NodeState.locked;
 
 /// [nodeState] of every node in one pass (a long path has over 1000 nodes).
+/// An unfinished [PathNode.catchUp] node before a finished one is open and
+/// does not lock what follows.
 Map<String, NodeState> nodeStates(List<PathUnit> units, Set<String> done, {bool free = false}) {
   final states = <String, NodeState>{};
+  final nodes = [for (final unit in units) ...unit.nodes];
+  final lastDone = nodes.lastIndexWhere((n) => done.contains(n.id));
   var passedUnfinished = false;
-  for (final unit in units) {
-    for (final node in unit.nodes) {
-      if (done.contains(node.id)) {
-        states[node.id] = NodeState.done;
-      } else {
-        states[node.id] = passedUnfinished ? (free ? NodeState.open : NodeState.locked) : NodeState.current;
-        passedUnfinished = true;
-      }
+  for (final (i, node) in nodes.indexed) {
+    if (done.contains(node.id)) {
+      states[node.id] = NodeState.done;
+    } else if (node.catchUp && i < lastDone) {
+      states[node.id] = passedUnfinished && !free ? NodeState.locked : NodeState.open;
+    } else {
+      states[node.id] = passedUnfinished ? (free ? NodeState.open : NodeState.locked) : NodeState.current;
+      passedUnfinished = true;
     }
   }
   return states;

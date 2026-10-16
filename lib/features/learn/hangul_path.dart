@@ -9,11 +9,12 @@ const hangulPerIntro = 6;
 
 /// Builds the Hangul course: one unit per group in content/korean/hangul.json
 /// ([units], in course order), letters before syllables, at most
-/// [hangulPerIntro] per lesson, then Memory Match, a chest and a Speed Drill
-/// over everything learned so far. Hangul has no stroke data, so no writing.
-/// Node ids use the unit key ("hangul-vowels-intro-0") so they stay put when
-/// units are added.
-List<PathUnit> buildHangulPath(List<Kana> all, Map<String, Localized> units) {
+/// [hangulPerIntro] per lesson, then writing (letters with stroke data, see
+/// [hasStrokes]), Memory Match, a chest and a Speed Drill over everything
+/// learned so far. Node ids use the unit key ("hangul-vowels-intro-0") so
+/// they stay put when units are added; the writing node came later and is
+/// [PathNode.catchUp].
+List<PathUnit> buildHangulPath(List<Kana> all, Map<String, Localized> units, {bool Function(Kana)? hasStrokes}) {
   final out = <PathUnit>[];
   final learned = <Kana>[];
   for (final MapEntry(:key, value: title) in units.entries) {
@@ -38,6 +39,7 @@ List<PathUnit> buildHangulPath(List<Kana> all, Map<String, Localized> units) {
       );
     }
     final pool = List<Kana>.unmodifiable(learned);
+    final writable = hasStrokes == null ? const <Kana>[] : unitKana.where(hasStrokes).toList();
     out.add(
       PathUnit(
         id: unitId,
@@ -47,6 +49,8 @@ List<PathUnit> buildHangulPath(List<Kana> all, Map<String, Localized> units) {
         title: title,
         nodes: [
           ...intros,
+          if (writable.isNotEmpty)
+            PathNode(id: '$unitId-write', type: NodeType.write, items: writable, reviewPool: pool, catchUp: true),
           PathNode(id: '$unitId-match', type: NodeType.match, items: unitKana, reviewPool: pool),
           PathNode(id: '$unitId-chest', type: NodeType.chest, items: const [], reviewPool: pool),
           PathNode(id: '$unitId-speed', type: NodeType.speed, items: unitKana, reviewPool: pool),
