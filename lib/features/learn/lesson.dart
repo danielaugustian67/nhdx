@@ -369,9 +369,15 @@ abstract class LessonBuilder {
 
 /// Kana course: kana ↔ romaji questions, writing, and words spelled with
 /// kana tiles / read in romaji. The Hangul course works the same with
-/// Korean words, without writing (no stroke data for Hangul yet).
+/// Korean words.
 class KanaLessonBuilder extends LessonBuilder {
-  KanaLessonBuilder({required this.focus, required this.pool, List<DictWord> dictionary = const [], super.random}) {
+  KanaLessonBuilder({
+    required this.focus,
+    required this.pool,
+    List<DictWord> dictionary = const [],
+    this.hasStrokes,
+    super.random,
+  }) {
     final byLiteral = {for (final k in pool) k.literal: k};
     final seen = <String>{};
     words = LessonBuilder.focusFirst([
@@ -384,12 +390,17 @@ class KanaLessonBuilder extends LessonBuilder {
   final List<Kana> focus;
   final List<Kana> pool;
 
+  /// Whether a Hangul letter has stroke data: a content.db from before
+  /// content 1.7.0 has none, and a writing question could not be answered.
+  /// Kana always have strokes. Null: no Hangul writing.
+  final bool Function(Kana)? hasStrokes;
+
   @override
   late final List<SpelledWord> words;
 
   /// Yōon are written one kana after the other (き, then ゃ).
   @override
-  List<Glyph> get writable => focus.where((k) => !k.isHangul).toList();
+  List<Glyph> get writable => focus.where((k) => !k.isHangul || (hasStrokes?.call(k) ?? false)).toList();
 
   @override
   List<Glyph> get focusItems => focus;

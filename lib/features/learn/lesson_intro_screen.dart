@@ -259,8 +259,8 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
     final l10n = AppLocalizations.of(context);
     final c = context.colors;
     final vocab = item is VocabWord;
-    // Stroke order for kana and kanji; Hangul has no stroke data.
-    final content = vocab || (item is Kana && item.isHangul) ? null : ref.watch(contentProvider).value;
+    // Stroke order for kana, kanji and Hangul (none in an old content.db).
+    final content = vocab ? null : ref.watch(contentProvider).value;
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -296,7 +296,7 @@ class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
           },
           SpeakButton(speechText(item), size: 32),
           const SizedBox(height: AppSpace.m),
-          if (content != null)
+          if (content != null && item.literal.characters.every((ch) => content.strokes(ch).isNotEmpty))
             Container(
               decoration: BoxDecoration(
                 color: c.surface,

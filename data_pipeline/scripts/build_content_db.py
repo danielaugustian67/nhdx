@@ -5,7 +5,8 @@ Build content.db (PRD §9.B) for v1.0:
 - kanji         kanji course N5 to N1 (KANJIDIC2): N5 + N4 grouped by theme
                 (kanji_themes.py), N3 to N1 by difficulty; easiest first
 - char_strokes  KanjiVG stroke paths for every kana and course kanji (F6)
-                (--with-kanji adds all KanjiVG kanji)
+                (--with-kanji adds all KanjiVG kanji), and hand-drawn ones
+                for every Hangul letter and syllable (hangul_strokes.py)
 - courses / lessons / lesson_items
                 curated curriculum from content/curriculum/*.json (if present)
 - grammar       grammar points from content/grammar/n*.json (F13), validated
@@ -63,6 +64,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from kana_to_romaji import hiragana_to_katakana, kana_to_romaji
+from hangul_strokes import strokes as hangul_stroke_paths
 from kanji_themes import theme_of
 
 ROOT = Path(__file__).parent.parent
@@ -72,7 +74,7 @@ CURRICULUM_DIR = ROOT.parent / "content" / "curriculum"
 GRAMMAR_DIR = ROOT.parent / "content" / "grammar"
 KOREAN_DIR = ROOT.parent / "content" / "korean"
 
-CONTENT_VERSION = "1.6.0"
+CONTENT_VERSION = "1.7.0"
 
 # (row_group, kana) in gojūon order
 BASIC_ROWS = [
@@ -602,6 +604,17 @@ def main() -> None:
     ko_grammar, ko_grammar_errors = load_korean_grammar(conn)
     korean_errors += ko_grammar_errors
     print(f"  ✓ korean: {hangul_rows} hangul, {ko_words} words, {ko_grammar} grammar points")
+    try:
+        hangul_strokes = [
+            (ord(lit), no, d)
+            for (lit,) in conn.execute("SELECT literal FROM hangul")
+            for no, d in enumerate(hangul_stroke_paths(lit), 1)
+        ]
+    except ValueError as e:
+        korean_errors.append(f"hangul strokes: {e}")
+        hangul_strokes = []
+    conn.executemany("INSERT INTO char_strokes VALUES (?, ?, ?)", hangul_strokes)
+    print(f"  ✓ hangul strokes: {len({cp for cp, _, _ in hangul_strokes})} characters")
     for m in korean_errors:
         print(f"  ✗ {m}")
 

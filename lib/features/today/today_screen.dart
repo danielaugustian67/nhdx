@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
+import '../../core/database/providers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
@@ -62,6 +63,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     words: ref.read(lessonWordsProvider).value ?? const <DictWord>[],
     allKana: ref.read(allKanaProvider).value ?? const <Kana>[],
     koWords: ref.read(koDictWordsProvider).value ?? const <DictWord>[],
+    content: ref.read(contentProvider).value,
   );
 
   void _selectTrack(LearnTrack track) {

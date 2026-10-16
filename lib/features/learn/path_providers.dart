@@ -148,6 +148,7 @@ LessonBuilder lessonFor(
   required List<DictWord> words,
   required List<Kana> allKana,
   List<DictWord> koWords = const [],
+  ContentDb? content,
 }) {
   if (node.items.firstOrNull is VocabWord) {
     return VocabLessonBuilder(focus: node.items.cast<VocabWord>(), pool: node.reviewPool.cast<VocabWord>());
@@ -164,7 +165,12 @@ LessonBuilder lessonFor(
     );
   }
   final hangul = node.kana.firstOrNull?.isHangul ?? false;
-  return KanaLessonBuilder(focus: node.kana, pool: node.reviewPool.cast<Kana>(), dictionary: hangul ? koWords : words);
+  return KanaLessonBuilder(
+    focus: node.kana,
+    pool: node.reviewPool.cast<Kana>(),
+    dictionary: hangul ? koWords : words,
+    hasStrokes: content == null ? null : (k) => content.strokes(k.literal).isNotEmpty,
+  );
 }
 
 /// Completed path node ids, stored in user.db as lesson_progress (the node
