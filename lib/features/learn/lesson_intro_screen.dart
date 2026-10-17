@@ -455,8 +455,15 @@ class _KanjiInfo extends StatelessWidget {
           style: AppText.title1.copyWith(color: c.primaryText),
         ),
         const SizedBox(height: AppSpace.s),
-        if (kanji.onyomi.isNotEmpty) reading(l10n.onyomi, kanji.onyomi),
-        if (kanji.kunyomi.isNotEmpty) reading(l10n.kunyomi, kanji.kunyomi),
+        // One left edge for both rows, so the readings line up.
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (kanji.onyomi.isNotEmpty) reading(l10n.onyomi, kanji.onyomi),
+            if (kanji.kunyomi.isNotEmpty) reading(l10n.kunyomi, kanji.kunyomi),
+          ],
+        ),
       ],
     );
   }
