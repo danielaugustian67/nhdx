@@ -64,6 +64,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     allKana: ref.read(allKanaProvider).value ?? const <Kana>[],
     koWords: ref.read(koDictWordsProvider).value ?? const <DictWord>[],
     content: ref.read(contentProvider).value,
+    knownKanji: ref.read(knownKanjiProvider),
   );
 
   void _selectTrack(LearnTrack track) {

@@ -21,6 +21,9 @@ Kana _hangul(int id, String literal, String romaji) =>
 Kana _kana(int id, String literal, String romaji, {String script = 'hiragana'}) =>
     Kana(id: id, literal: literal, script: script, romaji: romaji, rowGroup: 'a', kind: 'basic', orderNo: id);
 
+/// Every character has strokes.
+bool _all(String _) => true;
+
 void main() {
   group('reading a character', () {
     test('kana take any romanisation of the same kana', () {
@@ -76,6 +79,51 @@ void main() {
     expect(read.shown, '意味');
     expect(read.hint, isNull);
     expect((p.last as ChoiceExercise).answer, 'meaning');
+  });
+
+  group('writing a word', () {
+    const imi = DictWord(id: 1, kanji: '意味', kana: 'いみ', romaji: 'imi', jlpt: 5, gloss: 'meaning');
+    const ichiban = DictWord(id: 2, kanji: '一番', kana: 'いちばん', romaji: 'ichiban', jlpt: 5, gloss: 'best');
+    const bye = DictWord(id: 90000003, kana: '안녕히 가세요', romaji: 'annyeonghi gaseyo', jlpt: 0, gloss: 'bye');
+    List<Exercise> practise(DictWord word, {bool Function(String)? canWrite = _all, Set<String> known = const {}}) {
+      final w = VocabWord(word);
+      return VocabLessonBuilder(
+        focus: [w],
+        pool: [w, VocabWord(imi), VocabWord(ichiban)],
+        canWrite: canWrite,
+        knownKanji: known,
+      ).practice(w);
+    }
+
+    test('in kana first, then in kanji once all its kanji are known', () {
+      final unknown = practise(imi).whereType<WriteExercise>().toList();
+      expect(unknown.map((e) => e.literal), ['いみ']);
+      expect(unknown.single.hint, 'imi');
+
+      final partly = practise(ichiban, known: {'一'}).whereType<WriteExercise>();
+      expect(partly.map((e) => e.literal), ['いちばん']);
+
+      final known = practise(ichiban, known: {'一', '番'}).whereType<WriteExercise>().toList();
+      expect(known.map((e) => e.literal), ['いちばん', '一番']);
+      expect(known.last.hint, 'いちばん');
+    });
+
+    test('order: write, read, meaning', () {
+      final p = practise(imi, known: {'意', '味'});
+      expect(p.map((e) => e.runtimeType), [WriteExercise, WriteExercise, ReadExercise, ChoiceExercise]);
+    });
+
+    test('a Korean phrase is written in Hangul without its space', () {
+      final write = practise(bye).whereType<WriteExercise>().single;
+      expect(write.literal, '안녕히가세요');
+    });
+
+    test('nothing to write without strokes or when too long', () {
+      expect(practise(imi, canWrite: null).whereType<WriteExercise>(), isEmpty);
+      expect(practise(imi, canWrite: (c) => c != 'み').whereType<WriteExercise>(), isEmpty);
+      const long = DictWord(id: 3, kana: 'ありがとうございます', romaji: 'arigatougozaimasu', jlpt: 5, gloss: 'thanks');
+      expect(practise(long).whereType<WriteExercise>(), isEmpty);
+    });
   });
 
   group('LessonIntroScreen', () {

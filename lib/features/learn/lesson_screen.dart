@@ -415,8 +415,7 @@ class _WriteViewState extends ConsumerState<_WriteView> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final l10n = AppLocalizations.of(context);
-    final target = widget.exercise.target;
-    final parts = target.literal.characters.toList();
+    final parts = widget.exercise.literal.characters.toList();
     final part = parts[min(_part, parts.length - 1)];
     final db = ref.watch(contentProvider).value;
     final reference = db == null ? const <Path>[] : db.strokes(part).map(parseSvgPath).toList();

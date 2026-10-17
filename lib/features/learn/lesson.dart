@@ -100,11 +100,17 @@ class ChoiceExercise extends Exercise {
 
 /// Write one character over a guide; scored by the PRD F6 stroke scorer.
 class WriteExercise extends Exercise {
-  const WriteExercise(this.target, {required this.hint});
+  const WriteExercise(this.target, {required this.hint, this.text});
   final Glyph target;
 
   /// Romaji of a kana, meaning of a kanji.
   final String hint;
+
+  /// What to write when it is not [target]'s literal: a word in kana (いみ)
+  /// or in kanji (意味), written one character at a time.
+  final String? text;
+
+  String get literal => text ?? target.literal;
 
   @override
   List<Glyph> get items => [target];
@@ -577,7 +583,13 @@ class KanjiLessonBuilder extends LessonBuilder {
 /// Vocabulary course (PRD F7): word ↔ meaning questions, typing a word's
 /// reading or recalling it from its meaning, and matching pairs. No writing.
 class VocabLessonBuilder extends LessonBuilder {
-  VocabLessonBuilder({required this.focus, required this.pool, super.random});
+  VocabLessonBuilder({
+    required this.focus,
+    required this.pool,
+    this.canWrite,
+    this.knownKanji = const {},
+    super.random,
+  });
 
   /// Words this lesson teaches or reviews.
   final List<VocabWord> focus;
@@ -585,8 +597,19 @@ class VocabLessonBuilder extends LessonBuilder {
   /// Words of the course so far, for distractors.
   final List<VocabWord> pool;
 
+  /// Characters with stroke data; null when content.db is not open (no
+  /// writing practice then).
+  final bool Function(String char)? canWrite;
+
+  /// Kanji the learner has met in the kanji course: a word is written in
+  /// kanji only when it uses none but these.
+  final Set<String> knownKanji;
+
   /// Pairs in one matching exercise.
   static const pairs = 5;
+
+  /// Longest word written in practice; longer phrases are only read.
+  static const maxWriteLength = 6;
 
   @override
   List<SpelledWord> get words => const [];
@@ -659,17 +682,38 @@ class VocabLessonBuilder extends LessonBuilder {
     );
   }
 
-  /// Ungraded practice after a word's card: type its reading (a word with
-  /// kanji, or a Korean word in romaja), then pick its meaning.
+  /// Ungraded practice after a word's card: write it in kana (Hangul for
+  /// Korean), then in kanji when all its kanji are known; type its reading
+  /// (a word with kanji, or a Korean word in romaja); then pick its meaning.
   @override
   List<Exercise> practice(Glyph g) {
     final w = g as VocabWord;
+    final kanji = w.word.kanji;
     return [
+      ?_write(w, w.word.kana, hint: w.word.romaji),
+      if (kanji != null && _chars(kanji).where(_isKanji).every(knownKanji.contains))
+        ?_write(w, kanji, hint: w.word.kana),
       if (w.word.kanji != null || w.word.isKorean)
         // No meaning hint: it is asked right after.
         ReadExercise(word: w.word, shown: w.literal, items: [w]),
       _question(w, ChoiceKind.wordMeaning),
     ];
+  }
+
+  /// Writing [text] (spaces left out), or null when a character has no
+  /// strokes or the word is too long to write.
+  WriteExercise? _write(VocabWord w, String text, {required String hint}) {
+    final canWrite = this.canWrite;
+    final chars = _chars(text).where((c) => c.trim().isNotEmpty).toList();
+    if (canWrite == null || chars.isEmpty || chars.length > maxWriteLength || !chars.every(canWrite)) return null;
+    return WriteExercise(w, hint: hint, text: chars.join());
+  }
+
+  static Iterable<String> _chars(String s) => s.runes.map(String.fromCharCode);
+
+  static bool _isKanji(String c) {
+    final cp = c.runes.first;
+    return cp >= 0x4E00 && cp <= 0x9FFF || cp >= 0x3400 && cp <= 0x4DBF;
   }
 
   /// Alternates reading a kanji word and recalling a word from its meaning;

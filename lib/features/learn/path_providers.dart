@@ -85,6 +85,19 @@ final kanjiPathProvider = Provider<AsyncValue<List<PathUnit>>>(
   (ref) => ref.watch(allKanjiProvider).whenData(buildKanjiPath),
 );
 
+/// Kanji introduced by the finished nodes of the kanji course: vocabulary
+/// practice writes a word in kanji only when it uses none but these.
+final knownKanjiProvider = Provider<Set<String>>((ref) {
+  final done = ref.watch(pathProgressProvider);
+  final units = ref.watch(kanjiPathProvider).value ?? const <PathUnit>[];
+  return {
+    for (final unit in units)
+      for (final node in unit.nodes)
+        if (node.type == NodeType.intro && done.contains(node.id))
+          for (final k in node.items) k.literal,
+  };
+});
+
 /// Path of the selected course.
 final activePathProvider = Provider<AsyncValue<List<PathUnit>>>(
   (ref) => switch (ref.watch(learnTrackProvider)) {
@@ -163,9 +176,15 @@ LessonBuilder lessonFor(
   required List<Kana> allKana,
   List<DictWord> koWords = const [],
   ContentDb? content,
+  Set<String> knownKanji = const {},
 }) {
   if (node.items.firstOrNull is VocabWord) {
-    return VocabLessonBuilder(focus: node.items.cast<VocabWord>(), pool: node.reviewPool.cast<VocabWord>());
+    return VocabLessonBuilder(
+      focus: node.items.cast<VocabWord>(),
+      pool: node.reviewPool.cast<VocabWord>(),
+      canWrite: content == null ? null : (ch) => content.strokes(ch).isNotEmpty,
+      knownKanji: knownKanji,
+    );
   }
   if (node.items.firstOrNull is Kanji) {
     return KanjiLessonBuilder(
