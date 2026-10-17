@@ -1,4 +1,4 @@
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/common.dart';
 
 import '../../core/database/dictionary_db.dart';
 import '../../core/text/normalize.dart';
@@ -69,7 +69,7 @@ class SearchHit {
 class SearchService {
   SearchService(this._db);
 
-  final Database _db;
+  final CommonDatabase _db;
 
   static const maxCandidates = 300;
   static const minMeaningLength = 2;

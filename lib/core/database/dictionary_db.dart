@@ -1,6 +1,7 @@
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/common.dart';
 
 import 'content_db.dart';
+import 'sqlite_platform.dart';
 
 /// Read-only access to `dictionary.db` (PRD §9.A).
 ///
@@ -9,16 +10,17 @@ import 'content_db.dart';
 class DictionaryDb {
   DictionaryDb._(this.db);
 
-  final Database db;
+  final CommonDatabase db;
 
   /// Minimum SQLite version for the FTS5 trigram tokenizer.
   static const minSqlite = 3034000;
 
-  factory DictionaryDb.open(String path) {
-    if (sqlite3.version.versionNumber < minSqlite) {
-      throw StateError('SQLite ${sqlite3.version.libVersion} is too old for FTS5 trigram (need ≥ 3.34)');
+  factory DictionaryDb.open(String path) => DictionaryDb.of(openReadOnly(path));
+
+  factory DictionaryDb.of(CommonDatabase db) {
+    if (sqliteVersionNumber < minSqlite) {
+      throw StateError('SQLite $sqliteVersionNumber is too old for FTS5 trigram (need ≥ 3.34)');
     }
-    final db = sqlite3.open(path, mode: OpenMode.readOnly);
     // Fail fast if the file is not a pipeline-built dictionary or FTS5 is missing.
     db.select("SELECT rowid FROM words_fts_jp WHERE words_fts_jp MATCH '\"たべる\"' LIMIT 1");
     return DictionaryDb._(db);

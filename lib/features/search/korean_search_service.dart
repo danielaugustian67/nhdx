@@ -1,4 +1,4 @@
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/common.dart';
 
 import '../../core/database/korean_dict_db.dart';
 import '../../core/text/hangul.dart';
@@ -27,7 +27,7 @@ class KoreanSearchService {
   static final _token = RegExp(r'[^\p{L}\p{N}]+', unicode: true);
   static final _parts = RegExp('[;,/]');
 
-  Database get _db => _dict.db;
+  CommonDatabase get _db => _dict.db;
 
   /// Meaning as stored in `glosses.text`: lower case, no brackets.
   static String normGloss(String text) =>

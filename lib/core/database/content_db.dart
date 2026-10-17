@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:ui' show Locale;
 
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/common.dart';
+
+import 'sqlite_platform.dart';
 
 /// A character taught by a course: a kana or a kanji. Ids are codepoints
 /// (yōon combine two), so kana and kanji never collide in progress maps.
@@ -234,11 +236,11 @@ class KoWord {
 
 /// Read-only access to `content.db` (kana, KanjiVG strokes, curriculum).
 class ContentDb {
-  ContentDb._(this._db);
+  ContentDb(this._db);
 
-  final Database _db;
+  final CommonDatabase _db;
 
-  factory ContentDb.open(String path) => ContentDb._(sqlite3.open(path, mode: OpenMode.readOnly));
+  factory ContentDb.open(String path) => ContentDb(openReadOnly(path));
 
   String? meta(String key) {
     final rows = _db.select('SELECT value FROM meta WHERE key = ?', [key]);

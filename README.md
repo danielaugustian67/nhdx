@@ -138,6 +138,14 @@ nihondx/
    flutter run --dart-define-from-file=env/prod.json
    ```
 
+6. **Versi web / PWA (iPhone tanpa akun Apple Developer):**
+   ```bash
+   flutter build web --release --pwa-strategy=none --dart-define-from-file=env/prod.json
+   ```
+   Unggah isi `build/web` ke hosting statis HTTPS mana pun. Di iPhone buka lewat Safari → Share → *Add to Home Screen*.
+   Pembukaan pertama mengunduh database (~53 MB) ke IndexedDB; setelah itu aplikasi jalan offline (`web/sw.js`).
+   `--pwa-strategy=none` wajib: service worker bawaan Flutter menghapus dirinya sendiri dan menggantikan `sw.js`.
+
 ---
 
 ## Pengujian (Testing)

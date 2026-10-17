@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 
 import '../ids.dart';
+import 'sqlite_platform.dart';
 import 'user_db.steps.dart';
 
 part 'user_db.g.dart';
@@ -292,9 +290,7 @@ class DayTotals {
 class UserDb extends _$UserDb {
   UserDb(super.e);
 
-  factory UserDb.open(File file) => UserDb(NativeDatabase.createInBackground(file));
-
-  factory UserDb.memory() => UserDb(NativeDatabase.memory());
+  factory UserDb.memory() => UserDb(memoryDatabase());
 
   /// Bump with every schema change; add a step in [migration] and run
   /// `dart run drift_dev make-migrations` to dump the schema and generate

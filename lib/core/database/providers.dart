@@ -1,38 +1,25 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../../features/search/korean_search_service.dart';
 import '../../features/search/search_service.dart';
 import 'content_db.dart';
-import 'db_installer.dart';
 import 'dictionary_db.dart';
 import 'korean_dict_db.dart';
+import 'sqlite_platform.dart';
 import 'user_db.dart';
-
-final _installerProvider = FutureProvider<DbInstaller>((ref) async {
-  final support = await getApplicationSupportDirectory();
-  return DbInstaller(targetDir: Directory(p.join(support.path, 'db')));
-});
 
 /// Installs (first launch / after an app update) and opens dictionary.db.
 final dictionaryProvider = FutureProvider<DictionaryDb>((ref) async {
-  final installer = await ref.watch(_installerProvider.future);
-  // TODO(fase-2): pass onReplaced to remap word ids in user.db (PRD §7).
-  final path = await installer.ensureInstalled('dictionary.db');
-  final db = DictionaryDb.open(path);
+  // TODO(fase-2): remap word ids in user.db when the dataset changes (PRD §7).
+  final db = DictionaryDb.of(await openBundled('dictionary.db'));
   ref.onDispose(db.close);
   return db;
 });
 
 /// Installs and opens content.db (kana, KanjiVG strokes, curriculum).
 final contentProvider = FutureProvider<ContentDb>((ref) async {
-  final installer = await ref.watch(_installerProvider.future);
-  final path = await installer.ensureInstalled('content.db');
-  final db = ContentDb.open(path);
+  final db = ContentDb(await openBundled('content.db'));
   ref.onDispose(db.close);
   return db;
 });
@@ -40,9 +27,7 @@ final contentProvider = FutureProvider<ContentDb>((ref) async {
 /// Installs and opens korean.db, the Korean dictionary. Only opened while
 /// Korean is being learned.
 final koreanDictProvider = FutureProvider<KoreanDictDb>((ref) async {
-  final installer = await ref.watch(_installerProvider.future);
-  final path = await installer.ensureInstalled('korean.db');
-  final db = KoreanDictDb.open(path);
+  final db = KoreanDictDb.of(await openBundled('korean.db'));
   ref.onDispose(db.close);
   return db;
 });
@@ -50,8 +35,7 @@ final koreanDictProvider = FutureProvider<KoreanDictDb>((ref) async {
 /// The read-write user.db (progress, bookmarks, SRS, settings). Tests
 /// override it with [UserDb.memory].
 final userDbProvider = FutureProvider<UserDb>((ref) async {
-  final support = await getApplicationSupportDirectory();
-  final db = UserDb.open(File(p.join(support.path, 'user.db')));
+  final db = UserDb(await openUserDb());
   ref.onDispose(db.close);
   return db;
 });

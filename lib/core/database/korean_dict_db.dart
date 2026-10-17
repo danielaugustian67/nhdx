@@ -1,8 +1,9 @@
 import 'dart:convert';
 
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/common.dart';
 
 import 'dictionary_db.dart';
+import 'sqlite_platform.dart';
 
 /// Read-only access to `korean.db`, the Korean dictionary (English Wiktionary
 /// plus the course words, `data_pipeline/scripts/build_korean_dict.py`).
@@ -10,10 +11,11 @@ import 'dictionary_db.dart';
 class KoreanDictDb {
   KoreanDictDb._(this.db);
 
-  final Database db;
+  final CommonDatabase db;
 
-  factory KoreanDictDb.open(String path) {
-    final db = sqlite3.open(path, mode: OpenMode.readOnly);
+  factory KoreanDictDb.open(String path) => KoreanDictDb.of(openReadOnly(path));
+
+  factory KoreanDictDb.of(CommonDatabase db) {
     // Fail fast if the file is not a pipeline-built Korean dictionary.
     db.select("SELECT rowid FROM words_fts WHERE words_fts MATCH 'water' LIMIT 1");
     return KoreanDictDb._(db);
