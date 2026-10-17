@@ -124,9 +124,9 @@ nihondx/
 3. **Konfigurasi Environment:**
    Salin berkas template environment:
    ```bash
-   cp env/example.json env/local.json
+   cp env/example.json env/prod.json
    ```
-   Isi konfigurasi `SUPABASE_URL` dan `SUPABASE_ANON_KEY` sesuai project Supabase kamu.
+   Isi `SUPABASE_URL` dan `SUPABASE_PUBLISHABLE_KEY` (Dashboard → Project Settings → API Keys) sesuai project Supabase kamu.
 
 4. **Jalankan Code Generator (Drift & Riverpod):**
    ```bash
@@ -135,7 +135,7 @@ nihondx/
 
 5. **Jalankan Aplikasi:**
    ```bash
-   flutter run
+   flutter run --dart-define-from-file=env/prod.json
    ```
 
 ---
