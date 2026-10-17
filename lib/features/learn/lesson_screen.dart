@@ -425,7 +425,7 @@ class _WriteViewState extends ConsumerState<_WriteView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l10n.exWrite, style: AppText.title2.copyWith(color: c.ink)),
+        Text(parts.length > 1 ? l10n.exWriteWord : l10n.exWrite, style: AppText.title2.copyWith(color: c.ink)),
         const SizedBox(height: AppSpace.s),
         Row(
           children: [

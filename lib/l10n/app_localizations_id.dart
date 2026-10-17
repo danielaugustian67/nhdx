@@ -402,6 +402,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get exWrite => 'Tulis huruf ini';
 
   @override
+  String get exWriteWord => 'Tulis kata ini';
+
+  @override
   String exBuild(String script) {
     return 'Susun dalam $script';
   }

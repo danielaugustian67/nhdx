@@ -782,6 +782,12 @@ abstract class AppLocalizations {
   /// **'Tulis huruf ini'**
   String get exWrite;
 
+  /// No description provided for @exWriteWord.
+  ///
+  /// In id, this message translates to:
+  /// **'Tulis kata ini'**
+  String get exWriteWord;
+
   /// No description provided for @exBuild.
   ///
   /// In id, this message translates to:

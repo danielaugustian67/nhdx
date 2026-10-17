@@ -333,7 +333,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get nodeWrite => 'Write this unit\'s kana';
+  String get nodeWrite => 'Write this unit\'s characters';
 
   @override
   String get nodeMatch => 'Match the pairs';
@@ -419,6 +419,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exWrite => 'Write this character';
+
+  @override
+  String get exWriteWord => 'Write this word';
 
   @override
   String exBuild(String script) {
