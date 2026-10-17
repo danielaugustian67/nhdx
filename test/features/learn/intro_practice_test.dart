@@ -67,6 +67,17 @@ void main() {
     expect(meaning.answer, 'halo');
   });
 
+  test('a kanji word is read without its meaning, which is asked next', () {
+    const imi = DictWord(id: 1, kanji: '意味', kana: 'いみ', romaji: 'imi', jlpt: 5, gloss: 'meaning');
+    const natsu = DictWord(id: 2, kanji: '夏', kana: 'なつ', romaji: 'natsu', jlpt: 5, gloss: 'summer');
+    final w = VocabWord(imi);
+    final p = VocabLessonBuilder(focus: [w], pool: [w, VocabWord(natsu)]).practice(w);
+    final read = p.first as ReadExercise;
+    expect(read.shown, '意味');
+    expect(read.hint, isNull);
+    expect((p.last as ChoiceExercise).answer, 'meaning');
+  });
+
   group('LessonIntroScreen', () {
     final g = _hangul(1, 'ㄱ', 'g'), n = _hangul(2, 'ㄴ', 'n'), d = _hangul(3, 'ㄷ', 'd'), m = _hangul(4, 'ㅁ', 'm');
 

@@ -666,7 +666,8 @@ class VocabLessonBuilder extends LessonBuilder {
     final w = g as VocabWord;
     return [
       if (w.word.kanji != null || w.word.isKorean)
-        ReadExercise(word: w.word, shown: w.literal, hint: w.word.isKorean ? null : w.word.gloss, items: [w]),
+        // No meaning hint: it is asked right after.
+        ReadExercise(word: w.word, shown: w.literal, items: [w]),
       _question(w, ChoiceKind.wordMeaning),
     ];
   }
