@@ -63,3 +63,6 @@ __pycache__/
 /prd.md
 /development_plan.md
 /ui-design.md
+
+# Built apps to share
+/dist/
