@@ -203,26 +203,29 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     return Scaffold(
       // The language being learned (bottom left) and Hafalan Bebas: any kana,
       // kanji or words as flashcards, no rules (bottom right). The top bar
-      // has no room left for them on a narrow phone.
-      floatingActionButton: SizedBox(
-        width: MediaQuery.sizeOf(context).width - 2 * kFloatingActionButtonMargin,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _LanguageButton(language: language, shape: fabShape, onTap: () => _pickLanguage(language)),
-            FloatingActionButton.extended(
-              heroTag: 'free-study',
-              elevation: 2,
-              onPressed: _freeStudy,
-              backgroundColor: c.surfaceHigh,
-              foregroundColor: c.ink,
-              shape: fabShape,
-              icon: const Icon(Icons.psychology_rounded),
-              label: Text(AppLocalizations.of(context).freeStudy),
+      // has no room left for them on a narrow phone. Hidden while a lesson
+      // bubble is open: it is scrolled to the bottom edge, under them.
+      floatingActionButton: _selected != null
+          ? null
+          : SizedBox(
+              width: MediaQuery.sizeOf(context).width - 2 * kFloatingActionButtonMargin,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _LanguageButton(language: language, shape: fabShape, onTap: () => _pickLanguage(language)),
+                  FloatingActionButton.extended(
+                    heroTag: 'free-study',
+                    elevation: 2,
+                    onPressed: _freeStudy,
+                    backgroundColor: c.surfaceHigh,
+                    foregroundColor: c.ink,
+                    shape: fabShape,
+                    icon: const Icon(Icons.psychology_rounded),
+                    label: Text(AppLocalizations.of(context).freeStudy),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         // Only closes the lesson bubble; nothing for a screen reader.

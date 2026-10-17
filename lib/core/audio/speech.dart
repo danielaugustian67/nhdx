@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -31,7 +29,7 @@ class TtsSpeech implements Speech {
       final tts = _tts = FlutterTts();
       // A little slower than normal for learners (Android doubles the value,
       // iOS speaks normally at 0.5).
-      await tts.setSpeechRate(Platform.isIOS ? 0.45 : 0.42);
+      await tts.setSpeechRate(defaultTargetPlatform == TargetPlatform.iOS ? 0.45 : 0.42);
       return true;
     } catch (e) {
       debugPrint('Speech: text-to-speech not available ($e)');
@@ -53,10 +51,13 @@ class TtsSpeech implements Speech {
     if (text.trim().isEmpty) return true;
     if (!await (_ready ??= _init())) return false;
     final language = speechLanguageOf(text);
-    if (!await _available.putIfAbsent(language, () => _isAvailable(language))) return false;
+    // Browsers load their voices late, so an early check would wrongly say
+    // there is none; the browser picks a voice for the language itself.
+    if (!kIsWeb && !await _available.putIfAbsent(language, () => _isAvailable(language))) return false;
     try {
       await _tts!.stop();
-      if (_language != language) {
+      // On the web the voice is chosen anew each time, once voices are loaded.
+      if (_language != language || kIsWeb) {
         await _tts!.setLanguage(language);
         _language = language;
       }
