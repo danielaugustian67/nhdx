@@ -9,6 +9,7 @@ import 'package:nihondx/core/database/dictionary_db.dart';
 import 'package:nihondx/core/database/providers.dart';
 import 'package:nihondx/core/svg/svg_path.dart';
 import 'package:nihondx/core/theme/app_theme.dart';
+import 'package:nihondx/features/kana/widgets/answer_option.dart';
 import 'package:nihondx/features/kana/writing/stroke_scorer.dart';
 import 'package:nihondx/features/learn/hangul_path.dart';
 import 'package:nihondx/features/learn/kana_path.dart';
@@ -137,6 +138,21 @@ void main() {
     }
     expect(exercises.length, greaterThan(1000));
     expect(problems.take(30).toList(), isEmpty, reason: '${problems.length} of ${exercises.length}');
+  }, skip: skip, timeout: const Timeout(Duration(minutes: 20)));
+
+  testWidgets('every answered choice fits a small phone, with its romaji', (tester) async {
+    smallPhone(tester);
+    final problems = <String>[];
+    for (final (i, ex) in exercises.whereType<ChoiceExercise>().indexed) {
+      final locale = i.isEven ? const Locale('id') : const Locale('en');
+      await show(tester, ex, locale, (_) {});
+      await tester.pump();
+      await tester.tap(find.byType(AnswerOption).first);
+      await tester.pump();
+      final error = tester.takeException();
+      if (error != null) problems.add('${_key(ex)} ($locale): ${error.toString().split('\n').first}');
+    }
+    expect(problems.take(30).toList(), isEmpty, reason: '${problems.length} overflow');
   }, skip: skip, timeout: const Timeout(Duration(minutes: 20)));
 
   testWidgets('every word writing exercise can be written', (tester) async {

@@ -7,12 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/content_db.dart';
 import '../../core/database/dictionary_db.dart';
+import '../../core/audio/speech.dart';
 import '../../core/database/providers.dart';
 import '../../core/svg/svg_path.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/chunky_button.dart';
+import '../../core/widgets/speak_button.dart';
 import '../../core/widgets/xp_chip.dart';
 import '../../l10n/app_localizations.dart';
 import '../kana/games/game_result_view.dart';
@@ -23,6 +25,7 @@ import '../kana/widgets/ink_painter.dart';
 import '../kana/widgets/stroke_animation.dart';
 import '../kana/writing/stroke_scorer.dart';
 import 'lesson.dart';
+import 'speech_text.dart';
 import 'study_language.dart';
 
 /// One lesson of mixed exercises (ui-design §5.2): multiple choice, writing,
@@ -249,18 +252,43 @@ class _FeedbackBar extends StatelessWidget {
   }
 }
 
-class _ChoiceView extends StatefulWidget {
+class _ChoiceView extends ConsumerStatefulWidget {
   const _ChoiceView({required this.exercise, required this.answered, required this.onAnswer});
   final ChoiceExercise exercise;
   final bool answered;
   final OnAnswer onAnswer;
 
   @override
-  State<_ChoiceView> createState() => _ChoiceViewState();
+  ConsumerState<_ChoiceView> createState() => _ChoiceViewState();
 }
 
-class _ChoiceViewState extends State<_ChoiceView> {
+class _ChoiceViewState extends ConsumerState<_ChoiceView> {
   int? _picked;
+
+  /// Romaji and 🔊 under a Japanese prompt, so it can be read and heard; and
+  /// once answered the item itself when the prompt was a meaning. A question
+  /// that asks for the reading keeps both back until it is answered.
+  Widget _readAloud(BuildContext context) {
+    final c = context.colors;
+    final q = widget.exercise;
+    final answered = _picked != null;
+    final hearable = answered || q.kind == ChoiceKind.kanjiMeaning || q.kind == ChoiceKind.wordMeaning;
+    final romaji = romajiText(q.item);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (answered && !q.kind.promptIsJapanese)
+          Text(
+            q.item.literal,
+            locale: const Locale('ja'),
+            style: AppText.bodyJp.copyWith(fontSize: 22, color: c.ink),
+          ),
+        if ((answered || !q.kind.asksReading) && q.kind.promptIsJapanese && romaji.isNotEmpty)
+          Text(romaji, textAlign: TextAlign.center, style: AppText.title2.copyWith(color: c.primaryText)),
+        if (hearable) SpeakButton(speechText(q.item), size: 28),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -287,6 +315,7 @@ class _ChoiceViewState extends State<_ChoiceView> {
         ? null
         : () {
             setState(() => _picked = i);
+            autoSpeak(ref, speechText(q.item));
             final correct = i == q.answerIndex;
             widget.onAnswer(correct, title: correct ? l10n.correct : l10n.answerWas(q.answer));
           };
@@ -318,6 +347,7 @@ class _ChoiceViewState extends State<_ChoiceView> {
                     ),
             ),
           ),
+          _readAloud(context),
           for (var i = 0; i < q.options.length; i++) ...[
             if (i > 0) const SizedBox(height: AppSpace.s),
             SizedBox(
@@ -326,6 +356,7 @@ class _ChoiceViewState extends State<_ChoiceView> {
                 label: q.options[i],
                 isKana: !jpPrompt,
                 wrap: jpPrompt,
+                romaji: q.optionRomaji?[i],
                 state: stateOf(i),
                 onTap: tap(i),
               ),
@@ -357,6 +388,7 @@ class _ChoiceViewState extends State<_ChoiceView> {
             ),
           ),
         ),
+        _readAloud(context),
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
@@ -366,7 +398,13 @@ class _ChoiceViewState extends State<_ChoiceView> {
           childAspectRatio: widget.answered ? 2.2 : 1.6,
           children: [
             for (var i = 0; i < q.options.length; i++)
-              AnswerOption(label: q.options[i], isKana: !jpPrompt, state: stateOf(i), onTap: tap(i)),
+              AnswerOption(
+                label: q.options[i],
+                isKana: !jpPrompt,
+                romaji: q.optionRomaji?[i],
+                state: stateOf(i),
+                onTap: tap(i),
+              ),
           ],
         ),
       ],

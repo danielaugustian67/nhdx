@@ -17,6 +17,7 @@ class AnswerOption extends StatelessWidget {
     required this.state,
     this.onTap,
     this.wrap = false,
+    this.romaji,
   });
 
   final String label;
@@ -27,6 +28,9 @@ class AnswerOption extends StatelessWidget {
   final bool wrap;
   final OptionState state;
   final VoidCallback? onTap;
+
+  /// How a Japanese [label] reads, small under it.
+  final String? romaji;
 
   @override
   Widget build(BuildContext context) {
@@ -72,13 +76,20 @@ class AnswerOption extends StatelessWidget {
                         )
                       : FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text(
-                            label,
-                            locale: isKana ? Locale(korean ? 'ko' : 'ja') : null,
-                            // The stroke font has no Hangul; the system Korean font draws it.
-                            style: isKana
-                                ? TextStyle(fontFamily: korean ? null : AppFonts.jpStroke, fontSize: 34, color: c.ink)
-                                : AppText.title1.copyWith(color: state == OptionState.dimmed ? c.inkMuted : c.ink),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                label,
+                                locale: isKana ? Locale(korean ? 'ko' : 'ja') : null,
+                                // The stroke font has no Hangul; the system Korean font draws it.
+                                style: isKana
+                                    ? TextStyle(fontFamily: korean ? null : AppFonts.jpStroke, fontSize: 34, color: c.ink)
+                                    : AppText.title1.copyWith(color: state == OptionState.dimmed ? c.inkMuted : c.ink),
+                              ),
+                              if (romaji case final r? when r.isNotEmpty)
+                                Text(r, style: AppText.bodySmall.copyWith(color: c.inkMuted)),
+                            ],
                           ),
                         ),
                 ),
