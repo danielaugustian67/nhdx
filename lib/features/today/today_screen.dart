@@ -267,7 +267,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
   }
 
   Widget _path(AppColors c, LearnTrack track, List<PathUnit> units, Set<String> done, int xp) {
-    final states = nodeStates(units, done, free: track.free);
+    final states = nodeStates(units, done, free: track.free || ref.watch(openAllLessonsProvider));
     // On a narrow phone the magnifier makes room for the course switch at
     // full touch size; search stays on the Kamus tab and the pull down.
     final narrow = MediaQuery.sizeOf(context).width < 400;

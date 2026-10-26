@@ -235,6 +235,10 @@ class PathProgressNotifier extends Notifier<Set<String>> {
   }
 }
 
+/// Debug builds open every lesson, to try any of them without playing up to
+/// it. Release builds keep the order.
+final openAllLessonsProvider = Provider<bool>((ref) => kDebugMode);
+
 enum NodeState {
   done,
   current,

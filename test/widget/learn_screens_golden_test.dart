@@ -10,6 +10,7 @@ import 'package:nihondx/core/database/providers.dart';
 import 'package:nihondx/core/database/user_db.dart';
 import 'package:nihondx/core/theme/app_theme.dart';
 import 'package:nihondx/features/kana/kana_screen.dart';
+import 'package:nihondx/features/learn/path_providers.dart';
 import 'package:nihondx/features/today/today_screen.dart';
 import 'package:nihondx/l10n/app_localizations.dart';
 
@@ -25,6 +26,8 @@ void main() {
 
   Widget app(Widget home) => ProviderScope(
     overrides: [
+      // Locks as a release build shows them.
+      openAllLessonsProvider.overrideWithValue(false),
       contentProvider.overrideWith((ref) async => ContentDb.open(contentPath)),
       dictionaryProvider.overrideWith((ref) => Completer<Never>().future),
       userDbProvider.overrideWith((ref) async {
