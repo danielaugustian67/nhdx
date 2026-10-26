@@ -362,6 +362,12 @@ class _PracticeFeedback extends StatelessWidget {
                   style: AppText.title2.copyWith(color: tone, fontWeight: FontWeight.w700),
                 ),
                 if (outcome.detail case final d?) Text(d, style: AppText.bodySmall.copyWith(color: c.ink)),
+                // A word's reading is practised without its meaning; it shows here.
+                if (outcome.word case final w?)
+                  Text(
+                    [w.romaji, w.gloss].join('  ·  '),
+                    style: AppText.bodySmall.copyWith(color: c.ink),
+                  ),
               ],
             ),
           ),

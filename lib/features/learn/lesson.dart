@@ -7,6 +7,7 @@ import '../../core/text/kana_romaji.dart';
 import '../../core/text/normalize.dart';
 import '../../core/text/romaji_to_kana.dart';
 import '../kana/games/kana_quiz.dart';
+import 'speech_text.dart';
 import 'vocab_path.dart';
 
 /// How a "Kenali" lesson is put together (ui-design §5.2).
@@ -65,6 +66,10 @@ enum ChoiceKind {
 
   /// Options or prompt are dictionary meanings, which can be long.
   bool get hasGloss => this == wordMeaning || this == pickWord;
+
+  /// The question asks for the reading, so romaji would give it away until
+  /// it is answered. Meaning questions show it all along.
+  bool get asksReading => this == kanaReading || this == pickKana;
 }
 
 /// One question with 4 options.
@@ -75,6 +80,7 @@ class ChoiceExercise extends Exercise {
     required this.prompt,
     required this.options,
     required this.answerIndex,
+    this.optionRomaji,
   });
 
   ChoiceExercise.kana(QuizQuestion q)
@@ -91,6 +97,9 @@ class ChoiceExercise extends Exercise {
   final String prompt;
   final List<String> options;
   final int answerIndex;
+
+  /// Romaji under each Japanese option, when the options are words or kanji.
+  final List<String>? optionRomaji;
 
   String get answer => options[answerIndex];
 
@@ -446,7 +455,8 @@ class KanaLessonBuilder extends LessonBuilder {
   );
 
   @override
-  ReadExercise readWord(SpelledWord w) => ReadExercise(word: w.word, shown: w.word.kana, items: w.glyphs);
+  ReadExercise readWord(SpelledWord w) =>
+      ReadExercise(word: w.word, shown: w.word.kana, hint: w.word.gloss, items: w.glyphs);
 }
 
 /// Kanji course: kanji ↔ meaning questions, writing, and words written with
@@ -552,6 +562,7 @@ class KanjiLessonBuilder extends LessonBuilder {
       prompt: kind == ChoiceKind.kanjiMeaning ? k.literal : k.meaning,
       options: [for (final x in options) show(x)],
       answerIndex: options.indexOf(k),
+      optionRomaji: kind == ChoiceKind.pickKanji ? [for (final x in options) romajiText(x)] : null,
     );
   }
 
@@ -679,6 +690,7 @@ class VocabLessonBuilder extends LessonBuilder {
       prompt: kind == ChoiceKind.wordMeaning ? w.literal : w.word.gloss,
       options: [for (final x in options) show(x)],
       answerIndex: options.indexOf(w),
+      optionRomaji: kind == ChoiceKind.pickWord ? [for (final x in options) romajiText(x)] : null,
     );
   }
 
